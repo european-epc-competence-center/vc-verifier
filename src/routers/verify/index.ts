@@ -7,6 +7,15 @@ const { verifyCredential, verifyCredentials, verifySubjectsVCs } = verifyRoutes
 
 export const verifyRouter = Router();
 
+
+/**
+ * API model of a credentialSubject
+ * @summary The minimal form of a credential subject
+ * @typedef {object} CredentialSubject
+ * @property {string} id.required - The identifier of the identity which the credential refers to
+ */
+
+
 /**
  * API model of a signed credential
  * @summary Refers to W3C Credential
@@ -25,7 +34,7 @@ export const verifyRouter = Router();
  * Verifier response object
  * @summary The respsonse object of the verifier containing the original credential and the verification result
  * @typedef {object} VerifierRespsonse
- * @property {SignedCredentail} credential.required - The JSON-LD context URIs of the credential
+ * @property {SignedCredential} credential.required - The JSON-LD context URIs of the credential
  * @property {boolean} verified.required - The id of the the credential as an IRI
  */
 
@@ -45,7 +54,52 @@ export const verifyRouter = Router();
  * @tags Verify
  * @param {array<VerifierRespsonse>} request.body.required - Array of verifiable credentials
  * @return {array<object>} 200 - success response - application/json
- * @return {object} 404 - not found response - application/json
+ * @return {object} 400 - bad request response - application/json
+ * 
+ * @example request - Example request
+ * [{
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://ssi.eecc.de/api/registry/context/product-passport"
+    ],
+    "id": "https://ssi.eecc.de/api/registry/vc/c6e6e206-1538-4da3-b8d6-c7225fc52c5b",
+    "type": ["VerifiableCredential", "ProductPassportCredential"],
+    "credentialSubject": {
+        "id": "https://gs1.org/digital-link",
+        "property": "Example property"
+    },
+    "proof": {
+      "type": "Ed25519Signature2020",
+      "created": "2022-09-26T09:01:07.000Z",
+      "proofPurpose": "assertionMethod",
+      "verificationMethod": "did:web:ssi.eecc.de#z6Mks681c8vdENF2Qk6cZEvV82YfoqDAkC9KyqnpdgMy2oyv",
+      "proofValue": "z4wxpr1MJyVrmFEGAuwRy7FhFtcCcPiRb74hFgDyvVCsxUdPDkd6afyEVSe8JEs7Y82XLpAsXfRnaTSzyg2NLGMSm"
+    }
+}]
+ * @example response - 200 - credentials verified
+ * [{
+ *  "credential": {
+        "@context": [
+            "https://www.w3.org/2018/credentials/v1",
+            "https://ssi.eecc.de/api/registry/context/product-passport"
+        ],
+        "id": "https://ssi.eecc.de/api/registry/vc/c6e6e206-1538-4da3-b8d6-c7225fc52c5b",
+        "type": ["VerifiableCredential", "ProductPassportCredential"],
+        "credentialSubject": {
+            "id": "https://gs1.org/digital-link",
+            "property": "Example property"
+        },
+        "proof": {
+        "type": "Ed25519Signature2020",
+        "created": "2022-09-26T09:01:07.000Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:ssi.eecc.de#z6Mks681c8vdENF2Qk6cZEvV82YfoqDAkC9KyqnpdgMy2oyv",
+        "proofValue": "z4wxpr1MJyVrmFEGAuwRy7FhFtcCcPiRb74hFgDyvVCsxUdPDkd6afyEVSe8JEs7Y82XLpAsXfRnaTSzyg2NLGMSm"
+        }
+    },
+    "verified": true
+    
+ * }]
  */
  verifyRouter.post('/vc', verifyCredentials);
 
