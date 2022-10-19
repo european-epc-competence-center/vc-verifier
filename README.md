@@ -1,11 +1,11 @@
-# vc-verifier
-The EECC verifier for verifiable credentials which provides an verification API as well as the corresponding UI.
+# VC Verifier
+The EECC Verifier for verifiable credentials which provides an verification API as well as the corresponding UI.
 
 
 
 ## License
 
-Copyright 2022 EECC <christian.fries@eecc.de>
+Copyright 2022 European EPC Competence Center GmbH (EECC). Contact: Christian Fries <christian.fries@eecc.de>
 
 <a href="https://www.gnu.org/licenses/agpl-3.0.html">
 <img alt="AGPLV3" style="border-width:0" src="https://www.gnu.org/graphics/agplv3-with-text-162x68.png" /><br />
