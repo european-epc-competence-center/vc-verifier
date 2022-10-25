@@ -27,9 +27,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/css', express.static('public/css'));
 app.use('/img', express.static('public/img'));
 app.use('/js', express.static('public/js'));
-// app.use('/files', express.static('public/files'));
 
-// conigure nunjucks for UI
+// configure nunjucks for UI
 nunjucks.configure('views', {
     autoescape: true,
     express: app,

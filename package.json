@@ -26,6 +26,8 @@
   },
   "homepage": "https://github.com/european-epc-competence-center/vc-verifier#readme",
   "dependencies": {
+    "@digitalbazaar/ed25519-signature-2020": "^5.0.0",
+    "@digitalbazaar/vc": "^5.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
