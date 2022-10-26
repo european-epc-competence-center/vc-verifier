@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { VCVerifier } from '../../services/index.js';
 
-const VC_REGISTRY = 'https://ssi.eecc.de/api/registry/vcs/';
+const VC_REGISTRY = process.env.VC_REGISTRY ? process.env.VC_REGISTRY : 'https://ssi.eecc.de/api/registry/vcs/';
 
 
 export class VerifyRoutes {

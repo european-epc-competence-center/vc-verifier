@@ -1,0 +1,12 @@
+version: '3.7'
+services:
+
+  api:
+    build:
+      context: ./api
+    restart: unless-stopped
+    environment:
+      - PORT=${API_PORT}
+      - VC_REGISTRY=${VC_REGISTRY}
+    ports:
+      - "${API_PORT}:${API_PORT}"
