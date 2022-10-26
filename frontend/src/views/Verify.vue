@@ -38,25 +38,25 @@
                     <div class="accordion" :id="getCredCompId('acc', credential.id)">
                         <div class="accordion-item">
                             <h2 class="accordion-header" :id="getCredCompId('itemhead', credential.id)">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse" :data-bs-target="getCredCompId('#item', credential.id)" aria-expanded="true" :aria-controls="getCredCompId('item', credential.id)">
-                                    Details
-                                </button>
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="getCredCompId('#item', credential.id)" aria-expanded="false" :aria-controls="getCredCompId('item', credential.id)">
+                                Details
+                            </button>
                             </h2>
                             <div :id="getCredCompId('item', credential.id)" class="accordion-collapse collapse" :aria-labelledby="getCredCompId('itemhead', credential.id)" :data-bs-parent="getCredCompId('#acc', credential.id)">
-                                <div class="accordion-body">
-                                    <ul class="list-group">
-                                        <li v-for="(value, key) in credential.credentialSubject" :key="key" class="list-group-item">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <strong>{{key}}</strong>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    {{value}}
-                                                </div>
+                            <div class="accordion-body">
+                                <ul class="list-group">
+                                    <li v-for="(value, key) in credential.credentialSubject" :key="key" class="list-group-item">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <strong>{{key}}</strong>
                                             </div>
-                                        </li>
-                                    </ul>
-                                </div>
+                                            <div class="col-md-6">
+                                                {{value}}
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
                             </div>
                         </div>
                     </div>
