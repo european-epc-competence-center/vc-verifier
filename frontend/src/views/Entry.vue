@@ -72,7 +72,7 @@
         this.$router.push({ path: '/verify', query: { credentialId: encodeURIComponent(this.credentialId) } })
     },
     submitSubject() {
-
+        this.$router.push({ path: '/verify', query: { subjectId: encodeURIComponent(this.subjectId) } })
     }
   }
 }

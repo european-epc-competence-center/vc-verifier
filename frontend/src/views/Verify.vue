@@ -8,6 +8,9 @@
             <div v-if="credentialId" class="alert alert-primary m-3 mb-5 text-center" role="alert">
                 <p class="m-0">Verifying single credential <a :href="credentialId" target="_blank">{{credentialId}}</a></p>
             </div>
+            <div v-if="subjectId" class="alert alert-primary m-3 mb-5 text-center" role="alert">
+                <p class="m-0">Verifying credentials of <a :href="subjectId" target="_blank">{{subjectId}}</a></p>
+            </div>
             <div v-for="credential in credentials" :key="credential.id" class="card shadow m-3">
                 <div class="card-header p-3">
                     <div class="row justify-content-between align-items-center">
@@ -34,26 +37,26 @@
                     </div>
                     <div class="accordion" :id="getCredCompId('acc', credential.id)">
                         <div class="accordion-item">
-                            <h2 class="accordion-header" id="headingOne">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" :data-bs-target="getCredCompId('#item', credential.id)" aria-expanded="true" :aria-controls="getCredCompId('item', credential.id)">
-                                Details
-                            </button>
+                            <h2 class="accordion-header" :id="getCredCompId('itemhead', credential.id)">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" :data-bs-target="getCredCompId('#item', credential.id)" aria-expanded="true" :aria-controls="getCredCompId('item', credential.id)">
+                                    Details
+                                </button>
                             </h2>
-                            <div :id="getCredCompId('item', credential.id)" class="accordion-collapse collapse" aria-labelledby="headingOne" :data-bs-parent="getCredCompId('#acc', credential.id)">
-                            <div class="accordion-body">
-                                <ul class="list-group">
-                                    <li v-for="(value, key) in credential.credentialSubject" :key="key" class="list-group-item">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <strong>{{key}}</strong>
+                            <div :id="getCredCompId('item', credential.id)" class="accordion-collapse collapse" :aria-labelledby="getCredCompId('itemhead', credential.id)" :data-bs-parent="getCredCompId('#acc', credential.id)">
+                                <div class="accordion-body">
+                                    <ul class="list-group">
+                                        <li v-for="(value, key) in credential.credentialSubject" :key="key" class="list-group-item">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <strong>{{key}}</strong>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    {{value}}
+                                                </div>
                                             </div>
-                                            <div class="col-md-6">
-                                                {{value}}
-                                            </div>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -66,6 +69,9 @@
 <script>
 import { useToast } from "vue-toastification";
 import 'bootstrap/js/dist/collapse'
+
+const VC_REGISTRY = process.env.VC_REGISTRY || 'https://ssi.eecc.de/api/registry/vcs/'
+
 export default {
     name: 'Verify',
     components: {
@@ -75,7 +81,8 @@ export default {
     return {
         toast: useToast(),
         credentials: [],
-        credentialId: decodeURIComponent(this.$route.query.credentialId)
+        credentialId: this.$route.query.credentialId ? decodeURIComponent(this.$route.query.credentialId) : undefined,
+        subjectId: this.$route.query.subjectId ? decodeURIComponent(this.$route.query.subjectId) : undefined,
     }
     },
     mounted() {
@@ -95,9 +102,14 @@ export default {
         },
         async fetchData() {
 
-            if (this.$route.query.credentialId) {
+            if (this.credentialId) {
                 const res = await fetch(this.credentialId);
-                this.credentials.push(await res.json())
+                this.credentials.push(await res.json());
+            }
+
+            if (this.subjectId) {
+                const res = await fetch(VC_REGISTRY + encodeURIComponent(this.subjectId));
+                this.credentials = await res.json();
             }
 
         },
