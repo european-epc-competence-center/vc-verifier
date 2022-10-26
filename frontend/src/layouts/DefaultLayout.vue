@@ -1,9 +1,9 @@
 <template>
-    <div>
-        <router-view />
+    <div class="d-flex justify-content-center h-100 m-3">
+      <router-view />
     </div>
-  </template>
-  <script>
+</template>
+<script>
   export default {
   name: 'DefaultLayout',
   components: {
@@ -13,5 +13,5 @@
 
   }
 }
-  </script>
+</script>
   

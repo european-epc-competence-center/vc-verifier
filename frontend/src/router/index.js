@@ -17,7 +17,7 @@ const routes = [
       {
         path: '/verify',
         name: 'Verify',
-        component: () => import('@/views/Entry.vue'),
+        component: () => import('@/views/Verify.vue'),
       },
     ]
   }  
