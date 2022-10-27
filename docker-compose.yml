@@ -14,7 +14,7 @@ services:
     labels:
     - "traefik.enable=true"
     - "traefik.docker.network=ssi-suite"
-    - "traefik.http.routers.dashboard.rule=PathPrefix(`/api/verify/`)"
+    - "traefik.http.routers.api.rule=PathPrefix(`/api/verify/`)"
     networks:
       - ssi-suite
 
@@ -31,7 +31,7 @@ services:
     labels:
     - "traefik.enable=true"
     - "traefik.docker.network=ssi-suite"
-    - "traefik.http.routers.dashboard.rule=PathPrefix(`/verifier/`)"
+    - "traefik.http.routers.frontend.rule=PathPrefix(`/verifier/`)"
     networks:
       - ssi-suite
 
