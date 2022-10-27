@@ -1,7 +1,8 @@
 <template>
     <div class="card m-auto shadow" style="min-width: 80%; height: 90vh;">
-        <div class="card-header text-center p-3">
-            <h3>Verifiable Credential Verifier</h3>
+        <div class="card-header text-center p-3 pb-1">
+            <h3 class="mb-0">Verifiable Credential Verifier</h3>
+            <a href="https://github.com/european-epc-competence-center/vc-verifier"><i class="bi-github" role="img" aria-label="GitHub"></i></a>
             <a href="https://eecc.info"><img id="logo" src="@/assets/img/logo.png"/></a>
         </div>
         <div class="card-body p-3" style="overflow-y: scroll;">
@@ -83,8 +84,11 @@
                             </div>
                         </div>
                     </div>
-                    <div>
-                        Test
+                </div>
+                <div class="card-footer px-3 text-end">
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Download">
+                        <button @click="downloadCredential(credential)" type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Download credential file"><i class="bi-download" role="img" aria-label="GitHub"></i></button>
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Show credential as QR-Code"><i class="bi-qr-code" role="img" aria-label="GitHub"></i></button>
                     </div>
                 </div>
             </div>
@@ -94,6 +98,7 @@
 
 <script>
 import { useToast } from "vue-toastification";
+import exportFromJSON from "export-from-json";
 import 'bootstrap/js/dist/collapse'
 
 export default {
@@ -136,6 +141,13 @@ export default {
         }
     },
     methods: {
+        downloadCredential(credential) {
+
+            const fileName = this.getCredCompId('credential', credential.id);
+            const exportType = exportFromJSON.types.json;
+            exportFromJSON({ credential, fileName, exportType });
+
+        },
         getCredCompId(type, id) {
             return type + '-' + id.substr(id.length - 5, id.length)
         },

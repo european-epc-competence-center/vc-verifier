@@ -1,10 +1,11 @@
 <template>
     <div class="card m-auto shadow" style="min-width: 80%">
-        <div class="card-header text-center p-3">
-            <h3>Credential Selector</h3>
+        <div class="card-header text-center p-3 pb-1">
+            <h3 class="mb-0">Credential Selector</h3>
+            <a href="https://github.com/european-epc-competence-center/vc-verifier"><i class="bi-github" role="img" aria-label="GitHub"></i></a>
             <a href="https://eecc.info"><img id="logo" src="@/assets/img/logo.png"/></a>
         </div>
-        <div class="card-body m-3">
+        <div class="card-body m-3" style="overflow-y: scroll;">
             <p>Select the credential/s using one of the options below.</p>
             <!--By json file-->
             <div class="card mb-3 p-3 shadow">
