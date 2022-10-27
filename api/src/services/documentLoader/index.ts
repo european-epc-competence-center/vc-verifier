@@ -8,11 +8,15 @@ const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async 
     // Fetch did documents
     if (url.startsWith('did:')) {
 
-        const didIdentifier = url.split(':')[2].split('#')[0]
+        const [ _, method, queryId ] = url.split(':');
 
-        const verificationMethod = url.split(':')[2].split('#')[1]
+        const didIdentifier = queryId.split('#')[0]
+
+        const verificationMethod = queryId.split('#')[1]
         
         // TODO implement other methods besides did:web
+        if (method != 'web') throw new Error(`did:${method} not implemented`)
+        
         const didDocument = await (await fetch('https://' + didIdentifier + '/.well-known/did.json')).json();
 
         // if a verifcation method of the DID document is queried
