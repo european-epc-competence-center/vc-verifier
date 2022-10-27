@@ -1,10 +1,10 @@
 <template>
-    <div class="card m-auto shadow" style="min-width: 80%; height: 90vh; overflow-y: scroll;">
+    <div class="card m-auto shadow" style="min-width: 80%; height: 90vh;">
         <div class="card-header text-center p-3">
             <h3>Verifiable Credential Verifier</h3>
             <a href="https://eecc.info"><img id="logo" src="@/assets/img/logo.png"/></a>
         </div>
-        <div class="card-body p-3">
+        <div class="card-body p-3" style="overflow-y: scroll;">
             <div v-if="credentialId" class="alert alert-primary m-3 mb-5 text-center" role="alert">
                 <p class="m-0">{{getVerifyString}} single credential <a :href="credentialId" target="_blank">{{credentialId}}</a> {{verified ? '' : '...'}}</p>
             </div>
@@ -82,6 +82,9 @@
                             </div>
                             </div>
                         </div>
+                    </div>
+                    <div>
+                        Test
                     </div>
                 </div>
             </div>
