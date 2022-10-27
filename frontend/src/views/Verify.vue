@@ -144,8 +144,8 @@ export default {
         downloadCredential(credential) {
 
             const fileName = this.getCredCompId('credential', credential.id);
-            const exportType = exportFromJSON.types.json;
-            exportFromJSON({ credential, fileName, exportType });
+            const exportType = 'json';
+            exportFromJSON({ data: credential, fileName, exportType });
 
         },
         getCredCompId(type, id) {
