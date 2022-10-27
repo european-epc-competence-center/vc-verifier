@@ -37,7 +37,7 @@ nunjucks.configure('views', {
 
 
 // public verify router
-app.use('/api/verify', verifyRouter);
+app.use('/api/verifier', verifyRouter);
 
 
 

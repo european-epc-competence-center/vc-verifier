@@ -12,7 +12,7 @@ const swaggerOptions: any = {
       // Glob pattern to find your jsdoc files (multiple patterns can be added in an array)
       filesPattern: './**/*.js',
       // URL where SwaggerUI will be rendered
-      swaggerUIPath: '/api/swagger',
+      swaggerUIPath: '/api/verifier/swagger',
       // Expose OpenAPI UI
       exposeSwaggerUI: true,
       // Expose Open API JSON Docs documentation in `apiDocsPath` path.
