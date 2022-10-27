@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+import store from './store';
 
 import  Toast, { POSITION } from "vue-toastification";
 // Import the CSS or use your own!
@@ -18,5 +19,6 @@ const toastOptions = {
 const app = createApp(App)
 app.config.globalProperties.$api = api
 app.use(router)
+app.use(store);
 app.use(Toast, toastOptions);
 app.mount('#app')

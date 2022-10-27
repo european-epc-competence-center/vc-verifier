@@ -1,15 +1,18 @@
 <template>
     <div class="card m-auto shadow" style="min-width: 80%; height: 90vh; overflow-y: scroll;">
         <div class="card-header text-center p-3">
-            <h3>Credential Verifier</h3>
+            <h3>Verifiable Credential Verifier</h3>
             <a href="https://eecc.info"><img id="logo" src="/logo.png"/></a>
         </div>
         <div class="card-body p-3">
             <div v-if="credentialId" class="alert alert-primary m-3 mb-5 text-center" role="alert">
-                <p class="m-0">Verifying single credential <a :href="credentialId" target="_blank">{{credentialId}}</a></p>
+                <p class="m-0">{{getVerifyString}} single credential <a :href="credentialId" target="_blank">{{credentialId}}</a> {{verified ? '' : '...'}}</p>
             </div>
-            <div v-if="subjectId" class="alert alert-primary m-3 mb-5 text-center" role="alert">
-                <p class="m-0">Verifying credentials of <a :href="subjectId" target="_blank">{{subjectId}}</a></p>
+            <div v-else-if="subjectId" class="alert alert-primary m-3 mb-5 text-center" role="alert">
+                <p class="m-0">{{getVerifyString}} {{credentials.length}} credential{{credentials.length == 1 ? '' : 's'}} of <a :href="subjectId" target="_blank">{{subjectId}}</a> {{verified ? '' : '...'}}</p>
+            </div>
+            <div v-else class="alert alert-primary m-3 mb-5 text-center" role="alert">
+                <p class="m-0">{{getVerifyString}} {{credentials.length}} single credential{{credentials.length == 1 ? '' : 's'}} {{verified ? '' : '...'}}</p>
             </div>
             <div v-if="subjectId && Object.keys(verifiedProperties).length > 0" class="card border-success m-3 mb-5">
                 <div class="card-header text-success p-3">
@@ -30,7 +33,7 @@
                     </ul>
                 </div>
             </div>
-            <h5 class="mx-3">Single Credentials</h5>
+            <h5 v-if="!credentialId" class="mx-3">Included Credentials</h5>
             <div v-for="credential in credentials" :key="credential.id" class="card shadow m-3">
                 <div class="card-header p-3">
                     <div class="row justify-content-between align-items-center">
@@ -90,20 +93,19 @@
 import { useToast } from "vue-toastification";
 import 'bootstrap/js/dist/collapse'
 
-const VC_REGISTRY = process.env.VC_REGISTRY || 'https://ssi.eecc.de/api/registry/vcs/'
-
 export default {
     name: 'Verify',
     components: {
 
     },
     data() {
-    return {
-        toast: useToast(),
-        credentials: [],
-        credentialId: this.$route.query.credentialId ? decodeURIComponent(this.$route.query.credentialId) : undefined,
-        subjectId: this.$route.query.subjectId ? decodeURIComponent(this.$route.query.subjectId) : undefined,
-    }
+        return {
+            toast: useToast(),
+            credentials: [],
+            credentialId: this.$route.query.credentialId ? decodeURIComponent(this.$route.query.credentialId) : undefined,
+            subjectId: this.$route.query.subjectId ? decodeURIComponent(this.$route.query.subjectId) : undefined,
+            verified: false
+        }
     },
     mounted() {
         this.fetchData()
@@ -126,6 +128,9 @@ export default {
             });
             return verifiedProps
         },
+        getVerifyString() {
+            return this.verified ? 'Verified' : 'Verifying'
+        }
     },
     methods: {
         getCredCompId(type, id) {
@@ -136,12 +141,21 @@ export default {
             if (this.credentialId) {
                 const res = await fetch(this.credentialId);
                 this.credentials.push(await res.json());
+                return
             }
 
             if (this.subjectId) {
-                const res = await fetch(VC_REGISTRY + encodeURIComponent(this.subjectId));
+                const res = await fetch(this.$store.state.VC_REGISTRY + encodeURIComponent(this.subjectId));
                 this.credentials = await res.json();
+                return
             }
+
+            if (this.$store.state.credentials.length > 0) {
+                this.credentials = this.$store.state.credentials;
+                return
+            }
+
+            this.toast.error('No credentials provided!');
 
         },
         async verify() {
@@ -151,11 +165,20 @@ export default {
                 // verifies all at once -> TODO make verification sequential Promise.all()
                 const res = await this.$api.post('/vc', this.credentials)
 
+                var all_verified = true
+
                 for (const [i, value] of res.data.entries()) {
                     this.credentials[i]['verified'] = value.verified
+
+                    if (!value.verified) {
+                        this.toast.warning(`Verification of ${this.credentials[i].type[1]} failed!`);
+                        all_verified = false
+                    }
                 }
 
-                this.toast.success('All credentials could be verified!');
+                if (all_verified) this.toast.success('All credentials could be verified!');
+
+                this.verified = true
 
             } catch (error) {
                 this.toast.error(`Something went wrong verifying the credentials!\n${error}`);

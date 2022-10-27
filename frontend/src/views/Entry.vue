@@ -11,7 +11,7 @@
                 <h5>Credential File</h5>
                 <form v-on:submit.prevent="submitFile">
                     <div class="input-group">
-                        <input v-on:change="onFileChange" id="credentialId" type="file" class="form-control" placeholder="credential.json" aria-label="Credential" aria-describedby="credentialHelp">
+                        <input multiple v-on:change="onFileChange" id="credentialId" type="file" class="form-control" placeholder="credential.json" aria-label="Credential" aria-describedby="credentialHelp">
                         <button class="btn btn-outline-primary" type="submit">Verify</button>
                     </div>
                     <div class="form-text">Upload a credential in json format</div>
@@ -52,21 +52,26 @@
   data() {
     return {
         toast: useToast(),
-        credentialFile: undefined,
         credentialId: '',
         subjectId: ''
     }
   },
   methods: {
     onFileChange(e) {
-        var files = e.target.files || e.dataTransfer.files;
-        this.credentialFile = files[0];
-        if (this.credentialFile.type != 'application/json') this.toast.warning('Credential must be provided as a json file!');
-        console.log(this.credentialFile);
-        this.toast.warning('Not implemented!');
+        var files = Array.from(e.target.files || e.dataTransfer.files);
+        files.forEach( file => {
+            if (file.type != 'application/json') this.toast.warning(`Credential '${file.name}'' must be provided as a json file!`);
+
+            new Response(file).json().then(json => {
+                // TODO do credential checks
+                this.$store.dispatch("addCredential", json);
+            }, () => {
+                this.toast.warning(`Credential '${file.name}' is not a json file!`);
+            })
+        })
     },
     submitFile() {
-
+        this.$router.push({ path: '/verify' })
     },
     submitId() {
         this.$router.push({ path: '/verify', query: { credentialId: encodeURIComponent(this.credentialId) } })

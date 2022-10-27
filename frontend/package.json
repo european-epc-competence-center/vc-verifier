@@ -29,7 +29,8 @@
     "bootstrap-icons": "^1.9.1",
     "vue": "^3.2.41",
     "vue-router": "^4.1.6",
-    "vue-toastification": "^2.0.0-rc.5"
+    "vue-toastification": "^2.0.0-rc.5",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
