@@ -8,11 +8,13 @@
         <div class="card-body p-3" style="overflow-y: scroll;">
             <div class="alert alert-primary m-3 mb-5 text-center" role="alert">
                 <p v-html="getInfoString"></p>
-                <div class="text-center px-5">
+                <Transition name="fade">
+                <div v-if="progress < credentials.length" class="text-center px-5">
                     <div class="progress" style="height: 8px;">
-                        <div class="progress-bar progress-bar-striped" role="progressbar" aria-label="Example with label" :style="'width: ' + numberVerified/credentials.length * 100 + '%;'" :aria-valuenow="numberVerified" aria-valuemin="0" :aria-valuemax="credentials.length"></div>
+                        <div class="progress-bar progress-bar-striped" role="progressbar" aria-label="Verification progress" :style="'width: ' + progress/credentials.length * 100 + '%;'" :aria-valuenow="progress" aria-valuemin="0" :aria-valuemax="credentials.length + 1"></div>
                     </div>
                 </div>
+                </Transition>
             </div>
             <Transition name="slide-fade">
                 <div v-if="subjectId && Object.keys(verifiedProperties).length > 0" class="card border-success m-3 mb-5">
@@ -116,8 +118,8 @@ export default {
             credentials: [],
             credentialId: this.$route.query.credentialId ? decodeURIComponent(this.$route.query.credentialId) : undefined,
             subjectId: this.$route.query.subjectId ? decodeURIComponent(this.$route.query.subjectId) : undefined,
-            verified: false,
-            numberVerified: 0
+            numberVerified: 0,
+            progress: 0
         }
     },
     mounted() {
@@ -143,7 +145,7 @@ export default {
         },
         getInfoString() {
             if (this.credentialId) {
-                return `${this.verified ? 'Verified' : 'Verifying'} single credential <a href="${this.credentialId}" target="_blank">${this.credentialId}</a>`
+                return `${this.progress == this.credentials.length ? 'Verified' : 'Verifying'} single credential <a href="${this.credentialId}" target="_blank">${this.credentialId}</a>`
             }
             else if (this.subjectId) {
                 return `Verified ${this.numberVerified}/${this.credentials.length} credential${this.credentials.length == 1 ? '' : 's'} of <a href="${this.subjectId}" target="_blank">${this.subjectId}</a>`
@@ -191,24 +193,31 @@ export default {
 
             try {
 
-                // verifies all at once -> TODO make verification sequential Promise.all()
-                const res = await this.$api.post('/vc', this.credentials)
-
                 this.numberVerified = 0
+                this.progress = 1
 
-                for (const [i, value] of res.data.entries()) {
-                    this.credentials[i]['verified'] = value.verified
+                var verifyTasks = Promise.all(this.credentials.map(async function(credential) {
 
-                    if (!value.verified) {
-                        this.toast.warning(`Verification of ${this.credentials[i].type[1]} failed!`);
-                    } else {
+                    const res = await this.$api.post('/vc', [credential]);
+
+                    const verified = res.data[0].verified
+
+                    if (verified) {
                         this.numberVerified += 1
+                    } else {
+                        this.toast.warning(`Verification of ${credential.type[1]} failed!`);
                     }
-                }
+
+                    this.progress += 1
+
+                    return Object.assign(credential, {verified: verified});
+
+                }.bind(this)));
+
+                // wait for all vcs to be verified
+                await verifyTasks;
 
                 if (this.numberVerified == this.credentials) this.toast.success('All credentials could be verified!');
-
-                this.verified = true
 
             } catch (error) {
                 this.toast.error(`Something went wrong verifying the credentials!\n${error}`);
