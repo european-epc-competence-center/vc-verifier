@@ -18,7 +18,7 @@
                 </Transition>
             </div>
             <Passport v-if="subjectId" v-bind:credentials="credentials"/>
-            <h5 v-if="!credentialId" class="mx-3">Included Credentials</h5>
+            <h5 v-if="!credentialId" class="mx-3 px-3">Included Credentials</h5>
             <div v-for="credential in credentials" :key="credential.id" class="card shadow m-3">
                 <QRModal :id="getCredCompId('modal', credential.id)" v-bind:value="credential"/>
                 <div class="card-header p-3">
