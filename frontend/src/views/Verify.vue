@@ -119,7 +119,6 @@ export default {
             credentials: [],
             credentialId: this.$route.query.credentialId ? decodeURIComponent(this.$route.query.credentialId) : undefined,
             subjectId: this.$route.query.subjectId ? decodeURIComponent(this.$route.query.subjectId) : undefined,
-            numberVerified: 0,
             progress: 0
         }
     },
@@ -135,6 +134,9 @@ export default {
                  });
     },
     computed: {
+        numberVerified() {
+            return this.credentials.filter(function(credential) {return credential.verified}).length
+        },
         verifiedProperties() {
             var verifiedProps = {};
             this.credentials.forEach( credential => {
@@ -195,7 +197,6 @@ export default {
 
             try {
 
-                this.numberVerified = 0
                 this.progress = 1
 
                 var verifyTasks = Promise.all(this.credentials.map(async function(credential) {
@@ -204,11 +205,7 @@ export default {
 
                     const verified = res.data[0].verified
 
-                    if (verified) {
-                        this.numberVerified += 1
-                    } else {
-                        this.toast.warning(`Verification of ${credential.type[1]} failed!`);
-                    }
+                    if (!verified) this.toast.warning(`Verification of ${credential.type[1]} failed!`);
 
                     this.progress += 1
 
@@ -219,7 +216,7 @@ export default {
                 // wait for all vcs to be verified
                 await verifyTasks;
 
-                if (this.numberVerified == this.credentials) this.toast.success('All credentials could be verified!');
+                if (this.numberVerified == this.credentials.length) this.toast.success('All credentials could be verified!');
 
             } catch (error) {
                 this.toast.error(`Something went wrong verifying the credentials!\n${error}`);
