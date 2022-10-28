@@ -144,7 +144,7 @@ export default {
                     verifiedProps = Object.assign(verifiedProps, credential.credentialSubject)
                 }
             });
-            return verifiedProps
+            return Object.keys(verifiedProps).sort().reduce((res, key) => (res[key] =  verifiedProps[key], res), {});
         },
         getInfoString() {
             if (this.credentialId) {
