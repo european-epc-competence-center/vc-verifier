@@ -39,7 +39,7 @@ export const verifyRouter = Router();
  */
 
 /**
- * GET /api/verify/vc/{vcid}
+ * GET /api/verifier/vc/{vcid}
  * @summary Verifies a single VC given its id
  * @tags Verify
  * @param {string} vcid.path.required The identifier of the verifiable credential
@@ -84,7 +84,7 @@ export const verifyRouter = Router();
  verifyRouter.get('/vc/:vcid', verifyCredential);
 
 /**
- * POST /api/verify/vc
+ * POST /api/verifier/vc
  * @summary Verifies an array of VCs
  * @tags Verify
  * @param {array<VerifierRespsonse>} request.body.required - Array of verifiable credentials
@@ -154,7 +154,7 @@ export const verifyRouter = Router();
  verifyRouter.post('/vc', verifyCredentials);
 
 /**
- * GET /api/verify/id/{subjectId}
+ * GET /api/verifier/id/{subjectId}
  * @summary Verifies a all queryable vcs of an subjectId
  * @tags Verify
  * @param {string} subjectId.path.required The identifier of the verifiable credential
