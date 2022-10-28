@@ -16,7 +16,7 @@
                 <p class="m-0">{{getVerifyString}} {{credentials.length}} single credential{{credentials.length == 1 ? '' : 's'}} {{verified ? '' : '...'}}</p>
             </div>
             <div v-if="subjectId && Object.keys(verifiedProperties).length > 0" class="card border-success m-3 mb-5">
-                <div class="card-header text-success p-3">
+                <div class="card-header text-success p-3 shadow">
                     <h5>Merged verified properties</h5>
                 </div>
                 <div class="card-body p-3">
@@ -36,6 +36,7 @@
             </div>
             <h5 v-if="!credentialId" class="mx-3">Included Credentials</h5>
             <div v-for="credential in credentials" :key="credential.id" class="card shadow m-3">
+                <QRModal :id="getCredCompId('modal', credential.id)" :value="credential"/>
                 <div class="card-header p-3">
                     <div class="row justify-content-between align-items-center">
                         <div class="col-md-6">
@@ -87,8 +88,8 @@
                 </div>
                 <div class="card-footer px-3 text-end">
                     <div class="btn-group btn-group-sm" role="group" aria-label="Download">
-                        <button @click="downloadCredential(credential)" type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Download credential file"><i class="bi-download" role="img" aria-label="GitHub"></i></button>
-                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Show credential as QR-Code"><i class="bi-qr-code" role="img" aria-label="GitHub"></i></button>
+                        <button @click="downloadCredential(credential)" type="button" class="btn btn-outline-primary"><i class="bi-download" role="img" aria-label="GitHub"></i></button>
+                        <button data-bs-toggle="modal" :data-bs-target="getCredCompId('#modal', credential.id)" role="button" type="button" class="btn btn-outline-primary"><i class="bi-qr-code" role="img" aria-label="GitHub"></i></button>
                     </div>
                 </div>
             </div>
@@ -101,10 +102,12 @@ import { useToast } from "vue-toastification";
 import exportFromJSON from "export-from-json";
 import 'bootstrap/js/dist/collapse'
 
+import QRModal from "./QRModal.vue";
+
 export default {
     name: 'Verify',
     components: {
-
+        QRModal
     },
     data() {
         return {
