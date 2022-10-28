@@ -6,14 +6,13 @@
             <a href="https://eecc.info"><img id="logo" src="@/assets/img/logo.png"/></a>
         </div>
         <div class="card-body p-3" style="overflow-y: scroll;">
-            <div v-if="credentialId" class="alert alert-primary m-3 mb-5 text-center" role="alert">
-                <p class="m-0">{{getVerifyString}} single credential <a :href="credentialId" target="_blank">{{credentialId}}</a> {{verified ? '' : '...'}}</p>
-            </div>
-            <div v-else-if="subjectId" class="alert alert-primary m-3 mb-5 text-center" role="alert">
-                <p class="m-0">{{getVerifyString}} {{credentials.length}} credential{{credentials.length == 1 ? '' : 's'}} of <a :href="subjectId" target="_blank">{{subjectId}}</a> {{verified ? '' : '...'}}</p>
-            </div>
-            <div v-else class="alert alert-primary m-3 mb-5 text-center" role="alert">
-                <p class="m-0">{{getVerifyString}} {{credentials.length}} single credential{{credentials.length == 1 ? '' : 's'}} {{verified ? '' : '...'}}</p>
+            <div class="alert alert-primary m-3 mb-5 text-center" role="alert">
+                <p v-html="getInfoString"></p>
+                <div class="text-center px-5">
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar progress-bar-striped" role="progressbar" aria-label="Example with label" :style="'width: ' + numberVerified/credentials.length * 100 + '%;'" :aria-valuenow="numberVerified" aria-valuemin="0" :aria-valuemax="credentials.length"></div>
+                    </div>
+                </div>
             </div>
             <Transition name="slide-fade">
                 <div v-if="subjectId && Object.keys(verifiedProperties).length > 0" class="card border-success m-3 mb-5">
@@ -117,7 +116,8 @@ export default {
             credentials: [],
             credentialId: this.$route.query.credentialId ? decodeURIComponent(this.$route.query.credentialId) : undefined,
             subjectId: this.$route.query.subjectId ? decodeURIComponent(this.$route.query.subjectId) : undefined,
-            verified: false
+            verified: false,
+            numberVerified: 0
         }
     },
     mounted() {
@@ -141,8 +141,17 @@ export default {
             });
             return verifiedProps
         },
-        getVerifyString() {
-            return this.verified ? 'Verified' : 'Verifying'
+        getInfoString() {
+            if (this.credentialId) {
+                return `${this.verified ? 'Verified' : 'Verifying'} single credential <a href="${this.credentialId}" target="_blank">${this.credentialId}</a>`
+            }
+            else if (this.subjectId) {
+                return `Verified ${this.numberVerified}/${this.credentials.length} credential${this.credentials.length == 1 ? '' : 's'} of <a href="${this.subjectId}" target="_blank">${this.subjectId}</a>`
+            }
+            else if (this.credentials.length > 0) {
+                return `Verified ${this.numberVerified}/${this.credentials.length} single credential${this.credentials.length == 1 ? '' : 's'}`
+            }
+            else return 'Loading credentials ...'
         }
     },
     methods: {
@@ -185,18 +194,19 @@ export default {
                 // verifies all at once -> TODO make verification sequential Promise.all()
                 const res = await this.$api.post('/vc', this.credentials)
 
-                var all_verified = true
+                this.numberVerified = 0
 
                 for (const [i, value] of res.data.entries()) {
                     this.credentials[i]['verified'] = value.verified
 
                     if (!value.verified) {
                         this.toast.warning(`Verification of ${this.credentials[i].type[1]} failed!`);
-                        all_verified = false
+                    } else {
+                        this.numberVerified += 1
                     }
                 }
 
-                if (all_verified) this.toast.success('All credentials could be verified!');
+                if (this.numberVerified == this.credentials) this.toast.success('All credentials could be verified!');
 
                 this.verified = true
 
