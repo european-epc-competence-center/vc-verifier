@@ -171,14 +171,14 @@ export default {
         async fetchData() {
 
             if (this.credentialId) {
-                const res = await fetch(this.credentialId);
-                this.credentials.push(await res.json());
+                const res = await this.$api.get(this.credentialId);
+                this.credentials.push(res.data);
                 return
             }
 
             if (this.subjectId) {
-                const res = await fetch(this.$store.state.VC_REGISTRY + encodeURIComponent(this.subjectId));
-                this.credentials = await res.json();
+                const res = await this.$api.get(this.$store.state.VC_REGISTRY + encodeURIComponent(this.subjectId));
+                this.credentials = res.data
                 return
             }
 
