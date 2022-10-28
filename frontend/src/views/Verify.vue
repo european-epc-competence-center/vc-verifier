@@ -7,9 +7,9 @@
         </div>
         <div class="card-body p-3" style="overflow-y: scroll;">
             <div class="alert alert-primary m-3 mb-5 text-center" role="alert">
-                <p v-html="getInfoString"></p>
+                <p class="m-0" v-html="getInfoString"></p>
                 <Transition name="fade">
-                <div v-if="progress < credentials.length" class="text-center px-5">
+                <div v-if="progress < credentials.length" class="text-center px-5 mt-3">
                     <div class="progress" style="height: 8px;">
                         <div class="progress-bar progress-bar-striped" role="progressbar" aria-label="Verification progress" :style="'width: ' + progress/credentials.length * 100 + '%;'" :aria-valuenow="progress" aria-valuemin="0" :aria-valuemax="credentials.length + 1"></div>
                     </div>
