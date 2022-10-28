@@ -15,28 +15,30 @@
             <div v-else class="alert alert-primary m-3 mb-5 text-center" role="alert">
                 <p class="m-0">{{getVerifyString}} {{credentials.length}} single credential{{credentials.length == 1 ? '' : 's'}} {{verified ? '' : '...'}}</p>
             </div>
-            <div v-if="subjectId && Object.keys(verifiedProperties).length > 0" class="card border-success m-3 mb-5">
-                <div class="card-header text-success p-3 shadow">
-                    <h5>Merged verified properties</h5>
-                </div>
-                <div class="card-body p-3">
-                    <ul class="list-group">
-                        <li v-for="(value, key) in verifiedProperties" :key="key" class="list-group-item">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <strong>{{key}}</strong>
+            <Transition name="slide-fade">
+                <div v-if="subjectId && Object.keys(verifiedProperties).length > 0" class="card border-success m-3 mb-5">
+                    <div class="card-header text-success p-3 shadow">
+                        <h5>Merged verified properties</h5>
+                    </div>
+                    <div class="card-body p-3">
+                        <ul class="list-group">
+                            <li v-for="(value, key) in verifiedProperties" :key="key" class="list-group-item">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>{{key}}</strong>
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{value}}
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    {{value}}
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
+            </Transition>
             <h5 v-if="!credentialId" class="mx-3">Included Credentials</h5>
             <div v-for="credential in credentials" :key="credential.id" class="card shadow m-3">
-                <QRModal :id="getCredCompId('modal', credential.id)" :value="credential"/>
+                <QRModal :id="getCredCompId('modal', credential.id)" v-bind:value="credential"/>
                 <div class="card-header p-3">
                     <div class="row justify-content-between align-items-center">
                         <div class="col-md-6">
