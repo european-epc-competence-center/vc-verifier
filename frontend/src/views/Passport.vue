@@ -1,0 +1,49 @@
+<template>
+    <Transition name="slide-fade">
+        <div v-if="Object.keys(verifiedProperties).length > 0">
+            <ProductPassport v-if="isProductPassport" v-bind:properties="verifiedProperties"/>
+            <MergedProps v-else v-bind:properties="verifiedProperties"/>
+        </div>
+    </Transition>
+</template>
+
+<script>
+import MergedProps from './MergedProps.vue'
+import ProductPassport from './ProductPassport.vue';
+
+export default {
+    name: 'Passport',
+    props: {
+        credentials: Object,
+    },
+    components: {
+        MergedProps,
+        ProductPassport
+    },
+    data() {
+        return {
+
+        }
+    },
+
+    computed: {
+        verifiedProperties() {
+            var verifiedProps = {};
+            this.credentials.forEach( credential => {
+                if (credential.verified) {
+                    verifiedProps = Object.assign(verifiedProps, credential.credentialSubject)
+                }
+            });
+            return Object.keys(verifiedProps).sort().reduce((res, key) => (res[key] =  verifiedProps[key], res), {});
+        },
+    },
+    methods: {
+        isProductPassport() {
+            if (this.credentials.length < 1) return false
+            return this.credentials.filter(function(credential) {
+                return credential['@context'].any(c => c.startsWith('https://ssi.eecc.de/api/registry/context/productpassport'))
+            }).length > 0;
+        }
+    }
+}
+</script>

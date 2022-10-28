@@ -18,6 +18,10 @@ html, body {margin: 0; height: 100%; overflow: hidden}
     height: calc(3.2rem + 1vw);
 }
 
+#productpassportimg {
+    width: 100%;
+}
+
 .slide-fade-enter-active {
     transition: all 0.8s ease-in-out;
 }
@@ -37,4 +41,22 @@ html, body {margin: 0; height: 100%; overflow: hidden}
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
     opacity: 0;
+}
+
+.list-move, /* apply transition to moving elements */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+/* ensure leaving items are taken out of layout flow so that moving
+   animations can be calculated correctly. */
+.list-leave-active {
+  position: absolute;
 }

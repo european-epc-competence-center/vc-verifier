@@ -17,27 +17,7 @@
                 </div>
                 </Transition>
             </div>
-            <Transition name="slide-fade">
-                <div v-if="subjectId && Object.keys(verifiedProperties).length > 0" class="card border-success m-3 mb-5">
-                    <div class="card-header text-success p-3 shadow">
-                        <h5>Merged verified properties</h5>
-                    </div>
-                    <div class="card-body p-3">
-                        <ul class="list-group">
-                            <li v-for="(value, key) in verifiedProperties" :key="key" class="list-group-item">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <strong>{{key}}</strong>
-                                    </div>
-                                    <div class="col-md-6">
-                                        {{value}}
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </Transition>
+            <Passport v-if="subjectId" v-bind:credentials="credentials"/>
             <h5 v-if="!credentialId" class="mx-3">Included Credentials</h5>
             <div v-for="credential in credentials" :key="credential.id" class="card shadow m-3">
                 <QRModal :id="getCredCompId('modal', credential.id)" v-bind:value="credential"/>
@@ -107,11 +87,13 @@ import exportFromJSON from "export-from-json";
 import 'bootstrap/js/dist/collapse'
 
 import QRModal from "./QRModal.vue";
+import Passport from "./Passport.vue";
 
 export default {
     name: 'Verify',
     components: {
-        QRModal
+        QRModal,
+        Passport
     },
     data() {
         return {
@@ -136,15 +118,6 @@ export default {
     computed: {
         numberVerified() {
             return this.credentials.filter(function(credential) {return credential.verified}).length
-        },
-        verifiedProperties() {
-            var verifiedProps = {};
-            this.credentials.forEach( credential => {
-                if (credential.verified) {
-                    verifiedProps = Object.assign(verifiedProps, credential.credentialSubject)
-                }
-            });
-            return Object.keys(verifiedProps).sort().reduce((res, key) => (res[key] =  verifiedProps[key], res), {});
         },
         getInfoString() {
             if (this.credentialId) {
