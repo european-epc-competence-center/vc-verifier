@@ -146,7 +146,7 @@ export default {
         },
         getInfoString() {
             if (this.credentialId) {
-                return `${this.progress == this.credentials.length ? 'Verified' : 'Verifying'} single credential <a href="${this.credentialId}" target="_blank">${this.credentialId}</a>`
+                return `${this.progress < this.credentials.length ? 'Verifying' : 'Verified'} single credential <a href="${this.credentialId}" target="_blank">${this.credentialId}</a>`
             }
             else if (this.subjectId) {
                 return `Verified ${this.numberVerified}/${this.credentials.length} credential${this.credentials.length == 1 ? '' : 's'} of <a href="${this.subjectId}" target="_blank">${this.subjectId}</a>`
