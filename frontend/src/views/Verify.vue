@@ -183,6 +183,7 @@ export default {
 
             if (this.$store.state.credentials.length > 0) {
                 this.credentials = this.$store.state.credentials;
+                this.$store.dispatch("resetCredentials");
                 return
             }
 

@@ -14,6 +14,9 @@ export default createStore({
     addCredential(state, credential) {
         state.credentials.push(credential)
     },
+    addCredentials(state, credentials) {
+      state.credentials = state.credentials.concat(credentials)
+  },
     setCredentials(state, credentials) {
         state.credentials = credentials
     },
@@ -25,11 +28,14 @@ export default createStore({
     addCredential(context, credential) {
         this.commit('addCredential', credential)
     },
+    addCredentials(context, credentials) {
+      this.commit('addCredentials', credentials)
+  },
     setCredentials(context, credentials) {
         this.commit('setCredentials', credentials)
     },
     resetCredentials() {
-        this.commit('setCredentials')
+        this.commit('resetCredentials')
     },
   }, 
   modules: {},

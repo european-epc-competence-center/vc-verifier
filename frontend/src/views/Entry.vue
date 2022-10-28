@@ -65,7 +65,11 @@
 
             new Response(file).json().then(json => {
                 // TODO do credential checks
-                this.$store.dispatch("addCredential", json);
+                if (Array.isArray(json)) {
+                    this.$store.dispatch("addCredentials", json);
+                } else {
+                    this.$store.dispatch("addCredential", json);
+                }
             }, () => {
                 this.toast.warning(`Credential '${file.name}' is not a json file!`);
             })
