@@ -20,7 +20,7 @@
             <Passport v-if="subjectId" v-bind:credentials="credentials"/>
             <h5 v-if="!credentialId" class="mx-3 px-3">Included Credentials</h5>
             <div v-for="credential in credentials" :key="credential.id" class="card shadow m-3">
-                <QRModal :id="getCredCompId('modal', credential.id)" v-bind:value="credential"/>
+                <QRModal :id="getCredCompId('modal', credential.id)" v-bind:value="getPlainCredential(credential)"/>
                 <div class="card-header p-3">
                     <div class="row justify-content-between align-items-center">
                         <div class="col-md-6">
@@ -134,11 +134,16 @@ export default {
         }
     },
     methods: {
+        getPlainCredential(credential) {
+            var clean_credential = {...credential};
+            delete clean_credential.verified;
+            return clean_credential
+        },
         downloadCredential(credential) {
 
             const fileName = this.getCredCompId('credential', credential.id);
             const exportType = 'json';
-            exportFromJSON({ data: credential, fileName, exportType });
+            exportFromJSON({ data: this.getPlainCredential(credential), fileName, exportType });
 
         },
         getCredCompId(type, id) {
