@@ -85,6 +85,7 @@
 import { useToast } from "vue-toastification";
 import exportFromJSON from "export-from-json";
 import 'bootstrap/js/dist/collapse'
+import 'bootstrap/js/dist/modal'
 
 import QRModal from "./QRModal.vue";
 import Passport from "./Passport.vue";
