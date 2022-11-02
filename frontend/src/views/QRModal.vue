@@ -37,7 +37,7 @@ export default {
     methods: {
         downloadQR() {
             var link = document.createElement('a');
-            link.download = 'credential-' + this.id.substring(5) + '.png';
+            link.download = 'credential' + this.id.substring(5) + '.png';
             link.href = document.getElementById('canvas-' + this.id).toDataURL('image/png')
             link.click();
         }
