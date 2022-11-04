@@ -33,9 +33,9 @@ export const verifyRouter = Router();
 /**
  * Verifier response object
  * @summary The respsonse object of the verifier containing the original credential and the verification result
- * @typedef {object} VerifierRespsonse
- * @property {SignedCredential} credential.required - The JSON-LD context URIs of the credential
- * @property {boolean} verified.required - The id of the the credential as an IRI
+ * @typedef {object} VerifierResponse
+ * @property {array<object>} results.required - Array of results including both successes and errors
+ * @property {boolean} verified.required - Boolean if the whole verification was successful
  */
 
 /**
@@ -43,7 +43,7 @@ export const verifyRouter = Router();
  * @summary Verifies a single VC given its id
  * @tags Verify
  * @param {string} vcid.path.required The identifier of the verifiable credential
- * @return {VerifierRespsonse} 200 - success response - application/json
+ * @return {VerifierResponse} 200 - success response - application/json
  * @return {object} 404 - not found response - application/json
  * @example response - 200 - credentials verified
   {
@@ -57,17 +57,17 @@ export const verifyRouter = Router();
             "https://w3id.org/security/suites/ed25519-2020/v1"
           ],
           "type": "Ed25519Signature2020",
-          "created": "2022-10-25T15:54:49Z",
+          "created": "2022-11-03T14:18:36Z",
           "proofPurpose": "assertionMethod",
-          "verificationMethod": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
-          "proofValue": "z4mKhVSAQFh5SCtgDPdVxUM9GspjcGJycGpEjtCqXA6suGSb2NJAizoa9wSBKW3oFhUA7f8EJRDbeRT1gMPu26smt"
+          "verificationMethod": "did:web:ssi.eecc.de#products",
+          "proofValue": "z3uJvNNEkTKzPBHdRiCB8u4oa2hK7CLfbFWkdMdcMNxQfEnE2Jhmjd1evwCoWFv3kB1BL4peFYHqjwknzYozfLZVu"
         },
         "verified": true,
         "verificationMethod": {
-          "id": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+          "id": "did:web:ssi.eecc.de#products",
           "type": "Ed25519VerificationKey2020",
           "controller": "did:web:ssi.eecc.de",
-          "publicKeyMultibase": "z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+          "publicKeyMultibase": "z6Mkiaw6Uva4gJnZizeFLyxhMfy6V6eWzCm6pwNCzvSQhHy6",
           "@context": [
             "https://www.w3.org/ns/did/v1",
             "https://w3id.org/security/suites/ed25519-2020/v1",
@@ -87,7 +87,7 @@ export const verifyRouter = Router();
  * POST /api/verifier/vc
  * @summary Verifies an array of VCs
  * @tags Verify
- * @param {array<VerifierRespsonse>} request.body.required - Array of verifiable credentials
+ * @param {array<VerifierResponse>} request.body.required - Array of verifiable credentials
  * @return {array<object>} 200 - success response - application/json
  * @return {object} 400 - bad request response - application/json
  * 
@@ -126,17 +126,17 @@ export const verifyRouter = Router();
             "https://w3id.org/security/suites/ed25519-2020/v1"
           ],
           "type": "Ed25519Signature2020",
-          "created": "2022-10-25T15:54:49Z",
+          "created": "2022-11-03T14:18:36Z",
           "proofPurpose": "assertionMethod",
-          "verificationMethod": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
-          "proofValue": "z4mKhVSAQFh5SCtgDPdVxUM9GspjcGJycGpEjtCqXA6suGSb2NJAizoa9wSBKW3oFhUA7f8EJRDbeRT1gMPu26smt"
+          "verificationMethod": "did:web:ssi.eecc.de#products",
+          "proofValue": "z3uJvNNEkTKzPBHdRiCB8u4oa2hK7CLfbFWkdMdcMNxQfEnE2Jhmjd1evwCoWFv3kB1BL4peFYHqjwknzYozfLZVu"
         },
         "verified": true,
         "verificationMethod": {
-          "id": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+          "id": "did:web:ssi.eecc.de#products",
           "type": "Ed25519VerificationKey2020",
           "controller": "did:web:ssi.eecc.de",
-          "publicKeyMultibase": "z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+          "publicKeyMultibase": "z6Mkiaw6Uva4gJnZizeFLyxhMfy6V6eWzCm6pwNCzvSQhHy6",
           "@context": [
             "https://www.w3.org/ns/did/v1",
             "https://w3id.org/security/suites/ed25519-2020/v1",
@@ -158,7 +158,7 @@ export const verifyRouter = Router();
  * @summary Verifies a all queryable vcs of an subjectId
  * @tags Verify
  * @param {string} subjectId.path.required The identifier of the verifiable credential
- * @return {array<VerifierRespsonse>} 200 - success response - application/json
+ * @return {array<VerifierResponse>} 200 - success response - application/json
  * @return {object} 404 - not found response - application/json
  * 
  * @example response - 200 - credentials verified
@@ -174,17 +174,17 @@ export const verifyRouter = Router();
             "https://w3id.org/security/suites/ed25519-2020/v1"
           ],
           "type": "Ed25519Signature2020",
-          "created": "2022-10-25T15:54:49Z",
+          "created": "2022-11-03T14:18:36Z",
           "proofPurpose": "assertionMethod",
-          "verificationMethod": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
-          "proofValue": "z4mKhVSAQFh5SCtgDPdVxUM9GspjcGJycGpEjtCqXA6suGSb2NJAizoa9wSBKW3oFhUA7f8EJRDbeRT1gMPu26smt"
+          "verificationMethod": "did:web:ssi.eecc.de#products",
+          "proofValue": "z3uJvNNEkTKzPBHdRiCB8u4oa2hK7CLfbFWkdMdcMNxQfEnE2Jhmjd1evwCoWFv3kB1BL4peFYHqjwknzYozfLZVu"
         },
         "verified": true,
         "verificationMethod": {
-          "id": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+          "id": "did:web:ssi.eecc.de#products",
           "type": "Ed25519VerificationKey2020",
           "controller": "did:web:ssi.eecc.de",
-          "publicKeyMultibase": "z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+          "publicKeyMultibase": "z6Mkiaw6Uva4gJnZizeFLyxhMfy6V6eWzCm6pwNCzvSQhHy6",
           "@context": [
             "https://www.w3.org/ns/did/v1",
             "https://w3id.org/security/suites/ed25519-2020/v1",
