@@ -1,5 +1,5 @@
 # VC Verifier
-The EECC Verifier for verifiable credentials which provides an verification API as well as the corresponding UI.
+The [EECC Verifier](https://ssi.eecc.de/verifier/) for verifiable credentials which provides a verification API as well as the corresponding UI.
 
 
 
