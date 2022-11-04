@@ -29,7 +29,13 @@ export default {
     computed: {
         verifiedProperties() {
             var verifiedProps = {};
-            this.credentials.forEach( credential => {
+            var sortedCredentials = this.credentials;
+            sortedCredentials = sortedCredentials.sort((a, b) => {
+                let da = new Date(a.issuanceDate),
+                    db = new Date(b.issuanceDate);
+                return da - db;
+            });
+            sortedCredentials.forEach( credential => {
                 if (credential.verified) {
                     verifiedProps = Object.assign(verifiedProps, credential.credentialSubject)
                 }
