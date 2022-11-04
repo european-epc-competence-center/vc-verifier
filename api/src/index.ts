@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser'
 import * as dotenv from 'dotenv';
-import nunjucks from 'nunjucks';
 dotenv.config();
 
 
@@ -27,13 +26,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/css', express.static('public/css'));
 app.use('/img', express.static('public/img'));
 app.use('/js', express.static('public/js'));
-
-// configure nunjucks for UI
-nunjucks.configure('views', {
-    autoescape: true,
-    express: app,
-    watch: true
-})
 
 
 // public verify router
