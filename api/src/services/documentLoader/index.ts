@@ -1,5 +1,6 @@
 // @ts-ignore
 import jsonldSignatures from 'jsonld-signatures';
+import Resolver from './didresolver.js'
 
 const BASE_CONTEXT_URL: string = 'https://ssi.eecc.de/api/registry/context'
 
@@ -8,19 +9,13 @@ const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async 
     // Fetch did documents
     if (url.startsWith('did:')) {
 
-        const [ _, method, queryId ] = url.split(':');
+        const [did, verificationMethod] = url.split('#')
 
-        const didIdentifier = queryId.split('#')[0]
-
-        const verificationMethod = queryId.split('#')[1]
-        
-        // TODO implement other methods besides did:web
-        if (method != 'web') throw new Error(`did:${method} not implemented`)
-        
-        const didDocument = await (await fetch('https://' + didIdentifier + '/.well-known/did.json')).json();
+        // fetch document
+        const didDocument: any = (await Resolver.resolve(did)).didDocument
 
         // if a verifcation method of the DID document is queried
-        if (verificationMethod) {
+        if (verificationMethod && didDocument) {
 
             const verificationMethodDoc: any | undefined = didDocument.verificationMethod.filter(function(method: any) {
                                                                             return method.id === url || method.id === verificationMethod;
@@ -28,7 +23,7 @@ const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async 
 
             if (!verificationMethodDoc)
                 throw new jsonldSignatures.VerificationError(
-                            new Error(`${verificationMethod} is an unknown verification method for ${didIdentifier}`)
+                            new Error(`${verificationMethod} is an unknown verification method for ${did}`)
                             );
 
             return {
