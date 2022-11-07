@@ -1,6 +1,6 @@
 // @ts-ignore
 import jsonldSignatures from 'jsonld-signatures';
-import Resolver from './didresolver.js'
+import { getResolver } from './didresolver.js'
 
 const BASE_CONTEXT_URL: string = 'https://ssi.eecc.de/api/registry/context'
 
@@ -12,9 +12,9 @@ const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async 
         const [did, verificationMethod] = url.split('#')
 
         // fetch document
-        const didDocument: any = (await Resolver.resolve(did)).didDocument
+        const didDocument: any = (await getResolver().resolve(url)).didDocument
 
-        // if a verifcation method of the DID document is queried
+        // if a verifcation method of the DID document is queried (not yet implemented in the official resolver)
         if (verificationMethod && didDocument) {
 
             const verificationMethodDoc: any | undefined = didDocument.verificationMethod.filter(function(method: any) {
