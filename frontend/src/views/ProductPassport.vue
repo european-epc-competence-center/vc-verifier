@@ -9,7 +9,7 @@
                 <h3 class="ms-3 mb-3">{{properties.product}}</h3>
                 <ul class="list-group">
                     <Transition name="list">
-                        <li v-if="properties.production_date" class="list-group-item">
+                        <li v-if="properties.brand" class="list-group-item">
                             <div class="row">
                                 <div class="col-md-6">
                                     <strong>Brand</strong>
@@ -21,7 +21,7 @@
                         </li>
                     </Transition>
                     <Transition name="list">
-                        <li v-if="properties.production_date" class="list-group-item">
+                        <li v-if="properties.model" class="list-group-item">
                             <div class="row">
                                 <div class="col-md-6">
                                     <strong>Model</strong>
