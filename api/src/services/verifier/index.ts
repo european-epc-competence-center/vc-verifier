@@ -12,7 +12,11 @@ export class VCVerifier {
         // TODO choose suite based on proofType
         const suite = new Ed25519Signature2020();
 
-        return await verifyCredential({credential, suite, documentLoader});
+        const result = await verifyCredential({credential, suite, documentLoader});
+
+        console.log(result)
+
+        return result
     }
 
 }
