@@ -80,9 +80,16 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push image
         uses: docker/build-push-action@v2
+        env:
+          ENV_SECRET: ${{ secrets.ENV_SECRET }} #naming used below
+          ENV_SECRET_1: ${{ secrets.ENV_SECRET_1 }}
         with:
           file: frontend/Dockerfile
           context: ./frontend
+          build-args: |
+            PUBLIC_PATH=verifier
+            NODE_ENV=production
+            BASE_URL=https://ssi.eecc.de
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta_indy_node.outputs.tags }}
           labels: ${{ steps.meta_indy_node.outputs.labels }}
