@@ -19,7 +19,7 @@
             </div>
             <Passport :credentials="credentials"/>
             <h5 v-if="!credentialId" class="mx-3 px-3">Included Credentials</h5>
-            <div v-for="credential in credentials" :key="credential.id" class="card shadow m-3">
+            <div v-for="credential in getOrderedCredentials" :key="credential.id" class="card shadow m-3">
                 <QRModal :id="getCredCompId('modal', credential.id)" v-bind:value="getPlainCredential(credential)"/>
                 <div class="card-header p-3">
                     <div class="row justify-content-between align-items-center">
@@ -38,7 +38,7 @@
                 <div class="card-body p-3">
                     <div class="row justify-content-between mb-3">
                         <div class="col-md-6 text-secondary">
-                            <div class="row my-1">
+                            <div class="row my-1 me-md-5">
                                 <div class="col-sm-4">
                                     Issuer:
                                 </div>
@@ -48,7 +48,7 @@
                             </div>
                         </div>
                         <div class="col-md-6 text-secondary">
-                            <div class="row my-1">
+                            <div class="row my-1 ms-md-5">
                                 <div class="col-sm-4">
                                     Date:
                                 </div>
@@ -131,6 +131,13 @@ export default {
                  });
     },
     computed: {
+        getOrderedCredentials() {
+            return [...this.credentials].sort((a, b) => {
+                let da = new Date(a.issuanceDate),
+                    db = new Date(b.issuanceDate);
+                return db - da;
+            });
+        },
         numberVerified() {
             return this.credentials.filter(function(credential) {return credential.verified}).length
         },
