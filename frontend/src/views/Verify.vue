@@ -38,10 +38,24 @@
                 <div class="card-body p-3">
                     <div class="row justify-content-between mb-3">
                         <div class="col-md-6 text-secondary">
-                            Issuer: <span class="badge text-bg-primary text-white">{{credential.issuer}}</span>
+                            <div class="row my-1">
+                                <div class="col-sm-4">
+                                    Issuer:
+                                </div>
+                                <div class="col-sm-8 text-sm-end text-start">
+                                    <span class="badge text-bg-primary text-white">{{credential.issuer}}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6 text-end text-secondary">
-                            Date: <span class="badge text-bg-primary text-white">{{credential.issuanceDate}}</span>
+                        <div class="col-md-6 text-secondary">
+                            <div class="row my-1">
+                                <div class="col-sm-4">
+                                    Date:
+                                </div>
+                                <div class="col-sm-8 text-sm-end text-start">
+                                    <span class="badge text-bg-primary text-white">{{credential.issuanceDate}}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="accordion" :id="getCredCompId('acc', credential.id)">

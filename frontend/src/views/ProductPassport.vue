@@ -46,7 +46,7 @@
                     </Transition>
                 </ul>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 mt-md-0 mt-3">
                 <Transition name="slide-fade">
                     <img v-if="properties.product_img" class="rounded" id="productpassportimg" :src="properties.product_img" :alt="properties.product_img"/>
                 </Transition>
