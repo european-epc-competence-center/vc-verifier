@@ -14,8 +14,6 @@ export class VCVerifier {
 
         const result = await verifyCredential({credential, suite, documentLoader});
 
-        console.log(result)
-
         return result
     }
 
