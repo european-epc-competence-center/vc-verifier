@@ -1,8 +1,8 @@
 <template>
     <Transition name="slide-fade">
         <div v-if="Object.keys(verifiedProperties).length > 0">
-            <ProductPassport v-if="isProductPassport" v-bind:properties="verifiedProperties"/>
-            <MergedProps v-else v-bind:properties="verifiedProperties"/>
+            <ProductPassport v-if="isProductPassport()" :properties="verifiedProperties"/>
+            <MergedProps v-else :properties="verifiedProperties"/>
         </div>
     </Transition>
 </template>
@@ -25,7 +25,6 @@ export default {
 
         }
     },
-
     computed: {
         verifiedProperties() {
             var verifiedProps = {};
@@ -47,7 +46,7 @@ export default {
         isProductPassport() {
             if (this.credentials.length < 1) return false
             return this.credentials.filter(function(credential) {
-                return credential['@context'].any(c => c.startsWith('https://ssi.eecc.de/api/registry/context/productpassport'))
+                return credential['@context'].some(c => c.startsWith('https://ssi.eecc.de/api/registry/context/productpassport'))
             }).length > 0;
         }
     }
