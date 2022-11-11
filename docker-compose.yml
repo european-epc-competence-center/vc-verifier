@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
     environment:
       - VC_REGISTRY=${VC_REGISTRY}
-      - PUBLIC_PATH=${VERIFIER_PUBLIC_PATH}
+      - PUBLIC_PATH=${FRONTEND_PUBLIC_PATH}
       - NODE_ENV=${NODE_ENV}
       - BASE_URL=${BASE_URL}
 
