@@ -1,6 +1,6 @@
 import axios from 'axios'
 const axiosInstance =  axios.create({
-  baseURL: process.env.NODE_ENV === 'production' ? 'https://ssi.eecc.de/api/verifier' : 'http://localhost:3000/api/verifier',
+  baseURL: process.env.NODE_ENV === 'production' ? process.env.VERIFIER_API : 'http://localhost:3000/api/verifier',
   timeout: 5000,
   headers: {
     'Accept': 'application/json',

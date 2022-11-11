@@ -7,28 +7,19 @@ services:
     environment:
       - PORT=${API_PORT}
       - VC_REGISTRY=${VC_REGISTRY}
-      - PUBLIC_PATH=${FRONTEND_PUBLIC_PATH}
     ports:
       - "${API_PORT}:${API_PORT}"
-    labels:
-    - "traefik.enable=true"
-    - "traefik.docker.network=ssi-suite"
-    - "traefik.http.routers.api.rule=PathPrefix(`/api/verifier/`)"
-    networks:
-      - ssi-suite
+
 
   frontend:
     image: ghcr.io/european-epc-competence-center/vc-verifier/vc_verifier_frontend
     ports:
       - "${FRONTEND_PORT}:80"
     restart: unless-stopped
-    labels:
-    - "traefik.enable=true"
-    - "traefik.docker.network=ssi-suite"
-    - "traefik.http.routers.frontend.rule=PathPrefix(`/verifier/`)"
-    networks:
-      - ssi-suite
+    environment:
+      - VC_REGISTRY=${VC_REGISTRY}
+      - PUBLIC_PATH=${VERIFIER_PUBLIC_PATH}
+      - NODE_ENV=${NODE_ENV}
+      - BASE_URL=${BASE_URL}
 
-networks:
-  ssi-suite:
-    external: true
+
