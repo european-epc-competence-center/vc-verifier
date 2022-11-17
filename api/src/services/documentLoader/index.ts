@@ -2,7 +2,9 @@
 import jsonldSignatures from 'jsonld-signatures';
 import { getResolver } from './didresolver.js'
 
-const BASE_CONTEXT_URL: string = 'https://ssi.eecc.de/api/registry/context'
+const TRUSTED_CONTEXT_DOMAINS: [string] = ['https://ssi.eecc.de']
+
+const cache = new Map();
 
 const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async (url: string) => {
 
@@ -42,18 +44,30 @@ const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async 
         };
     }
 
-    // Warn when context is fetched externally
-    // TODO create list of trusted sources
-    if (!url.startsWith(BASE_CONTEXT_URL)) console.warn(`Fetched @context from ${url}. Use with care!`)
+    let document = cache.get(url);
 
-    const document = await fetch(url);
+    // fetch if not in cache
+    if (!document) {
+
+        document = await(await fetch(url)).json();
+
+        // cache and warn if external
+        if (!TRUSTED_CONTEXT_DOMAINS.some((trusted) => url.startsWith(trusted))) {
+
+            console.warn(`Fetched and cached @context from ${url}. Use with care!`);
+
+            cache.set(url, document);
+
+        }
+
+    }
 
     return {
         contextUrl: null,
         documentUrl: url,
-        document: await document.json(),
+        document: document,
     };
 
 });
 
-export { documentLoader, BASE_CONTEXT_URL }
+export { documentLoader }
