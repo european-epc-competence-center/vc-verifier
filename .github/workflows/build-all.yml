@@ -90,6 +90,7 @@ jobs:
             PUBLIC_PATH=verifier
             NODE_ENV=production
             BASE_URL=https://ssi.eecc.de
+            VERIFIER_API=https://ssi.eecc.de/api/verifier
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta_indy_node.outputs.tags }}
           labels: ${{ steps.meta_indy_node.outputs.labels }}
