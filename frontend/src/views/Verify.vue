@@ -219,7 +219,7 @@ export default {
                 if (this.numberVerified == this.credentials.length) this.toast.success('All credentials could be verified!');
 
             } catch (error) {
-                this.toast.error(`Something went wrong verifying the credentials!\n${error}`);
+                this.toast.error(`Something went wrong verifying the credentials!\n${error.response.data.error || error.response.data || error}`);
             }
            
         }
