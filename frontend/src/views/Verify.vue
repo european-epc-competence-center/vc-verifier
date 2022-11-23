@@ -43,7 +43,8 @@
                                     Issuer:
                                 </div>
                                 <div class="col-sm-8 text-sm-end text-start">
-                                    <span class="badge text-bg-primary text-white">{{credential.issuer}}</span>
+                                    <span v-if="typeof credential.issuer == 'string'" class="badge text-bg-primary text-white">{{credential.issuer}}</span>
+                                    <span v-else class="badge text-bg-primary text-white">{{credential.issuer.id}}</span> - {{credential.issuer.name}} <img style="height: 1.2rem;" :src="credential.issuer.image" />
                                 </div>
                             </div>
                         </div>
@@ -168,7 +169,7 @@ export default {
 
         },
         getCredCompId(type, id) {
-            return type + '-' + id.substr(id.length - 5, id.length)
+            return type + '-' + id.substr(id.length - 5, id.length).replace(/^[^a-z]+|[^\w:.-]+/gi, "");
         },
         async fetchData() {
 

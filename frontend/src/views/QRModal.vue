@@ -7,7 +7,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <qrcode-vue :value="JSON.stringify(value)" :margin="1" :size="300" level="M" class="m-3" :id="'canvas-' + id"/>
+                    <qrcode-vue v-if="JSON.stringify(value).length < 18672" :value="JSON.stringify(value)" :margin="1" :size="300" level="M" class="m-3" :id="'canvas-' + id"/>
+                    <h5 v-else class="text-danger">Credential too large for display!</h5>
                 </div>
                 <div class="modal-footer justify-content-center">
                     <button type="button" class="btn btn-outline-primary" @click="downloadQR()"><i class="bi-download" role="img" aria-label="QR Download"></i> Download QR-Code</button>
