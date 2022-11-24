@@ -44,7 +44,7 @@
                                 </div>
                                 <div class="col-sm-8 text-sm-end text-start">
                                     <span v-if="typeof credential.issuer == 'string'" class="badge text-bg-primary text-white">{{credential.issuer}}</span>
-                                    <span v-else class="badge text-bg-primary text-white">{{credential.issuer.id}}</span> - {{credential.issuer.name}} <img style="height: 1.2rem;" :src="credential.issuer.image" />
+                                    <div v-else ><span class="badge text-bg-primary text-white">{{credential.issuer.id}}</span><span class="ms-3">{{credential.issuer.name}} <img style="height: 1.2rem;" :src="credential.issuer.image" /></span></div>
                                 </div>
                             </div>
                         </div>
