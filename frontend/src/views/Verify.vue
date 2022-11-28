@@ -196,6 +196,11 @@ export default {
         },
         async verify() {
 
+            if (this.credentials.length == 0) {
+                this.toast.warning('No credentials provided for verification!');
+                return
+            }
+
             try {
 
                 this.progress = 1
@@ -218,6 +223,8 @@ export default {
                 await verifyTasks;
 
                 if (this.numberVerified == this.credentials.length) this.toast.success('All credentials could be verified!');
+
+                return
 
             } catch (error) {
                 this.toast.error(`Something went wrong verifying the credentials!\n${error.response.data.error || error.response.data || error}`);
