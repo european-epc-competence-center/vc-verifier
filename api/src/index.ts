@@ -22,11 +22,6 @@ app.use(bodyParser.json())
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// use static routes for css
-app.use('/css', express.static('public/css'));
-app.use('/img', express.static('public/img'));
-app.use('/js', express.static('public/js'));
-
 
 // public verify router
 app.use('/api/verifier', verifyRouter);
