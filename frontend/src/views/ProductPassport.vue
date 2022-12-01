@@ -14,7 +14,11 @@
                                 <strong>{{mainProps[key]}}</strong>
                             </div>
                             <div class="col-md-6">
-                                {{value}}
+                                <span v-if="typeof value === 'object'" class="badge text-bg-primary text-white" 
+                                data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="credential-tooltip" :data-bs-title="Object.entries(value).map(([k, v]) => `<b>${k}:</b> ${v}<br>`).join('')">
+                                    {{value.value || value['@value']}}
+                                </span>
+                                <p class="m-0" v-else>{{value}}</p>
                             </div>
                         </div>
                     </li>
