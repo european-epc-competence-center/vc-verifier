@@ -15,6 +15,11 @@ html, body {margin: 0; height: 100%; overflow: hidden}
     --bs-tooltip-bg: var(--bs-primary);
 }
   
+#backbutton {
+    position: absolute;
+    left: .2rem;
+    top: .2rem;
+}
 
 #logo {
     position: absolute;

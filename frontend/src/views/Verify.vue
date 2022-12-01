@@ -1,6 +1,7 @@
 <template>
     <div class="card m-auto shadow" style="min-width: 80%; height: 90vh;">
         <div class="card-header text-center p-3 pb-1">
+            <router-link to="/"><i id="backbutton" style="font-size: 2rem;" class="bi-arrow-left-square-fill mx-3 my-1" role="img" aria-label="API Docs"></i></router-link>
             <h3 class="mb-0 mx-5">Verifiable Credential Verifier</h3>
             <a href="https://github.com/european-epc-competence-center/vc-verifier"><i class="bi-github mx-3" role="img" aria-label="GitHub"></i></a>
             <a href="https://ssi.eecc.de/api/verifier/swagger/"><i class="bi-filetype-doc mx-3" role="img" aria-label="API Docs"></i></a>
