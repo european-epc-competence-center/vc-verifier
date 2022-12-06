@@ -76,11 +76,7 @@
                                                 <strong>{{key}}</strong>
                                             </div>
                                             <div class="col-md-6">
-                                                <span v-if="typeof value === 'object'" class="badge text-bg-primary text-white" 
-                                                data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="credential-tooltip" :data-bs-title="Object.entries(value).map(([k, v]) => `<b>${k}:</b> ${v}<br>`).join('')">
-                                                    {{value.value || value['@value']}}
-                                                </span>
-                                                <p class="m-0" v-else>{{value}}</p>
+                                                {{typeof value === 'object' ? value.value || value['@value'] : value}}
                                             </div>
                                         </div>
                                     </li>
@@ -106,7 +102,6 @@ import { useToast } from "vue-toastification";
 import exportFromJSON from "export-from-json";
 import 'bootstrap/js/dist/collapse'
 import 'bootstrap/js/dist/modal'
-import { Tooltip } from 'bootstrap'
 
 import QRModal from "./QRModal.vue";
 import Passport from "./Passport.vue";
@@ -126,10 +121,7 @@ export default {
             progress: 0
         }
     },
-    mounted() {
-        new Tooltip(document.body, {
-        selector: '[data-bs-toggle="tooltip"]',
-        })     
+    mounted() {   
         this.fetchData()
                 .then(() => {
                     this.verify()
