@@ -11,7 +11,8 @@
                             <strong>{{key}}</strong>
                         </div>
                         <div class="col-md-6">
-                            {{typeof value === 'object' ? value.value || value['@value'] : value}}
+                            <a v-if="$isURL($getCredentialValue(value))" :href="$getCredentialValue(value)">{{$getCredentialValue(value)}}</a>
+                            <p v-else class="m-0">{{$getCredentialValue(value)}}</p>
                         </div>
                     </div>
                 </li>
