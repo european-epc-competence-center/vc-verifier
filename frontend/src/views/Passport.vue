@@ -2,7 +2,7 @@
     <Transition name="slide-fade">
         <div v-if="Object.keys(verifiedProperties).length > 0">
             <ProductPassport v-if="isProductPassport()" :properties="verifiedProperties"/>
-            <MergedProps v-else :properties="verifiedProperties"/>
+            <MergedProps v-else-if="(Object.keys(credentials).length > 1)" :properties="verifiedProperties"/>
         </div>
     </Transition>
 </template>
