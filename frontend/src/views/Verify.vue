@@ -26,6 +26,7 @@
                     <div class="row justify-content-between align-items-center">
                         <div class="col-md-6">
                             <h5 class="mb-0 text-primary">{{credential.type[1]}}</h5>
+                            <div class="credentialid mt-1"><a :href="credential.id"><span class="badge border text-bg-light text-muted">{{credential.id}}</span></a></div>
                         </div>
                         <div class="col-md-6 text-end">
                             <i v-if="credential.verified==true" style="font-size: 1.25rem;" class="bi bi-check-circle-fill text-success" role="img" aria-label="Verified"></i>
