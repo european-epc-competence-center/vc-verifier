@@ -11,6 +11,12 @@ body {
 
 html, body {margin: 0; height: 100%; overflow: hidden}
 
+.versiontag {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-size: 0.5rem;
+}
   
 #backbutton {
     position: absolute;
