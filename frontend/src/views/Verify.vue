@@ -123,7 +123,9 @@ export default {
             progress: 0
         }
     },
-    mounted() {   
+    mounted() { 
+        // somehow modal backdrop does not disappear on hide ... 
+        document.getElementsByClassName('modal-backdrop').forEach((el) => el.remove()); 
         this.fetchData()
                 .then(() => {
                     this.verify()
