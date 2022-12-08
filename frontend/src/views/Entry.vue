@@ -13,7 +13,7 @@
                 <h5>Credential File</h5>
                 <form v-on:submit.prevent="submitFile">
                     <div class="input-group">
-                        <button @click="scan='file'" data-bs-toggle="modal" type="button" data-bs-target="#scan-modal" class="btn btn-outline-light scanqr">Scan <i class="bi-qr-code" role="img" aria-label="QR-Code"></i></button>
+                        <button @click="scan='file'" data-bs-toggle="modal" type="button" data-bs-target="#scan-modal" class="btn btn-outline-light scanqr"><i class="bi-qr-code" role="img" aria-label="QR-Code"></i></button>
                         <input multiple v-on:change="onFileChange" id="credentialId" type="file" class="form-control" placeholder="credential.json" aria-label="Credential" aria-describedby="credentialHelp">
                         <button class="btn btn-outline-primary" type="submit">Verify</button>
                     </div>
@@ -25,7 +25,7 @@
                 <h5>Credential Id</h5>
                 <form v-on:submit.prevent="submitId">
                     <div class="input-group">
-                        <button @click="scan='credid'" data-bs-toggle="modal" type="button" data-bs-target="#scan-modal" class="btn btn-outline-light scanqr">Scan <i class="bi-qr-code" role="img" aria-label="QR-Code"></i></button>
+                        <button @click="scan='credid'" data-bs-toggle="modal" type="button" data-bs-target="#scan-modal" class="btn btn-outline-light scanqr"><i class="bi-qr-code" role="img" aria-label="QR-Code"></i></button>
                         <input v-model="credentialId" id="credentialId" type="text" class="form-control" placeholder="https://registry.org/vc/uuid" aria-label="Credential Id" aria-describedby="credentialIdHelp">
                         <button class="btn btn-outline-primary" type="submit">Verify</button>
                     </div>
@@ -37,7 +37,7 @@
                 <h5>Subject Id</h5>
                 <form v-on:submit.prevent="submitSubject">
                     <div class="input-group">
-                        <button @click="scan='subid'" data-bs-toggle="modal" type="button" data-bs-target="#scan-modal" class="btn btn-outline-light scanqr">Scan <i class="bi-qr-code" role="img" aria-label="QR-Code"></i></button>
+                        <button @click="scan='subid'" data-bs-toggle="modal" type="button" data-bs-target="#scan-modal" class="btn btn-outline-light scanqr"><i class="bi-qr-code" role="img" aria-label="QR-Code"></i></button>
                         <input v-model="subjectId" id="credentialId" type="text" class="form-control" placeholder="https://gs1.org/123455" aria-label="Subject Id" aria-describedby="subjectIdHelp">
                         <button class="btn btn-outline-primary" type="submit">Verify</button>
                     </div>
@@ -66,6 +66,9 @@
         subjectId: '',
         scan: ''
     }
+  },
+  mounted() {
+    document.getElementById('scan-modal').addEventListener('hidden.bs.modal', () => { this.scan = '' });
   },
   methods: {
     onFileChange(e) {

@@ -7,7 +7,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <qrcode-stream v-if="scan!=''" @init="onInit" @decode="onDecode">
+                    <qrcode-stream v-if="scan!=''" @init="onInit" @decode="onDecode" :camera="camera">
                         <div v-if="!cameraReady" class="spinner-border text-primary m-5" role="status">
                             <span class="visually-hidden">Waiting for camera ...</span>
                         </div>
@@ -37,11 +37,17 @@ export default {
         return {
             toast: useToast(),
             cameraReady: false,
-            modal: null
+            modal: null,
         }
     },
     mounted() {
         this.modal = new Modal(document.getElementById('scan-modal'));
+    },
+    computed: {
+        camera() {
+            if(this.scan == '') return ''
+            return 'auto'
+        }
     },
     methods: {
         async onInit (promise) {
@@ -69,33 +75,35 @@ export default {
             }
         },
         onDecode(decodedString) {
-            
-            try{
 
-                if (this.scan == 'file') {
-                    const credential = JSON.parse(decodedString);
-                    if (Array.isArray(credential)) {
-                        this.$store.dispatch("addCredentials", credential);
+            try{
+                if (decodedString.length != 0) {
+                    
+                    if (this.scan == 'file') {
+                        const credential = JSON.parse(decodedString);
+                        if (Array.isArray(credential)) {
+                            this.$store.dispatch("addCredentials", credential);
+                        } else {
+                            this.$store.dispatch("addCredential", credential);
+                        }
+
+                        this.$router.push({ path: '/verify' })
+
+                    } else if (this.scan == 'credid') {
+
+                        this.$router.push({ path: '/verify', query: { credentialId: encodeURIComponent(decodedString) } })
+
                     } else {
-                        this.$store.dispatch("addCredential", credential);
+
+                        this.$router.push({ path: '/verify', query: { subjectId: encodeURIComponent(decodedString) } })
+
                     }
 
-                    this.$router.push({ path: '/verify' })
-
-                } else if (this.scan == 'credid') {
-
-                    this.$router.push({ path: '/verify', query: { credentialId: encodeURIComponent(decodedString) } })
-
-                } else {
-
-                    this.$router.push({ path: '/verify', query: { subjectId: encodeURIComponent(decodedString) } })
+                    this.modal.hide()
+                    // modal backdrop does not disappear on hide ....
+                    document.getElementsByClassName('modal-backdrop').forEach((el) => el.remove());
 
                 }
-
-                this.modal.hide()
-                // modal backdrop does not disappear on hide ....
-                document.getElementsByClassName('modal-backdrop').forEach((el) => el.remove());
-
             } catch (error) {
                 this.toast.warning(`Error reading the credential/s!\n${error}`);
             }
