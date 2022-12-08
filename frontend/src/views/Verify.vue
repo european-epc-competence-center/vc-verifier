@@ -24,11 +24,11 @@
                 <QRModal :id="getCredCompId('modal', credential.id)" v-bind:value="getPlainCredential(credential)"/>
                 <div class="card-header p-3">
                     <div class="row justify-content-between align-items-center">
-                        <div class="col-md-6">
+                        <div class="col-8">
                             <h5 class="mb-0 text-primary">{{credential.type[1]}}</h5>
-                            <div class="credentialid mt-1"><a :href="credential.id"><span class="badge border text-bg-light text-muted">{{credential.id}}</span></a></div>
+                            <div class="credentialid mt-1"><a :href="credential.id">{{credential.id}}</a></div>
                         </div>
-                        <div class="col-md-6 text-end">
+                        <div class="col-2 text-end">
                             <i v-if="credential.verified==true" style="font-size: 1.25rem;" class="bi bi-check-circle-fill text-success" role="img" aria-label="Verified"></i>
                             <i v-else-if="credential.verified==false" style="font-size: 1.25rem;" class="bi bi-x-circle-fill text-danger" role="img" aria-label="Unverified"></i>
                             <div v-else class="spinner-border text-secondary" role="status" style="width: 1.25rem; height: 1.25rem;">
@@ -123,7 +123,13 @@ export default {
             progress: 0
         }
     },
-    mounted() {   
+    mounted() { 
+        try {
+            // somehow modal backdrop does not disappear on hide ... 
+            // ignore on reload
+            document.getElementsByClassName('modal-backdrop').forEach((el) => el.remove()); 
+        } catch(e){console.log('https://github.com/european-epc-competence-center/vc-verifier/issues/19')}
+
         this.fetchData()
                 .then(() => {
                     this.verify()
