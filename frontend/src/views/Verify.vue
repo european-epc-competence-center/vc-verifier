@@ -102,6 +102,8 @@
 <script>
 import { useToast } from "vue-toastification";
 import exportFromJSON from "export-from-json";
+import * as jsonld from 'jsonld';
+import {documentLoader} from '../utils.js'
 import 'bootstrap/js/dist/collapse'
 import 'bootstrap/js/dist/modal'
 
@@ -210,7 +212,7 @@ export default {
                 return
             }
 
-            try {
+
 
                 this.progress = 1
 
@@ -233,11 +235,19 @@ export default {
 
                 if (this.numberVerified == this.credentials.length) this.toast.success('All credentials could be verified!');
 
+                var contextTasks = Promise.all(this.credentials.map(async function(credential) {
+
+                    console.log(credential)
+
+                    console.log(await jsonld.processContext({}, {'@context':['https://ref.gs1.org/gs1/vc/licence-context']}, {base: null, documentLoader:documentLoader}))
+
+                }.bind(this)));
+
+                await contextTasks;
+
                 return
 
-            } catch (error) {
-                this.toast.error(`Something went wrong verifying the credentials!\n${error.response.data.error || error.response.data || error}`);
-            }
+
            
         }
     }
