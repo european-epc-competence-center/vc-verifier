@@ -90,7 +90,7 @@
                 </div>
                 <div class="card-footer px-3 text-end">
                     <div class="btn-group btn-group-sm" role="group" aria-label="Download">
-                        <button @click="downloadCredential(credential)" type="button" class="btn btn-outline-primary"><i class="bi-filetype-json" role="img" aria-label="JSON Download"></i></button>
+                        <button @click="downloadCredential(credential)" type="button" style="border-right: none;" class="btn btn-outline-primary"><i class="bi-filetype-json" role="img" aria-label="JSON Download"></i></button>
                         <button data-bs-toggle="modal" :data-bs-target="getCredCompId('#modal', credential.id)" role="button" type="button" class="btn btn-outline-primary"><i class="bi-qr-code" role="img" aria-label="QR-Code"></i></button>
                     </div>
                 </div>

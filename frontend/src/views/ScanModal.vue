@@ -77,8 +77,9 @@ export default {
         onDecode(decodedString) {
 
             try{
-                if (decodedString.length != 0) {
-                    
+                
+                if (decodedString.length > 0) {
+
                     if (this.scan == 'file') {
                         const credential = JSON.parse(decodedString);
                         if (Array.isArray(credential)) {
