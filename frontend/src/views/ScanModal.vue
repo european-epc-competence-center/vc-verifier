@@ -3,16 +3,28 @@
         <div class="modal-dialog modal-dialog-centered modal-fullscreen-md-down">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5 text-primary" id="exampleModalToggleLabel">Scan {{getRequestType()}}</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalToggleLabel">Scan {{getRequestType()}}</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <qrcode-stream v-if="scan!=''" @init="onInit" @decode="onDecode" :camera="camera">
+                    <qrcode-stream v-if="scan!='' && !cameraFailed && !showDragDrop" @init="onInit" @decode="onDecode" :camera="camera">
                         <div v-if="!cameraReady" class="spinner-border text-primary m-5" role="status">
                             <span class="visually-hidden">Waiting for camera ...</span>
                         </div>
                     </qrcode-stream>
-                    <qrcode-drop-zone @decode="onDecode" class="p-5 mb-3 text-center shadow"><h5>... or drop image here</h5></qrcode-drop-zone>
+                    <qrcode-drop-zone v-if="showDragDrop" @dragover="onDragOver" @detect="onDetect" class="text-center shadow">
+                        <div class="drop-area align-content-center text-primary" :class="{ 'dragover': dragover }">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-file-earmark-image mx-auto mb-3" viewBox="0 0 16 16">
+                                <path d="M6.502 7a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
+                                <path d="M14 14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5V14zM4 1a1 1 0 0 0-1 1v10l2.224-2.224a.5.5 0 0 1 .61-.075L8 11l2.157-3.02a.5.5 0 0 1 .76-.063L13 10V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4z"/>
+                            </svg>
+                            DROP IMAGES HERE
+                        </div>
+                    </qrcode-drop-zone>
+                    <div v-if="!cameraFailed">
+                        <button v-if="showDragDrop" @click="showDragDrop=false" class="btn btn-outline-primary mt-3">Scan <i class="bi bi-file-earmark-image"></i></button>
+                        <button v-else @click="showDragDrop=true" class="btn btn-outline-primary mt-3">Upload <i class="bi bi-file-earmark-image"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -38,6 +50,9 @@ export default {
             toast: useToast(),
             cameraReady: false,
             modal: null,
+            dragover: false,
+            showDragDrop: false,
+            cameraFailed: false
         }
     },
     mounted() {
@@ -50,13 +65,16 @@ export default {
         }
     },
     methods: {
+        onDragOver (isDraggingOver) {
+            this.dragover = isDraggingOver
+        },
         async onInit (promise) {
             try {
                 await promise
-                this.cameraReady = true
+
             } catch (error) {
                 if (error.name === 'NotAllowedError') {
-                    this.toast.error("ERROR: you need to grant camera access permission")
+                    this.toast.warning("You need to grant camera access permission")
                 } else if (error.name === 'NotFoundError') {
                     this.toast.error("ERROR: no camera on this device")
                 } else if (error.name === 'NotSupportedError') {
@@ -72,12 +90,32 @@ export default {
                 } else {
                     this.toast.error(`${error}`);
                 }
+                this.cameraFailed = true
+                this.showDragDrop = true
+            } finally {
+                this.cameraReady = true
+            }
+        },
+        async onDetect (promise) {
+            try {
+                const { content } = await promise
+
+                this.onDecode(content)
+
+            } catch (error) {
+                if (error.name === 'DropImageFetchError') {
+                    this.toast.error('Sorry, you can\'t load cross-origin images :/')
+                } else if (error.name === 'DropImageDecodeError') {
+                    this.toast.error(this.error = 'Ok, that\'s not an image. That can\'t be decoded.')
+                } else {
+                    this.toast.error(this.error = 'Ups, what kind of error is this?! ' + error.message)
+                }
             }
         },
         onDecode(decodedString) {
 
             try{
-                
+
                 if (decodedString.length > 0) {
 
                     if (this.scan == 'file') {

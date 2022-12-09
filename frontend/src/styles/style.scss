@@ -27,6 +27,20 @@ html, body {margin: 0; height: 100%; overflow: hidden}
     border-right: none !important;
     color: #212529 !important;
 }
+
+.drop-area {
+    height: 370px;
+    color: #fff;
+    text-align: center;
+    font-weight: bold;
+    padding: 10px;
+    display: grid;
+    background-color: rgba(0,0,0,0);
+}
+
+.dragover {
+    background-color: rgba(0,0,0,.1);
+}
   
 #backbutton {
     position: absolute;
