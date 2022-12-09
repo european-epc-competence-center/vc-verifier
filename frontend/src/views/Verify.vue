@@ -124,12 +124,7 @@ export default {
         }
     },
     mounted() { 
-        try {
-            // somehow modal backdrop does not disappear on hide ... 
-            // ignore on reload
-            document.getElementsByClassName('modal-backdrop').forEach((el) => el.remove()); 
-        } catch(e){console.log('https://github.com/european-epc-competence-center/vc-verifier/issues/19')}
-
+        
         this.fetchData()
                 .then(() => {
                     this.verify()

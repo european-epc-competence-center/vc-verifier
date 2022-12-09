@@ -34,7 +34,6 @@
 <script>
 import { QrcodeStream, QrcodeDropZone } from 'vue3-qrcode-reader'
 import { useToast } from "vue-toastification";
-import { Modal } from 'bootstrap';
 
 export default {
     name: 'ScanModal',
@@ -49,14 +48,10 @@ export default {
         return {
             toast: useToast(),
             cameraReady: false,
-            modal: null,
             dragover: false,
             showDragDrop: false,
             cameraFailed: false
         }
-    },
-    mounted() {
-        this.modal = new Modal(document.getElementById('scan-modal'));
     },
     computed: {
         camera() {
@@ -138,7 +133,6 @@ export default {
 
                     }
 
-                    this.modal.hide()
                     // modal backdrop does not disappear on hide ....
                     document.getElementsByClassName('modal-backdrop').forEach((el) => el.remove());
 
