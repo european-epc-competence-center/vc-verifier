@@ -1,7 +1,7 @@
 <template>
-    <div class="d-flex justify-content-center h-100 m-1">
+    <div class="d-flex justify-content-center h-100 m-md-1">
       <router-view />
-      <div class="versiontag text-light m-1">Version {{this.$store.state.version}}</div>
+      <div class="versiontag text-muted m-1">Version {{this.$store.state.version}}</div>
     </div>
 </template>
 <script>

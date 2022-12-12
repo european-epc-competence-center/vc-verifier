@@ -1,5 +1,5 @@
 <template>
-    <div class="card m-auto shadow" style="min-width: 80%">
+    <div id="maincard" class="card m-md-auto shadow">
         <div class="card-header text-center p-3 pb-1">
             <h3 class="mb-0 mx-5">Credential Selector</h3>
             <a href="https://github.com/european-epc-competence-center/vc-verifier"><i class="bi-github mx-3" role="img" aria-label="GitHub"></i></a>
