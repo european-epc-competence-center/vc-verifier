@@ -102,8 +102,7 @@
 <script>
 import { useToast } from "vue-toastification";
 import exportFromJSON from "export-from-json";
-import * as jsonld from 'jsonld';
-import {documentLoader} from '../utils.js'
+
 import 'bootstrap/js/dist/collapse'
 import 'bootstrap/js/dist/modal'
 
@@ -207,21 +206,30 @@ export default {
                 return
             }
 
-
-
                 this.progress = 1
 
                 var verifyTasks = Promise.all(this.credentials.map(async function(credential) {
 
-                    const res = await this.$api.post('/vc', [credential]);
+                    try {
 
-                    const verified = res.data[0].verified
+                        const res = await this.$api.post('/vc', [credential]);
 
-                    if (!verified) this.toast.warning(`Verification of ${credential.type[1]} failed!`);
+                        const verified = res.data[0].verified
 
-                    this.progress += 1
+                        if (!verified) this.toast.warning(`Verification of ${credential.type[1]} failed!`);
 
-                    return Object.assign(credential, {verified: verified});
+                        this.progress += 1
+
+                        return Object.assign(credential, {verified: verified});
+
+                    } catch (error) {
+
+                        this.toast.error(`Verificaton API failed for ${credential.type[1]}!`)
+
+                        return Object.assign(credential, {verified: false});
+
+                    }
+
 
                 }.bind(this)));
 
@@ -234,7 +242,7 @@ export default {
 
                     console.log(credential)
 
-                    console.log(await jsonld.processContext({}, {'@context':['https://ref.gs1.org/gs1/vc/licence-context']}, {base: null, documentLoader:documentLoader}))
+                    // console.log(await jsonld.processContext({}, ['https://ref.gs1.org/gs1/vc/licence-context'], {base: null, documentLoader:documentLoader}))
 
                 }.bind(this)));
 

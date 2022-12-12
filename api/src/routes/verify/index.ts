@@ -37,7 +37,7 @@ export class VerifyRoutes {
 
     verifyCredentials = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
 
-        try {
+
 
             let tasks = Promise.all(req.body.map(function(vc: any){
 
@@ -50,9 +50,6 @@ export class VerifyRoutes {
 
             return res.status(StatusCodes.OK).json(results);
 
-        } catch (error) {
-            return res.status(StatusCodes.BAD_REQUEST).send(error);
-        }
 
     }
 
