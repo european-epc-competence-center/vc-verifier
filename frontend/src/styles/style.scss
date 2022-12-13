@@ -13,11 +13,12 @@ html, body {margin: 0; height: 100%; overflow: hidden}
 
 #maincard {
     min-width: 80%; 
-    height: 90vh;
+    max-height: 90vh;
 
     @media (max-width: 768px) {
         border-radius: 0;
         height: 100%;
+        max-height: 100%;
         width: 100%;
     }
     
