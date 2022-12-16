@@ -6,10 +6,10 @@
             <a href="https://ssi.eecc.de/api/verifier/swagger/"><i class="bi-filetype-doc mx-3" role="img" aria-label="API Docs"></i></a>
             <a href="https://eecc.info"><img id="logo" src="@/assets/img/logo.png"/></a>
         </div>
-        <div class="card-body m-3" style="overflow-y: scroll;">
-            <p>Select the credential/s using one of the options below.</p>
+        <div class="card-body" style="overflow-y: scroll;">
+            <p class="m-3">Select the credential/s using one of the options below.</p>
             <!--By json file-->
-            <div class="card mb-3 p-3 shadow">
+            <div class="card m-3 p-3 shadow">
                 <h5>Credential File</h5>
                 <form v-on:submit.prevent="submitFile">
                     <div class="input-group">
@@ -21,7 +21,7 @@
                 </form>
             </div>
             <!--By credential id-->
-            <div class="card mb-3 p-3 shadow">
+            <div class="card m-3 p-3 shadow">
                 <h5>Credential Id</h5>
                 <form v-on:submit.prevent="submitId">
                     <div class="input-group">
@@ -33,7 +33,7 @@
                 </form>
             </div>
             <!--By subject id-->
-            <div class="card mb-3 p-3 shadow">
+            <div class="card m-3 p-3 shadow">
                 <h5>Subject Id</h5>
                 <form v-on:submit.prevent="submitSubject">
                     <div class="input-group">
