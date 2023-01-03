@@ -1,6 +1,7 @@
 // @ts-ignore
 import jsonldSignatures from 'jsonld-signatures';
-import { getResolver } from './didresolver.js'
+import { getResolver } from './didresolver.js';
+import { fetch_get } from '../fetch/index.js';
 
 const TRUSTED_CONTEXT_DOMAINS: [string] = ['https://ssi.eecc.de']
 
@@ -49,7 +50,7 @@ const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async 
     // fetch if not in cache
     if (!document) {
 
-        document = await(await fetch(url)).json();
+        document = await(await fetch_get(url)).json();
 
         // cache and warn if external
         if (!TRUSTED_CONTEXT_DOMAINS.some((trusted) => url.startsWith(trusted))) {

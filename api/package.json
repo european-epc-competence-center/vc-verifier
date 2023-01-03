@@ -28,6 +28,7 @@
   "dependencies": {
     "@digitalbazaar/ed25519-signature-2020": "^5.0.0",
     "@digitalbazaar/vc": "^5.0.0",
+    "@digitalbazaar/vc-revocation-list": "^5.0.0",
     "cors": "^2.8.5",
     "did-resolver": "^4.0.1",
     "dotenv": "^16.0.1",
