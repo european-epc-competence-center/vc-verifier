@@ -173,7 +173,8 @@ export default {
 
         },
         getCredCompId(type, id) {
-            return type + '-' + id.substr(id.length - 5, id.length).replace(/^[^a-z]+|[^\w:.-]+/gi, "");
+            const cleanString = id.replace(/^[^a-z]+|[^\w:.-]+/gi, "-").toString();
+            return type + '-' + cleanString.substr(cleanString.length - 5, cleanString.length);
         },
         async fetchData() {
 
