@@ -8,6 +8,7 @@ This tool uses the libraries by [Digital Bazaar, Inc.](https://github.com/digita
 
 - https://github.com/digitalbazaar/vc-js
 - https://github.com/digitalbazaar/ed25519-signature-2020
+- https://github.com/digitalbazaar/vc-revocation-list
 
 in order to verify signatures of [W3C conformal verifiable credentials](https://www.w3.org/TR/vc-data-model/) in JSON-LD form.
 
