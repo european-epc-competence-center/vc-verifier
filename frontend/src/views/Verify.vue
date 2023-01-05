@@ -20,7 +20,7 @@
             </div>
             <Passport :credentials="credentials"/>
             <h5 v-if="!credentialId" class="mx-3 px-3">Included Credentials</h5>
-            <div v-for="credential in getOrderedCredentials" :key="credential.id" class="card shadow m-3">
+            <div v-for="credential in getOrderedCredentials" :key="credential.id" class="card shadow m-3" :class="[ getStateColor(credential) != 'success' ? `border-${getStateColor(credential)}` : '' ]">
                 <QRModal :id="getCredCompId('modal', credential.id)" v-bind:value="getPlainCredential(credential)"/>
                 <div class="card-header p-3">
                     <div class="row justify-content-between align-items-center">
@@ -29,11 +29,14 @@
                             <div class="credentialid mt-1"><a :href="credential.id">{{credential.id}}</a></div>
                         </div>
                         <div class="col-2 text-end">
-                            <i v-if="credential.verified==true" style="font-size: 1.25rem;" class="bi bi-check-circle-fill text-success" role="img" aria-label="Verified"></i>
-                            <i v-else-if="credential.verified==false" style="font-size: 1.25rem;" class="bi bi-x-circle-fill text-danger" role="img" aria-label="Unverified"></i>
-                            <div v-else class="spinner-border text-secondary" role="status" style="width: 1.25rem; height: 1.25rem;">
-                                <span class="visually-hidden">Verifying...</span>
-                            </div>
+                            <a tabindex="0" style="display: inline-block;" type="button" data-bs-container="body" data-bs-toggle="tooltip" :data-bs-title="credential.status ? credential.status : 'Verifying...'">
+                                <i v-if="credential.verified==true" style="font-size: 1.25rem;" class="bi bi-check-circle-fill text-success" role="img" aria-label="Verified"></i>
+                                <i v-else-if="credential.verified==false && !credential.revoked" style="font-size: 1.25rem;" class="bi bi-x-circle-fill text-danger" role="img" aria-label="Unverified"></i>
+                                <i v-else-if="credential.revoked" style="font-size: 1.25rem;" class="bi bi-sign-turn-left text-warning" role="img" aria-label="Revoked"></i>
+                                <div v-else class="spinner-border text-secondary" role="status" style="width: 1.25rem; height: 1.25rem;">
+                                    <span class="visually-hidden">Verifying...</span>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -102,8 +105,7 @@
 <script>
 import { useToast } from "vue-toastification";
 import exportFromJSON from "export-from-json";
-import 'bootstrap/js/dist/collapse'
-import 'bootstrap/js/dist/modal'
+import { Tooltip } from 'bootstrap'
 
 import QRModal from "./QRModal.vue";
 import Passport from "./Passport.vue";
@@ -123,8 +125,13 @@ export default {
             progress: 0
         }
     },
-    mounted() { 
-        
+    mounted() {
+
+        new Tooltip(document.body, {
+            selector: "[data-bs-toggle='tooltip']"
+        })
+
+
         this.fetchData()
                 .then(() => {
                     this.verify()
@@ -160,12 +167,17 @@ export default {
         }
     },
     methods: {
+        getStateColor(credential) {
+            if (credential.revoked) return 'warning';
+            if (!credential.verified) return 'error';
+            return 'success';
+        },
         getPlainCredential(credential) {
             var clean_credential = {...credential};
             delete clean_credential.verified;
             delete clean_credential.revoked;
-            delete clean_credential.error;
-            return clean_credential
+            delete clean_credential.status;
+            return clean_credential;
         },
         downloadCredential(credential) {
 
@@ -175,8 +187,10 @@ export default {
 
         },
         getCredCompId(type, id) {
+
             const cleanString = id.replace(/^[^a-z]+|[^\w:]+/gi, "-").toString();
             return type + '-' + cleanString.substr(cleanString.length - 5, cleanString.length);
+
         },
         async fetchData() {
 
@@ -199,6 +213,7 @@ export default {
             }
 
             this.toast.error('No credentials provided!');
+            return;
 
         },
         async verify() {
@@ -228,26 +243,29 @@ export default {
 
                             credentialResult.revoked = true;
 
-                            message = 'Credential is revoked!';
+                            message = 'Revoked!';
 
                         }
 
                         if (result.error) {
 
-                            message = result.error.name + '\n';
+                            message = result.error.name + ': ';
 
                             if (result.error.errors) result.error.errors.forEach( (e) => {
 
-                                message += e.name + ' ' + e.message  + '\n';
+                                message += e.message  + '\n';
 
                             })
 
-                            credentialResult.error = message;
-
                         }
 
-                        this.toast.warning(`Verification of ${credential.type[1]} failed!\nCause: ${message}`);
+                        credentialResult.status = message;
 
+                        if (credentialResult.revoked) this.toast.warning(`${credential.type[1]} is revoked!`);
+                        else this.toast.error(`Verification of ${credential.type[1]} failed!\n${message}`);
+
+                    } else {
+                        credentialResult.status = 'Verified!';
                     }
 
                     this.progress += 1
