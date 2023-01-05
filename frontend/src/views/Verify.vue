@@ -93,6 +93,7 @@
                 </div>
                 <div class="card-footer px-3 text-end">
                     <div class="btn-group btn-group-sm" role="group" aria-label="Download">
+                        <button @click="downloadCredentialPDF(credential)" type="button" style="border-right: none;" class="btn btn-outline-primary"><i class="bi-filetype-pdf" role="img" aria-label="PDF Download"></i></button>
                         <button @click="downloadCredential(credential)" type="button" style="border-right: none;" class="btn btn-outline-primary"><i class="bi-filetype-json" role="img" aria-label="JSON Download"></i></button>
                         <button data-bs-toggle="modal" :data-bs-target="getCredCompId('#modal', credential.id)" role="button" type="button" class="btn btn-outline-primary"><i class="bi-qr-code" role="img" aria-label="QR-Code"></i></button>
                     </div>
@@ -105,7 +106,11 @@
 <script>
 import { useToast } from "vue-toastification";
 import exportFromJSON from "export-from-json";
-import { Tooltip } from 'bootstrap'
+import { Tooltip } from 'bootstrap';
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+import { credentialPDF } from '../pdf.js'
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 import QRModal from "./QRModal.vue";
 import Passport from "./Passport.vue";
@@ -167,6 +172,12 @@ export default {
         }
     },
     methods: {
+        downloadCredentialPDF(credential) {
+
+            let pdf = credentialPDF(credential)
+            return pdfMake.createPdf(pdf).open();
+            // return pdfMake.createPdf(pdf).download(this.getCredCompId('credential', credential.id) + '.pdf');
+        },
         getStateColor(credential) {
             if (credential.revoked) return 'warning';
             if (!credential.verified) return 'error';
