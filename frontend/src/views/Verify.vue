@@ -11,11 +11,11 @@
             <div class="alert alert-primary m-3 mb-5 text-center" role="alert">
                 <p class="m-0" v-html="getInfoString"></p>
                 <Transition name="fade">
-                <div v-if="progress < credentials.length" class="text-center px-5 mt-3">
-                    <div class="progress" style="height: 8px;">
-                        <div class="progress-bar progress-bar-striped" role="progressbar" aria-label="Verification progress" :style="'width: ' + progress/credentials.length * 100 + '%;'" :aria-valuenow="progress" aria-valuemin="0" :aria-valuemax="credentials.length + 1"></div>
+                    <div v-if="progress < credentials.length" class="text-center px-5 mt-3">
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar progress-bar-striped" role="progressbar" aria-label="Verification progress" :style="'width: ' + progress/credentials.length * 100 + '%;'" :aria-valuenow="progress" aria-valuemin="0" :aria-valuemax="credentials.length + 1"></div>
+                        </div>
                     </div>
-                </div>
                 </Transition>
             </div>
             <Passport :credentials="credentials"/>
@@ -163,6 +163,8 @@ export default {
         getPlainCredential(credential) {
             var clean_credential = {...credential};
             delete clean_credential.verified;
+            delete clean_credential.revoked;
+            delete clean_credential.error;
             return clean_credential
         },
         downloadCredential(credential) {
@@ -214,13 +216,43 @@ export default {
 
                     const res = await this.$api.post('/vc', [credential]);
 
-                    const verified = res.data[0].verified
+                    const result = res.data[0];
 
-                    if (!verified) this.toast.warning(`Verification of ${credential.type[1]} failed!`);
+                    var credentialResult = {verified: result.verified};
+
+                    if (!result.verified) {
+
+                        var message;
+
+                        if (result.statusResult && !result.statusResult.verified) {
+
+                            credentialResult.revoked = true;
+
+                            message = 'Credential is revoked!';
+
+                        }
+
+                        if (result.error) {
+
+                            message = result.error.name + '\n';
+
+                            if (result.error.errors) result.error.errors.forEach( (e) => {
+
+                                message += e.name + ' ' + e.message  + '\n';
+
+                            })
+
+                            credentialResult.error = message;
+
+                        }
+
+                        this.toast.warning(`Verification of ${credential.type[1]} failed!\nCause: ${message}`);
+
+                    }
 
                     this.progress += 1
 
-                    return Object.assign(credential, {verified: verified});
+                    return Object.assign(credential, credentialResult);
 
                 }.bind(this)));
 
