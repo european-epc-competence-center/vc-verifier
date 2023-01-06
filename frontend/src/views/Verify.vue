@@ -173,11 +173,11 @@ export default {
     },
     methods: {
         downloadCredentialPDF(credential) {
-            var win = window.open('', '_blank');
+            //var win = window.open('', '_blank');
             credentialPDF(credential)
                 .then((pdf) => {
-                    return pdfMake.createPdf(pdf).open({}, win);
-                    //return pdfMake.createPdf(pdf).download(this.getCredCompId('credential', credential.id) + '.pdf');
+                    //return pdfMake.createPdf(pdf).open({}, win);
+                    return pdfMake.createPdf(pdf).download(this.getCredCompId('credential', credential.id) + '.pdf');
                  })
                  .catch((error) => {
                     this.toast.error(`Something went wrong creating the pdf!\n${error}`);
