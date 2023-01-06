@@ -1,5 +1,5 @@
 // According to https://pdfmake.github.io/docs/0.1/document-definition-object/columns/
-import { isURL } from './utils';
+import { isURL, getPlainCredential } from './utils';
 
 function getBase64ImageFromURL(url) {
     return new Promise((resolve, reject) => {
@@ -148,7 +148,7 @@ export async function credentialPDF(credential) {
                 }
             },
             // Large QR code containing entire credential
-            { qr: JSON.stringify(credential), fit: '350', alignment: 'center', margin: [0, 5]},
+            { qr: JSON.stringify(getPlainCredential(credential)), fit: '350', alignment: 'center', margin: [0, 5]},
             { text: 'Full credential', fontSize: 16, alignment: 'center'},
         ],
         footer: {

@@ -109,7 +109,8 @@ import exportFromJSON from "export-from-json";
 import { Tooltip } from 'bootstrap';
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
-import { credentialPDF } from '../pdf.js'
+import { credentialPDF } from '../pdf.js';
+import { getPlainCredential } from '../utils.js';
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 import QRModal from "./QRModal.vue";
@@ -127,7 +128,8 @@ export default {
             credentials: [],
             credentialId: this.$route.query.credentialId ? decodeURIComponent(this.$route.query.credentialId) : undefined,
             subjectId: this.$route.query.subjectId ? decodeURIComponent(this.$route.query.subjectId) : undefined,
-            progress: 0
+            progress: 0,
+            getPlainCredential: getPlainCredential
         }
     },
     mounted() {
@@ -190,18 +192,11 @@ export default {
             if (!credential.verified) return 'error';
             return 'success';
         },
-        getPlainCredential(credential) {
-            var clean_credential = {...credential};
-            delete clean_credential.verified;
-            delete clean_credential.revoked;
-            delete clean_credential.status;
-            return clean_credential;
-        },
         downloadCredential(credential) {
 
             const fileName = this.getCredCompId('credential', credential.id);
             const exportType = 'json';
-            exportFromJSON({ data: this.getPlainCredential(credential), fileName, exportType });
+            exportFromJSON({ data: getPlainCredential(credential), fileName, exportType });
 
         },
         getCredCompId(type, id) {
