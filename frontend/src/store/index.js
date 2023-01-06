@@ -3,7 +3,7 @@ import { createStore } from 'vuex'
 
 export default createStore({
   state: {
-    version: '0.4.2',
+    version: '0.4.3',
     credentials: [],
     VC_REGISTRY: process.env.VC_REGISTRY || 'https://ssi.eecc.de/api/registry/vcs/',
     showQRModal: false
