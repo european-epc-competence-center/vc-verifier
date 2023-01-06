@@ -173,10 +173,17 @@ export default {
     },
     methods: {
         downloadCredentialPDF(credential) {
-
-            let pdf = credentialPDF(credential)
-            return pdfMake.createPdf(pdf).open();
-            // return pdfMake.createPdf(pdf).download(this.getCredCompId('credential', credential.id) + '.pdf');
+            var win = window.open('', '_blank');
+            credentialPDF(credential)
+                .then((pdf) => {
+                    return pdfMake.createPdf(pdf).open({}, win);
+                    //return pdfMake.createPdf(pdf).download(this.getCredCompId('credential', credential.id) + '.pdf');
+                 })
+                 .catch((error) => {
+                    this.toast.error(`Something went wrong creating the pdf!\n${error}`);
+                 }).finally(() => {
+                     //Perform action in always
+                 });
         },
         getStateColor(credential) {
             if (credential.revoked) return 'warning';
