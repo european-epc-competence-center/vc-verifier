@@ -1,5 +1,6 @@
 
 export function isURL(url) {
+    if (typeof url != 'string') return false;
     return url.startsWith('https://');
 }
 

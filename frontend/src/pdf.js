@@ -1,5 +1,5 @@
 // According to https://pdfmake.github.io/docs/0.1/document-definition-object/columns/
-import { isURL, getPlainCredential } from './utils';
+import { isURL, getPlainCredential, getCredentialValue } from './utils';
 
 function getBase64ImageFromURL(url) {
     return new Promise((resolve, reject) => {
@@ -141,9 +141,9 @@ export async function credentialPDF(credential) {
                   .map(key => ([
                                 {text: key, style: 'property_key'},
                                 // display value as url if possible
-                                isURL(credential.credentialSubject[key]) ? 
-                                {text: credential.credentialSubject[key], link: credential.credentialSubject[key], color: 'blue', style: ['property_key', 'property_value']} :
-                                {text: credential.credentialSubject[key], style: ['property_key', 'property_value']}
+                                isURL(getCredentialValue(credential.credentialSubject[key])) ? 
+                                {text: getCredentialValue(credential.credentialSubject[key]), link: getCredentialValue(credential.credentialSubject[key]), color: 'blue', style: ['property_key', 'property_value']} :
+                                {text: getCredentialValue(credential.credentialSubject[key]), style: ['property_key', 'property_value']}
                             ])))
                 }
             },
