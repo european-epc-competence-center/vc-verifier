@@ -5,7 +5,7 @@
             <h3 class="mb-0 mx-5">Verifiable Credential Verifier</h3>
             <a href="https://github.com/european-epc-competence-center/vc-verifier"><i class="bi-github mx-3" role="img" aria-label="GitHub"></i></a>
             <a href="https://ssi.eecc.de/api/verifier/swagger/"><i class="bi-filetype-doc mx-3" role="img" aria-label="API Docs"></i></a>
-            <a href="https://eecc.info"><img id="logo" src="@/assets/img/logo.png"/></a>
+            <a href="https://id.eecc.de"><img id="logo" src="@/assets/img/logo.png"/></a>
         </div>
         <div class="card-body p-3" style="overflow-y: scroll;">
             <div class="alert alert-primary m-3 mb-5 text-center" role="alert">
