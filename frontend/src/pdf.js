@@ -3,6 +3,8 @@ import { isURL, getPlainCredential, getCredentialValue } from './utils';
 
 function getBase64ImageFromURL(url) {
     return new Promise((resolve, reject) => {
+      if (!url) resolve(undefined);
+      if (url.startsWith('data:image')) resolve(url);
       var img = new Image();
       img.setAttribute("crossOrigin", "anonymous");
     
@@ -26,6 +28,16 @@ function getBase64ImageFromURL(url) {
       img.src = url;
 });
 }
+async function getIssuer(issuer) {
+
+    if (typeof issuer == 'object') {
+        return issuer.name + ' (' + issuer.id + ')';
+    }
+
+    return issuer;
+
+}
+
 
 async function getStatusImage(credential) {
     if (credential.revoked) return await getBase64ImageFromURL(require('@/assets/img/sign-turn-left-fill.png'));
@@ -38,6 +50,9 @@ const styles = {
         fontSize: 8,
         color: '#848484'
     },
+    meta: {
+        fontSize: 8,
+    },
     property_key: {
       fontSize: 12,
       bold: true,
@@ -45,14 +60,15 @@ const styles = {
     property_value: {
         bold: false,
         // alignment: 'center'
-      },
+    },
     property_header: {
         fontSize: 16,
         bold: true,
-      }
+    }
 };
 
 export async function credentialPDF(credential) {
+    const date = new Date();
     return {
         pageMargins: [ 50, 50, 50, 50 ],
         styles: styles,
@@ -84,7 +100,7 @@ export async function credentialPDF(credential) {
             { text: credential.type[1], fontSize: 24, bold: true, color: '#6795d0' },
             {
                 columns: [
-                    { text: credential.id, fontSize: 8, link: credential.id, color: '#848484', width: '*', margin: [ 4, 2, 4, 5 ] },
+                    { text: credential.id, fontSize: 8, link: credential.id, color: '#848484', width: '*', margin: [ 0, 2, 4, 10 ] },
                     { qr: credential.id , fit: '50', margin: [25, -22], width: '180'},
                 ]
             },
@@ -98,8 +114,26 @@ export async function credentialPDF(credential) {
                 columns:
                     [   
                         {
-                            width: '*',
+                            width: 80,
+                            text: 'Issuer:',
+                            style: 'meta',
+                            bold: true
+                        },
+                        await getBase64ImageFromURL(credential.issuer.image) ?
+                        {
+                            width: 'auto',
+                            image: await getBase64ImageFromURL(credential.issuer.image),
+                            fit: [16, 16],
+                            margin: [ 0, -2, 4, 0 ]
+                        } : 
+                        {
+                            width: 'auto',
                             text: '',
+                        },
+                        {
+                            width: '*',
+                            text: await getIssuer(credential.issuer),
+                            style: 'meta'
                         },
                         {
                             width: 100,
@@ -108,7 +142,29 @@ export async function credentialPDF(credential) {
                             bold: true
                         },
                     ],
-                margin: [0, 3]
+                margin: [0, 12, 0, 3]
+            },
+            {
+                columns:
+                    [   
+                        {
+                            width: 80,
+                            text: 'Issuance date:',
+                            style: 'meta',
+                            bold: true
+                        },
+                        {
+                            width: '*',
+                            text: credential.issuanceDate,
+                            style: 'meta'
+                        },
+                        {
+                            width: 100,
+                            text: `asserted by ${window.location.origin.replace(/^\/\/|^.*?:(\/\/)?/, '')}`,
+                            alignment: 'center',
+                            style: 'footer'
+                        },
+                    ]
             },
             {
                 columns:
@@ -116,12 +172,15 @@ export async function credentialPDF(credential) {
                         {
                             width: '*',
                             text: '',
+                            style: 'meta'
                         },
                         {
                             width: 100,
-                            text: `asserted by ${window.location.origin}`,
+                            text: `${date.getDate()}/${(date.getMonth() + 1)}/${date.getFullYear()} ${date.getUTCHours()}:${date.getMinutes()}:${date.getSeconds()} UTC `,
                             alignment: 'center',
-                            style: 'footer'
+                            fontSize: 6,
+                            style: 'footer',
+                            margin: [0, 5]
                         },
                     ]
             },
@@ -129,7 +188,7 @@ export async function credentialPDF(credential) {
             // Table of properties
             {
                 layout: 'lightHorizontalLines', // optional
-                margin: [0, 5, 0, 40],
+                margin: [0, 10, 0, 40],
                 table: {
                   // headers are automatically repeated if the table spans over multiple pages
                   // you can declare how many rows should be treated as headers
@@ -149,13 +208,13 @@ export async function credentialPDF(credential) {
             },
             // Large QR code containing entire credential
             { qr: JSON.stringify(getPlainCredential(credential)), fit: '350', alignment: 'center', margin: [0, 5]},
-            { text: 'Full credential', fontSize: 16, alignment: 'center'},
+            { text: 'Full Credential', fontSize: 16, alignment: 'center'},
         ],
         footer: {
             columns:
             [   
                 {
-                    width: '*',
+                    width: 250,
                     text: 'Generated by the ',
                     alignment: 'right',
                     margin: [4,16],
