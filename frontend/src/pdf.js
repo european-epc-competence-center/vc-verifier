@@ -69,6 +69,12 @@ const styles = {
 
 export async function credentialPDF(credential) {
     const date = new Date();
+    var issuerImage;
+    try {
+        issuerImage = await getBase64ImageFromURL(credential.issuer.image);
+    } catch (error) {
+        issuerImage = undefined;
+    }
     return {
         pageMargins: [ 50, 50, 50, 50 ],
         styles: styles,
@@ -119,10 +125,10 @@ export async function credentialPDF(credential) {
                             style: 'meta',
                             bold: true
                         },
-                        await getBase64ImageFromURL(credential.issuer.image) ?
+                        issuerImage ?
                         {
                             width: 'auto',
-                            image: await getBase64ImageFromURL(credential.issuer.image),
+                            image: issuerImage,
                             fit: [16, 16],
                             margin: [ 0, -2, 4, 0 ]
                         } : 
