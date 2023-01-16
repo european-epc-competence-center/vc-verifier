@@ -1,5 +1,5 @@
 <template>
-    <div class="modal fade" id="scan-modal" aria-hidden="true" tabindex="-1">
+    <div class="modal" id="scan-modal" aria-hidden="true" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-fullscreen-md-down">
             <div class="modal-content">
                 <div class="modal-header">
@@ -34,6 +34,7 @@
 <script>
 import { QrcodeStream, QrcodeDropZone } from 'vue3-qrcode-reader'
 import { useToast } from "vue-toastification";
+import { Modal } from 'bootstrap';
 
 export default {
     name: 'ScanModal',
@@ -133,8 +134,8 @@ export default {
 
                     }
 
-                    // modal backdrop does not disappear on hide ....
-                    document.getElementsByClassName('modal-backdrop').forEach((el) => el.remove());
+                    // hide modal after scan
+                    Modal.getInstance('#scan-modal').hide();
 
                 }
             } catch (error) {
