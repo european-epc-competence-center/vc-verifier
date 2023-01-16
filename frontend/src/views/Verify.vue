@@ -41,24 +41,24 @@
                     </div>
                 </div>
                 <div class="card-body p-3">
-                    <div class="row justify-content-between mb-3">
+                    <div class="row justify-content-between mb-3 align-items-center">
                         <div class="col-md-6 text-secondary">
-                            <div class="row my-1 me-md-5">
+                            <div class="row my-md-1 mb-3 me-md-5 align-items-center">
                                 <div class="col-sm-4">
                                     Issuer:
                                 </div>
-                                <div class="col-sm-8 text-sm-end text-start">
+                                <div class="col-sm-8 my-1 my-md-0 text-sm-end text-start">
                                     <span v-if="typeof credential.issuer == 'string'" class="badge text-bg-primary text-white">{{credential.issuer}}</span>
-                                    <div v-else ><span class="badge text-bg-primary text-white">{{credential.issuer.id}}</span><span class="ms-3">{{credential.issuer.name}} <img style="height: 1.2rem;" :src="credential.issuer.image" /></span></div>
+                                    <div v-else ><span class="me-1"><img style="height: 1.8rem;" :src="credential.issuer.image" /></span><span class="me-3">{{credential.issuer.name}}</span><span class="badge text-bg-primary text-white">{{credential.issuer.id}}</span></div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6 text-secondary">
-                            <div class="row my-1 ms-md-5">
+                            <div class="row my-md-1 mb-3 ms-md-5">
                                 <div class="col-sm-4">
                                     Date:
                                 </div>
-                                <div class="col-sm-8 text-sm-end text-start">
+                                <div class="col-sm-8 my-1 my-md-0 text-sm-end text-start">
                                     <span class="badge text-bg-primary text-white">{{credential.issuanceDate}}</span>
                                 </div>
                             </div>
