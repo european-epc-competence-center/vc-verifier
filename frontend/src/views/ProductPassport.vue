@@ -68,8 +68,11 @@ export default {
             mainProps: {
                 'brand': 'Brand',
                 'model': 'Model',
+                'country_of_origin': 'Made in',
                 'clockworkType': 'Clockwork',
-                'caseMaterial': 'Case Material'
+                'caseMaterial': 'Case Material',
+                'production_date': 'Production date',
+                'product_website':  'Product website'
             }
         }
     },
