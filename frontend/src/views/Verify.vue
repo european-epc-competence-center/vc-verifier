@@ -72,21 +72,19 @@
                             </button>
                             </h2>
                             <div :id="getCredCompId('item', credential.id)" class="accordion-collapse collapse" :aria-labelledby="getCredCompId('itemhead', credential.id)" :data-bs-parent="getCredCompId('#acc', credential.id)">
-                            <div class="accordion-body">
-                                <ul class="list-group">
-                                    <li v-for="(value, key) in credential.credentialSubject" :key="key" class="list-group-item">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <strong>{{key}}</strong>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <a v-if="$isURL($getCredentialValue(value))" :href="$getCredentialValue(value)">{{$getCredentialValue(value)}}</a>
-                                                <p v-else class="m-0">{{$getCredentialValue(value)}}</p>
-                                            </div>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
+                                <div class="accordion-body p-0">
+                                    <table class="table table-striped mb-1">
+                                        <tbody>
+                                            <tr v-for="(value, key) in credential.credentialSubject" :key="key">
+                                                <td><strong>{{key}}</strong></td>
+                                                <td>
+                                                    <a v-if="$isURL($getCredentialValue(value))" :href="$getCredentialValue(value)">{{$getCredentialValue(value)}}</a>
+                                                    <p v-else class="m-0">{{$getCredentialValue(value)}}</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
