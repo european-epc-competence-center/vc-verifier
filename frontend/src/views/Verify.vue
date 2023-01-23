@@ -25,7 +25,7 @@
                 <div class="card-header p-3">
                     <div class="row justify-content-between align-items-center">
                         <div class="col-8">
-                            <h5 class="mb-0 text-primary">{{credential.type[1]}}</h5>
+                            <h5 class="mb-0 text-primary">{{credential.type[1] || credential.type[0]}}</h5>
                             <div class="credentialid mt-1"><a :href="credential.id">{{credential.id}}</a></div>
                         </div>
                         <div class="col-2 text-end">
