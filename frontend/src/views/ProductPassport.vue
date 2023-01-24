@@ -35,21 +35,21 @@
                     </button>
                     </h2>
                     <div id="productpassportdetails" class="accordion-collapse collapse" aria-labelledby="productpassportacchead" data-bs-parent="productpassportacc">
-                    <div class="accordion-body">
-                        <TransitionGroup name="list" tag="ul" class="list-group">
-                            <li v-for="(value, key) in properties" :key="key" class="list-group-item">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <strong>{{key}}</strong>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <a v-if="$isURL($getCredentialValue(value))" :href="$getCredentialValue(value)">{{$getCredentialValue(value)}}</a>
-                                        <p v-else class="m-0">{{$getCredentialValue(value)}}</p>
-                                    </div>
-                                </div>
-                            </li>
-                        </TransitionGroup>
-                    </div>
+                        <div class="accordion-body p-0">
+                            <div class="table-responsive-md">
+                                <table class="table table-striped mb-1">
+                                    <TransitionGroup name="list" tag="tbody">
+                                            <tr v-for="(value, key) in properties" :key="key">
+                                                <td><strong>{{key}}</strong></td>
+                                                <td>
+                                                    <a v-if="$isURL($getCredentialValue(value))" :href="$getCredentialValue(value)">{{$getCredentialValue(value)}}</a>
+                                                    <p v-else class="m-0">{{$getCredentialValue(value)}}</p>
+                                                </td>
+                                            </tr>
+                                    </TransitionGroup>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
