@@ -1,17 +1,14 @@
 
 import parseLink from 'parse-link-header';
 
-const JSON_HEADERS = {
-    'Accept': 'application/json'
+const HEADERS = {
+    'Accept': 'application/ld+json, application/json'
 }
 
-const JSONLD_HEADERS = {
-    'Accept': 'application/ld+json'
-}
 
 export async function fetch_jsonld(url: string): Promise<object> {
 
-    const response = await fetch(url, { method: 'GET', headers: JSONLD_HEADERS});
+    const response = await fetch(url, { method: 'GET', headers: HEADERS});
 
     const contentType = response.headers.get("content-type");
 
@@ -27,7 +24,7 @@ export async function fetch_jsonld(url: string): Promise<object> {
 
     if (link && link.alternate && link.alternate.rel == 'alternate' && link.alternate.type == 'application/ld+json') {
 
-        const linkResponse = await fetch(url + link.alternate.url, { method: 'GET', headers: JSONLD_HEADERS});
+        const linkResponse = await fetch(url + link.alternate.url, { method: 'GET', headers: HEADERS});
 
         return await linkResponse.json();
 
@@ -40,7 +37,7 @@ export async function fetch_jsonld(url: string): Promise<object> {
 
 export async function fetch_json(url: string): Promise<object> {
 
-    const response = await fetch(url, { method: 'GET', headers: JSON_HEADERS});
+    const response = await fetch(url, { method: 'GET', headers: HEADERS});
 
     return await response.json();
     
