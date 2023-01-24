@@ -1,7 +1,7 @@
 import { NextFunction, Request, response, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-import { VCVerifier, fetch_get } from '../../services/index.js';
+import { VCVerifier, fetch_json } from '../../services/index.js';
 
 const VC_REGISTRY = process.env.VC_REGISTRY ? process.env.VC_REGISTRY : 'https://ssi.eecc.de/api/registry/vcs/';
 
@@ -17,13 +17,11 @@ export class VerifyRoutes {
 
             try {
 
-                credential = await fetch_get(req.params.vcid);
+                credential = await fetch_json(req.params.vcid);
 
             } catch(error) {
                 return res.status(StatusCodes.NOT_FOUND);
             }
-
-            credential = await credential.json();
 
             const result = await VCVerifier.verifyCredential(credential);
 
@@ -61,19 +59,17 @@ export class VerifyRoutes {
         try {
 
             // fetch credentials
-            let credentials;
+            let credentials: object;
 
             try {
 
-                credentials = await fetch_get(VC_REGISTRY + encodeURIComponent(req.params.subjectId));
+                credentials = await fetch_json(VC_REGISTRY + encodeURIComponent(req.params.subjectId));
 
             } catch(error) {
                 return res.status(StatusCodes.NOT_FOUND);
             }
 
-            const credentials_array: [any] = await credentials.json();
-
-            let tasks = Promise.all(credentials_array.map(function(vc: any){
+            let tasks = Promise.all((credentials as [object]).map(function(vc: any){
 
                 return VCVerifier.verifyCredential(vc);
 
