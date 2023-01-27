@@ -73,7 +73,7 @@
                             </h2>
                             <div :id="getCredCompId('item', credential.id)" class="accordion-collapse collapse" :aria-labelledby="getCredCompId('itemhead', credential.id)" :data-bs-parent="getCredCompId('#acc', credential.id)">
                                 <div class="accordion-body p-0">
-                                    <div class="table-responsive-md">
+                                    <div class="table-responsive">
                                         <table class="table table-striped mb-1">
                                             <tbody>
                                                 <tr v-for="(value, key) in credential.credentialSubject" :key="key">

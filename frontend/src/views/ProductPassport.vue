@@ -36,7 +36,7 @@
                     </h2>
                     <div id="productpassportdetails" class="accordion-collapse collapse" aria-labelledby="productpassportacchead" data-bs-parent="productpassportacc">
                         <div class="accordion-body p-0">
-                            <div class="table-responsive-md">
+                            <div class="table-responsive">
                                 <table class="table table-striped mb-1">
                                     <TransitionGroup name="list" tag="tbody">
                                             <tr v-for="(value, key) in properties" :key="key">
