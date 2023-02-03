@@ -3,7 +3,7 @@ import { VerifyRoutes } from '../../routes/index.js';
 
 
 const verifyRoutes = new VerifyRoutes();
-const { verifyCredential, verifyCredentials, verifySubjectsVCs } = verifyRoutes
+const { fetchAndVerify, verify, verifySubjectsVCs } = verifyRoutes
 
 export const verifyRouter = Router();
 
@@ -81,7 +81,7 @@ export const verifyRouter = Router();
     ]
   }
  */
- verifyRouter.get('/vc/:vcid', verifyCredential);
+verifyRouter.get('/vc/:vcid', fetchAndVerify);
 
 /**
  * POST /api/verifier/vc
@@ -151,7 +151,7 @@ export const verifyRouter = Router();
   }
 ]
  */
- verifyRouter.post('/vc', verifyCredentials);
+verifyRouter.post('/', verify);
 
 /**
  * GET /api/verifier/id/{subjectId}
@@ -199,5 +199,5 @@ export const verifyRouter = Router();
   }
 ]
  */
- verifyRouter.get('/id/:subjectId', verifySubjectsVCs);
+verifyRouter.get('/id/:subjectId', verifySubjectsVCs);
 
