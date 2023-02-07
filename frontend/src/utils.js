@@ -5,11 +5,11 @@ export function isURL(url) {
 }
 
 export function getCredentialValue(value) {
-    return typeof value === 'object' ? value.value || value['@value'] : value;
+    return typeof value === 'object' ? value.value || value['@value'] || JSON.stringify(value, null, 2) : value;
 }
 
 export function getPlainCredential(credential) {
-    var clean_credential = {...credential};
+    var clean_credential = { ...credential };
     delete clean_credential.verified;
     delete clean_credential.revoked;
     delete clean_credential.status;
