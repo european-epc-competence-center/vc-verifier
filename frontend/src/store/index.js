@@ -3,8 +3,8 @@ import { createStore } from 'vuex'
 
 export default createStore({
   state: {
-    version: '0.5.0',
-    credentials: [],
+    version: '0.6.0',
+    verifiables: [],
     VC_REGISTRY: process.env.VC_REGISTRY || 'https://ssi.eecc.de/api/registry/vcs/',
     showQRModal: false
   },
@@ -12,32 +12,20 @@ export default createStore({
     showQRModal(state, payload) {
       state.showQRModal = payload.value
     },
-    addCredential(state, credential) {
-        state.credentials.push(credential)
+    addVerifiables(state, verifiables) {
+      state.verifiables = state.verifiables.concat(verifiables)
     },
-    addCredentials(state, credentials) {
-      state.credentials = state.credentials.concat(credentials)
-  },
-    setCredentials(state, credentials) {
-        state.credentials = credentials
-    },
-    resetCredentials(state) {
-        state.credentials = []
+    resetVerifiables(state) {
+      state.verifiables = [];
     },
   },
-  actions: { 
-    addCredential(context, credential) {
-        this.commit('addCredential', credential)
+  actions: {
+    addVerifiables(context, verifiables) {
+      this.commit('addVerifiables', verifiables)
     },
-    addCredentials(context, credentials) {
-      this.commit('addCredentials', credentials)
+    resetVerifiables() {
+      this.commit('resetVerifiables')
+    },
   },
-    setCredentials(context, credentials) {
-        this.commit('setCredentials', credentials)
-    },
-    resetCredentials() {
-        this.commit('resetCredentials')
-    },
-  }, 
   modules: {},
 })
