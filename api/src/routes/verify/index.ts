@@ -1,14 +1,14 @@
 import { NextFunction, Request, response, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-import { VCVerifier, fetch_json } from '../../services/index.js';
+import { Verifier, fetch_json } from '../../services/index.js';
 
 const VC_REGISTRY = process.env.VC_REGISTRY ? process.env.VC_REGISTRY : 'https://ssi.eecc.de/api/registry/vcs/';
 
 
 export class VerifyRoutes {
 
-    verifyCredential = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    fetchAndVerify = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
 
         try {
 
@@ -17,13 +17,13 @@ export class VerifyRoutes {
 
             try {
 
-                credential = await fetch_json(req.params.vcid);
+                credential = await fetch_json(req.params.vcid) as Verifiable;
 
-            } catch(error) {
+            } catch (error) {
                 return res.status(StatusCodes.NOT_FOUND);
             }
 
-            const result = await VCVerifier.verifyCredential(credential);
+            const result = await Verifier.verify(credential);
 
             return res.status(StatusCodes.OK).json(result);
 
@@ -33,13 +33,13 @@ export class VerifyRoutes {
 
     }
 
-    verifyCredentials = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    verify = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
 
         try {
 
-            let tasks = Promise.all(req.body.map(function(vc: any){
+            let tasks = Promise.all(req.body.map(function (verifialbe: Verifiable) {
 
-                return VCVerifier.verifyCredential(vc);
+                return Verifier.verify(verifialbe);
 
             }));
 
@@ -59,19 +59,19 @@ export class VerifyRoutes {
         try {
 
             // fetch credentials
-            let credentials: object;
+            let credentials: Verifiable[];
 
             try {
 
-                credentials = await fetch_json(VC_REGISTRY + encodeURIComponent(req.params.subjectId));
+                credentials = await fetch_json(VC_REGISTRY + encodeURIComponent(req.params.subjectId)) as [Verifiable];
 
-            } catch(error) {
+            } catch (error) {
                 return res.status(StatusCodes.NOT_FOUND);
             }
 
-            let tasks = Promise.all((credentials as [object]).map(function(vc: any){
+            let tasks = Promise.all(credentials.map(function (vc) {
 
-                return VCVerifier.verifyCredential(vc);
+                return Verifier.verify(vc);
 
             }));
 

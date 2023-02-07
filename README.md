@@ -2,7 +2,7 @@
 
 # VC Verifier
 
-The [EECC Verifier](https://ssi.eecc.de/verifier/) for verifiable credentials provides a verification API as well as the corresponding UI. It's primary purpose is to aggregate data from various VCs and display them in a comprehensible manner as a product passport.
+The [EECC Verifier](https://ssi.eecc.de/verifier/) for verifiable credentials provides a verification API as well as the corresponding UI. It's primary purpose is to aggregate data from various VCs and display them in a comprehensible manner as a product passport. [See here for an example.](https://ssi.eecc.de/verifier/#/verify?subjectId=https%3A%2F%2Fid.eecc.de/01/04012345999990/10/20210401-A/21/XYZ-1234)
 
 This tool uses the libraries by [Digital Bazaar, Inc.](https://github.com/digitalbazaar), in particular
 
