@@ -252,7 +252,7 @@ export default {
                 return `Verified ${this.numberVerified}/${this.verifiables.length} presentations${this.verifiables.length == 1 ? '' : 's'} with ${this.credentials.length} credential${this.credentials.length == 1 ? '' : 's'}`
             }
             else if (this.credentials.length > 0) {
-                return `Verified ${this.numberVerified}/${this.credentials.length} single credential${this.credentials.length == 1 ? '' : 's'}`
+                return `Verified${this.credentials.length > 1 ? ' ' + this.numberVerified + '/' + this.credentials.length : ''} single credential${this.credentials.length == 1 ? '' : 's'}`
             }
             else return 'Loading credentials ...'
         }
@@ -333,7 +333,7 @@ export default {
 
                 if (result.error) {
 
-                    message = result.error.name + ': ';
+                    message = 'Credential\n' + result.error.name + ': ';
 
                     if (result.error.errors) result.error.errors.forEach((e) => {
 
@@ -393,7 +393,10 @@ export default {
                             status: 'verified'
                         }
 
-                        if (presentation.presentationResult && !presentation.verified) presentation.status = 'partially verified'
+                        if (presentation.presentationResult && !presentation.verified) {
+                            presentation.status = 'partially verified'
+                            this.toast.warning(`Presentation of ${presentation.holder.id || presentation.holder} contains invalid credentials!`);
+                        }
 
                         if (result.error) {
 
@@ -404,6 +407,8 @@ export default {
                                 presentation.status += e.message + '\n';
 
                             })
+
+                            this.toast.error(`Verification of presentation of holder ${presentation.holder.id || presentation.holder} failed!\n${presentation.status}`);
 
                         }
 
