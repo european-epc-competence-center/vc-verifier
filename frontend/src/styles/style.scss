@@ -5,14 +5,19 @@ $enable-ltr: true;
 $enable-rtl: true;
 
 body {
-    background-image: linear-gradient(to bottom, rgba(53, 53, 53, 0.8) 0%, rgba(53, 53, 53, 0.8) 100%),url('./assets/img/background.jpg');
+    background-image: linear-gradient(to bottom, rgba(53, 53, 53, 0.8) 0%, rgba(53, 53, 53, 0.8) 100%), url('./assets/img/background.jpg');
     background-size: cover;
 }
 
-html, body {margin: 0; height: 100%; overflow: hidden}
+html,
+body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden
+}
 
 #maincard {
-    min-width: 80%; 
+    min-width: 80%;
     max-height: 90vh;
 
     @media (max-width: 768px) {
@@ -21,7 +26,7 @@ html, body {margin: 0; height: 100%; overflow: hidden}
         max-height: 100%;
         width: 100%;
     }
-    
+
 }
 
 .versiontag {
@@ -48,13 +53,13 @@ html, body {margin: 0; height: 100%; overflow: hidden}
     font-weight: bold;
     padding: 10px;
     display: grid;
-    background-color: rgba(0,0,0,0);
+    background-color: rgba(0, 0, 0, 0);
 }
 
 .dragover {
-    background-color: rgba(0,0,0,.1);
+    background-color: rgba(0, 0, 0, .1);
 }
-  
+
 #backbutton {
     position: absolute;
     left: .2rem;
@@ -86,27 +91,34 @@ html, body {margin: 0; height: 100%; overflow: hidden}
     opacity: 0;
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
     transition: opacity .5s;
 }
-.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+
+.fade-enter,
+.fade-leave-to
+
+/* .fade-leave-active below version 2.1.8 */
+    {
     opacity: 0;
 }
 
-.list-move, /* apply transition to moving elements */
+.list-move,
+/* apply transition to moving elements */
 .list-enter-active,
 .list-leave-active {
-  transition: all 0.5s ease;
+    transition: all 0.5s ease;
 }
 
 .list-enter-from,
 .list-leave-to {
-  opacity: 0;
-  transform: translateX(30px);
+    opacity: 0;
+    transform: translateX(30px);
 }
 
 /* ensure leaving items are taken out of layout flow so that moving
    animations can be calculated correctly. */
 .list-leave-active {
-  position: absolute;
+    position: absolute;
 }

@@ -14,12 +14,12 @@
             <div class="alert alert-primary m-3 mb-5 text-center" role="alert">
                 <p class="m-0" v-html="getInfoString"></p>
                 <Transition name="fade">
-                    <div v-if="progress < credentials.length" class="text-center px-5 mt-3">
+                    <div v-if="progress < verifiables.length + 1" class="text-center px-5 mt-3">
                         <div class="progress" style="height: 8px;">
                             <div class="progress-bar progress-bar-striped" role="progressbar"
                                 aria-label="Verification progress"
-                                :style="'width: ' + progress / credentials.length * 100 + '%;'"
-                                :aria-valuenow="progress" aria-valuemin="0" :aria-valuemax="credentials.length + 1">
+                                :style="'width: ' + progress / (verifiables.length + 1) * 100 + '%;'"
+                                :aria-valuenow="progress" aria-valuemin="0" :aria-valuemax="verifiables.length + 1">
                             </div>
                         </div>
                     </div>
@@ -407,7 +407,7 @@ export default {
 
                         if (presentation.presentationResult && !presentation.verified) {
                             presentation.status = 'partially verified!'
-                            this.toast.warning(`Presentation${presentation.holder ? ' of holder' + presentation.holder.id || presentation.holder : ''} contains invalid credentials!`);
+                            this.toast.warning(`Presentation${presentation.holder ? ' of holder ' + presentation.holder.id || presentation.holder + ' ' : ' '}contains invalid credentials!`);
                         }
 
                         if (result.error) {
@@ -420,7 +420,7 @@ export default {
 
                             })
 
-                            this.toast.error(`Verification of presentation${presentation.holder ? ' of holder' + presentation.holder.id || presentation.holder : ''} failed!\n${presentation.status}`);
+                            this.toast.error(`Verification of presentation${presentation.holder ? ' of holder ' + presentation.holder.id || presentation.holder + ' ' : ' '} failed!\n${presentation.status}`);
 
                         }
 
