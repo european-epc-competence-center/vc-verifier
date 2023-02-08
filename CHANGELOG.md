@@ -4,7 +4,9 @@ VC Verifier Changelog
 
 WIP
 ---
+
 - allow arrays in the proof field of a verifiable
+- assign basic presentation props to credential before verification
 
 
 1.0.0 (2023-02-07)

@@ -37,8 +37,9 @@
                             <div class="credentialid mt-1"><a :href="credential.id">{{ credential.id }}</a></div>
                         </div>
                         <div class="col-2 text-end">
-                            <a v-if="credential.presentation" tabindex="0" style="display: inline-block;" type="button"
-                                class="me-3" data-bs-container="body" data-bs-toggle="tooltip"
+                            <a v-if="credential.presentation && credential.presentation.verified != undefined"
+                                tabindex="0" style="display: inline-block;" type="button" class="me-3"
+                                data-bs-container="body" data-bs-toggle="tooltip"
                                 :data-bs-title="'Presentation ' + credential.presentation.status">
                                 <i v-if="credential.presentation.verified" style="font-size: 1.25rem;"
                                     class="bi bi-card-checklist text-success" role="img" aria-label="Verified"></i>
@@ -373,10 +374,18 @@ export default {
                 const verifyTasks = Promise.all(this.verifiables.map(async (verifiable) => {
 
                     if (getVerifiableType(verifiable) == VerifiableType.PRESENTATION) {
-                        if (Array.isArray(verifiable.verifiableCredential)) this.credentials = this.credentials.concat(verifiable.verifiableCredential)
-                        else this.credentials.push(verifiable.verifiableCredential)
+
+                        const presentation = {
+                            holder: verifiable.holder,
+                            challenge: verifiable.proof.challenge,
+                            domain: verifiable.proof.domain
+                        }
+
+                        if (Array.isArray(verifiable.verifiableCredential)) this.credentials = this.credentials.concat(verifiable.verifiableCredential.map((credential) => { return { ...credential, presentation } }));
+                        else this.credentials.push({ ...verifiable.verifiableCredential, presentation });
+
                     } else {
-                        this.credentials.push(verifiable)
+                        this.credentials.push(verifiable);
                     }
 
                     const res = await this.$api.post('/', [verifiable]);
@@ -393,11 +402,11 @@ export default {
                             holder: verifiable.holder,
                             challenge: verifiable.proof.challenge,
                             domain: verifiable.proof.domain,
-                            status: 'verified'
+                            status: 'verified!'
                         }
 
                         if (presentation.presentationResult && !presentation.verified) {
-                            presentation.status = 'partially verified'
+                            presentation.status = 'partially verified!'
                             this.toast.warning(`Presentation of ${presentation.holder ? 'of holder' + presentation.holder.id || presentation.holder : ''} contains invalid credentials!`);
                         }
 
