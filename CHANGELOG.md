@@ -1,8 +1,11 @@
 VC Verifier Changelog
 =================
 
-
 WIP
+---
+
+
+1.0.1 (2023-02-08)
 ---
 
 - allow arrays in the proof field of a verifiable
