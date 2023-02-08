@@ -43,10 +43,8 @@ export class VerifyRoutes {
 
             }));
 
-            // wait for all vcs to be verified
+            // wait for all verifiables to be verified
             const results = await tasks;
-
-            console.log(results)
 
             return res.status(StatusCodes.OK).json(results);
 

@@ -4,7 +4,7 @@ VC Verifier Changelog
 
 WIP
 ---
-- tbd.
+- allow arrays in the proof field of a verifiable
 
 
 1.0.0 (2023-02-07)
