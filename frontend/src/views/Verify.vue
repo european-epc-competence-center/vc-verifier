@@ -407,7 +407,7 @@ export default {
 
                         if (presentation.presentationResult && !presentation.verified) {
                             presentation.status = 'partially verified!'
-                            this.toast.warning(`Presentation of ${presentation.holder ? 'of holder' + presentation.holder.id || presentation.holder : ''} contains invalid credentials!`);
+                            this.toast.warning(`Presentation${presentation.holder ? ' of holder' + presentation.holder.id || presentation.holder : ''} contains invalid credentials!`);
                         }
 
                         if (result.error) {
@@ -420,7 +420,7 @@ export default {
 
                             })
 
-                            this.toast.error(`Verification of presentation ${presentation.holder ? 'of holder' + presentation.holder.id || presentation.holder : ''} failed!\n${presentation.status}`);
+                            this.toast.error(`Verification of presentation${presentation.holder ? ' of holder' + presentation.holder.id || presentation.holder : ''} failed!\n${presentation.status}`);
 
                         }
 
