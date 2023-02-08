@@ -67,14 +67,16 @@
                     </div>
                 </div>
                 <div class="card-body p-3">
-                    <div v-if="credential.presentation" class="row justify-content-between mb-3 align-items-center">
+                    <div v-if="credential.presentation && (credential.presentation.holder || credential.presentation.challenge || credential.presentation.domain)"
+                        class="row justify-content-between mb-3 align-items-center">
                         <div class="col-md-6 text-secondary">
                             <div class="row my-md-1 mb-3 me-md-5 align-items-center">
                                 <div class="col-sm-4">
                                     Holder:
                                 </div>
                                 <div class="col-sm-8 my-1 my-md-0 text-sm-end text-start">
-                                    <span v-if="typeof credential.presentation.holder == 'string'"
+                                    <span v-if="!credential.presentation.holder">-</span>
+                                    <span v-else-if="typeof credential.presentation.holder == 'string'"
                                         class="badge text-bg-secondary text-white">{{
                                             credential.presentation.holder
                                         }}</span>
@@ -90,7 +92,8 @@
                             </div>
                         </div>
                         <div class="col-md-6 text-secondary">
-                            <div class="row my-md-1 mb-3 ms-md-5">
+                            <div v-if="credential.presentation.challenge || credential.presentation.domain"
+                                class="row my-md-1 mb-3 ms-md-5">
                                 <div class="col-sm-4">
                                     {{ credential.presentation.challenge ? 'Challange' : 'Domain' }}:
                                 </div>
@@ -395,7 +398,7 @@ export default {
 
                         if (presentation.presentationResult && !presentation.verified) {
                             presentation.status = 'partially verified'
-                            this.toast.warning(`Presentation of ${presentation.holder.id || presentation.holder} contains invalid credentials!`);
+                            this.toast.warning(`Presentation of ${presentation.holder ? 'of holder' + presentation.holder.id || presentation.holder : ''} contains invalid credentials!`);
                         }
 
                         if (result.error) {
@@ -408,7 +411,7 @@ export default {
 
                             })
 
-                            this.toast.error(`Verification of presentation of holder ${presentation.holder.id || presentation.holder} failed!\n${presentation.status}`);
+                            this.toast.error(`Verification of presentation ${presentation.holder ? 'of holder' + presentation.holder.id || presentation.holder : ''} failed!\n${presentation.status}`);
 
                         }
 
@@ -442,6 +445,7 @@ export default {
                 return
 
             } catch (error) {
+                console.log(error)
                 this.toast.error(`Something went wrong verifying the credentials!\n${error}`);
             }
 

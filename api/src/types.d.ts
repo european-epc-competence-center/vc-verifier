@@ -7,7 +7,7 @@ type Proof = {
 type Verifiable = {
     '@context': (string | any)[];
     type: string[];
-    proof: Proof;
+    proof: Proof | Proof[];
 }
 
 type CredentialSubject = {
