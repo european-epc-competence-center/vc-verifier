@@ -43,7 +43,6 @@
   "devDependencies": {
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
-    "@types/http-status-codes": "^1.2.0",
     "@types/node": "^17.0.45",
     "@types/parse-link-header": "^2.0.0",
     "nodemon": "^2.0.19",
