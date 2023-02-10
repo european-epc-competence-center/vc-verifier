@@ -4,6 +4,11 @@ VC Verifier Changelog
 WIP
 ---
 
+
+1.1.1 (2023-02-10)
+---
+
+- fix vpp not rendering without image
 - UI improvements
 
 1.1.0 (2023-02-10)

@@ -303,11 +303,11 @@ export async function productPassportPDF(vpp, credentials) {
                         width: '*',
                         stack: [
                             {
-                                text: vpp.model,
+                                text: vpp.model || 'Unknown model',
                                 bold: true
                             },
                             {
-                                text: 'by ' + vpp.brand || 'unknown'
+                                text: vpp.brand ? 'by ' + vpp.brand : ''
                             },
                             {
                                 qr: vpp.digital_link || vpp.id,
@@ -324,7 +324,7 @@ export async function productPassportPDF(vpp, credentials) {
                         margin: 20
                     },
                     {
-                        image: productImage || undefined,
+                        image: productImage || await getBase64ImageFromURL(require('@/assets/img/no-image-icon.png')),
                         width: 200
                     },
                 ]
