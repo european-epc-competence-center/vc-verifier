@@ -263,10 +263,10 @@ export default {
     },
     methods: {
         downloadCredentialPDF(credential) {
-            //var win = window.open('', '_blank');
+            // var win = window.open('', '_blank');
             credentialPDF(credential)
                 .then((pdf) => {
-                    //return pdfMake.createPdf(pdf).open({}, win);
+                    // return pdfMake.createPdf(pdf).open({}, win);
                     return pdfMake.createPdf(pdf).download(this.getCredCompId('credential', credential.id) + '.pdf');
                 })
                 .catch((error) => {
@@ -454,7 +454,6 @@ export default {
                 return
 
             } catch (error) {
-                console.log(error)
                 this.toast.error(`Something went wrong verifying the credentials!\n${error}`);
             }
 
