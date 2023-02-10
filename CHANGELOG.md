@@ -4,8 +4,11 @@ VC Verifier Changelog
 WIP
 ---
 
+- UI improvements
+
 1.1.0 (2023-02-10)
 ---
+
 - add PDF download of verified product passport
 - use UTC time for credential PDF
 - UI improvements

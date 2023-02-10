@@ -6,13 +6,15 @@
                     <h5 class="mb-0">Verified Product Passport</h5>
                 </div>
                 <div class="col-3 text-end">
-                    <button :disabled="renderingPDF" @click="downloadProductPassportPDF"
+                    <button @mouseover="hoverdownload = true" @mouseleave="hoverdownload = false"
+                        :disabled="renderingPDF" @click="downloadProductPassportPDF"
                         class="btn btn-sm btn-outline-success">
                         <div v-if="renderingPDF" class="spinner-border text-secondary" role="status"
                             style="width: 1rem; height: 1rem;">
                             <span class="visually-hidden">Verifying...</span>
                         </div>
-                        <i v-else class="bi-filetype-pdf" role="img" aria-label="PDF Download"></i>
+                        <i v-else :class="[hoverdownload ? 'bi-cloud-download' : 'bi-filetype-pdf']" role="img"
+                            aria-label="PDF Download"></i>
                     </button>
                 </div>
             </div>
@@ -95,6 +97,7 @@ export default {
     data() {
         return {
             toast: useToast(),
+            hoverdownload: false,
             renderingPDF: false,
             mainProps: {
                 'brand': 'Brand',
