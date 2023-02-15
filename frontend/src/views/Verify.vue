@@ -71,7 +71,7 @@
                     <div v-if="credential.presentation && (credential.presentation.holder || credential.presentation.challenge || credential.presentation.domain)"
                         class="row justify-content-between mb-3 align-items-center">
                         <div class="col-md-6 text-secondary">
-                            <div class="row my-md-1 mb-3 me-md-5 align-items-center">
+                            <div class="row my-md-1 mb-3 me-md-3 align-items-center">
                                 <div class="col-sm-4">
                                     Holder:
                                 </div>
@@ -94,7 +94,7 @@
                         </div>
                         <div class="col-md-6 text-secondary">
                             <div v-if="credential.presentation.challenge || credential.presentation.domain"
-                                class="row my-md-1 mb-3 ms-md-5">
+                                class="row my-md-1 mb-3 ms-md-3">
                                 <div class="col-sm-4">
                                     {{ credential.presentation.challenge ? 'Challange' : 'Domain' }}:
                                 </div>
@@ -108,7 +108,7 @@
                     </div>
                     <div class="row justify-content-between mb-3 align-items-center">
                         <div class="col-md-6 text-secondary">
-                            <div class="row my-md-1 mb-3 me-md-5 align-items-center">
+                            <div class="row my-md-1 mb-3 me-md-3 align-items-center">
                                 <div class="col-sm-4">
                                     Issuer:
                                 </div>
@@ -126,7 +126,7 @@
                             </div>
                         </div>
                         <div class="col-md-6 text-secondary">
-                            <div class="row my-md-1 mb-3 ms-md-5">
+                            <div class="row my-md-1 mb-3 ms-md-3">
                                 <div class="col-sm-4">
                                     Date:
                                 </div>
