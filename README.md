@@ -35,7 +35,7 @@ When using the scanner option to transfer the data, the service will start the v
 
 ![Select view](assets/select.png)
 
-## Verifiaction
+## Verification
 
 
 ### Credential
