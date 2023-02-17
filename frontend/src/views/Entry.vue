@@ -12,7 +12,7 @@
             <p class="m-3">Select the credential/s using one of the options below.</p>
             <!--By json file-->
             <div class="card m-3 p-3 shadow">
-                <h5>Credential File</h5>
+                <h5>Credential/Presentation Files</h5>
                 <form v-on:submit.prevent="submitFile">
                     <div class="input-group">
                         <button @click="scan = 'file'" data-bs-toggle="modal" type="button" data-bs-target="#scan-modal"
@@ -22,7 +22,7 @@
                             placeholder="credential.json" aria-label="Credential" aria-describedby="credentialHelp">
                         <button class="btn btn-outline-primary" type="submit">Verify</button>
                     </div>
-                    <div class="form-text">Upload a credential in json format</div>
+                    <div class="form-text">Upload credentials or presentations in json format</div>
                 </form>
             </div>
             <!--By credential id-->
@@ -30,9 +30,9 @@
                 <h5>Credential Id</h5>
                 <form v-on:submit.prevent="submitId">
                     <div class="input-group">
-                        <button @click="scan = 'credid'" data-bs-toggle="modal" type="button"
-                            data-bs-target="#scan-modal" class="btn btn-outline-light scanqr"><i class="bi-qr-code"
-                                role="img" aria-label="QR-Code"></i></button>
+                        <button @click="scan = 'credid'" data-bs-toggle="modal" type="button" data-bs-target="#scan-modal"
+                            class="btn btn-outline-light scanqr"><i class="bi-qr-code" role="img"
+                                aria-label="QR-Code"></i></button>
                         <input v-model="credentialId" id="credentialId" type="text" class="form-control"
                             placeholder="https://registry.org/vc/uuid" aria-label="Credential Id"
                             aria-describedby="credentialIdHelp">
@@ -46,12 +46,11 @@
                 <h5>Subject Id</h5>
                 <form v-on:submit.prevent="submitSubject">
                     <div class="input-group">
-                        <button @click="scan = 'subid'" data-bs-toggle="modal" type="button"
-                            data-bs-target="#scan-modal" class="btn btn-outline-light scanqr"><i class="bi-qr-code"
-                                role="img" aria-label="QR-Code"></i></button>
+                        <button @click="scan = 'subid'" data-bs-toggle="modal" type="button" data-bs-target="#scan-modal"
+                            class="btn btn-outline-light scanqr"><i class="bi-qr-code" role="img"
+                                aria-label="QR-Code"></i></button>
                         <input v-model="subjectId" id="credentialId" type="text" class="form-control"
-                            placeholder="https://gs1.org/123455" aria-label="Subject Id"
-                            aria-describedby="subjectIdHelp">
+                            placeholder="https://gs1.org/123455" aria-label="Subject Id" aria-describedby="subjectIdHelp">
                         <button class="btn btn-outline-primary" type="submit">Verify</button>
                     </div>
                     <div class="form-text">Provide the subject id for which the credentials shall be queried</div>
