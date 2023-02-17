@@ -13,6 +13,54 @@ This tool uses the libraries by [Digital Bazaar, Inc.](https://github.com/digita
 in order to verify signatures of [W3C conformal verifiable credentials](https://www.w3.org/TR/vc-data-model/) in JSON-LD form.
 
 
+## Functionalities
+
+### Credential Selection
+
+
+1. **Upload credential**
+
+    Uploading credentials als files must be done in form of verifiables, i.e. the [plain credential](https://www.w3.org/TR/vc-data-model/#credentials) or a [credential presentation](https://www.w3.org/TR/vc-data-model/#presentations). The upload can consist of multiple files and their content can be both single verifiables or arrays of verifiables.
+
+2. **Reference credential**
+
+    The given credential id URI must resolve to the credential itself. If so, the credential gets fetched and then verified.
+
+3. **Query credentials**
+   
+    When passing an IRI/URI of a credential subject into the credential subject field, the verifier service queries the predefined verifiable [credential registry](https://w3c.github.io/did-spec-registries/#credentialregistry). All found credentials associated with the given subject id will get verified and presented according to the credential context.  
+    
+
+When using the scanner option to transfer the data, the service will start the verification right away without further user interaction.
+
+![Select view](assets/select.png)
+
+## Verifiaction
+
+
+### Credential
+
+When a credential gets verified, the verifier service checks the signature over the credential using the issuer's public key. Further it checks, if the credential has been revoked in case it is revokable. If both holds true, the credential is displayed as verified (see below)
+
+![Select view](assets/credential.png)
+
+### Presentation
+
+Verification of a presentation includes the full verification of the contained credentials as such, as well as the verification of the presentation itself. Both verifications are separate operations, i.e. a successfully verified presentation can contain revoked, but no unverified credentials.
+
+![Select view](assets/presentation.png)
+
+## Credential Retrieval
+
+Each credential can be obtained in various ways using the buttons at the bottom right of the particular credential. It can either be downloaded as a rendered PDF file, as pure data in JSON format or as a QR-Code image.
+
+## Examples
+
+- **Example Credential** [https://id.gs1.org/vc/licence/gs1_prefix/05](https://ssi.eecc.de/verifier/#/verify?credentialId=https%253A%252F%252Fid.gs1.org%252Fvc%252Flicence%252Fgs1_prefix%252F05)
+- **Verified Product Passport** https://id.eecc.de/01/04012345999990/10/20210401-A/21/XYZ-1234
+- **Revoked Credential** https://ssi.eecc.de/api/registry/vc/0a720a69-34f0-4ed0-b767-a0a5f9212020
+
+
 ## License
 
 Copyright 2022 European EPC Competence Center GmbH (EECC). Corresponding Author: Christian Fries <christian.fries@eecc.de>
