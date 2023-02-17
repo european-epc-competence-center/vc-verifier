@@ -166,7 +166,7 @@ async function getCredentialContent(credential, append = false) {
 
         // using a { text: '...' } object lets you set styling properties
 
-        { text: credential.type[1], fontSize: 24, bold: true, color: '#6795d0', pageBreak: append ? 'before' : undefined },
+        { text: credential.type[1] || credential.type[0], fontSize: 24, bold: true, color: '#6795d0', pageBreak: append ? 'before' : undefined },
         {
             columns: [
                 { text: credential.id, fontSize: 8, link: credential.id, color: '#848484', width: '*', margin: [0, 2, 4, 10] },

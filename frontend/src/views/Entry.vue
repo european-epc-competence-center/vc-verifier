@@ -63,7 +63,7 @@
 </template>
 <script>
 import { useToast } from "vue-toastification";
-import ScanModal from "./ScanModal.vue"
+import ScanModal from "@/components/ScanModal.vue"
 
 import 'bootstrap/js/dist/modal'
 

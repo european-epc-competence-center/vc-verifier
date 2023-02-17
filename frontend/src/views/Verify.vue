@@ -77,17 +77,15 @@
                                 </div>
                                 <div class="col-sm-8 my-1 my-md-0 text-sm-end text-start">
                                     <span v-if="!credential.presentation.holder">-</span>
-                                    <span v-else-if="typeof credential.presentation.holder == 'string'"
-                                        class="badge text-bg-secondary text-white">{{
-                                            credential.presentation.holder
-                                        }}</span>
+                                    <div v-else-if="typeof credential.presentation.holder == 'string'">
+                                        <TrimmedBatch :value="credential.presentation.holder" :color="'secondary'" />
+                                    </div>
                                     <div v-else><span class="me-1"><img style="height: 1.8rem;"
                                                 :src="credential.presentation.holder.image" /></span><span
                                             class="me-3">{{
                                                 credential.presentation.holder.name
-                                            }}</span><span class="badge text-bg-secondary text-white">{{
-    credential.presentation.holder.id
-}}</span>
+                                            }}</span>
+                                        <TrimmedBatch :value="credential.presentation.holder.id" :color="'secondary'" />
                                     </div>
                                 </div>
                             </div>
@@ -99,9 +97,9 @@
                                     {{ credential.presentation.challenge ? 'Challange' : 'Domain' }}:
                                 </div>
                                 <div class="col-sm-8 my-1 my-md-0 text-sm-end text-start">
-                                    <span class="badge text-bg-secondary text-white">{{
-                                        credential.presentation.challenge || credential.presentation.domain
-                                    }}</span>
+                                    <TrimmedBatch
+                                        :value="credential.presentation.challenge || credential.presentation.domain"
+                                        :color="'secondary'" />
                                 </div>
                             </div>
                         </div>
@@ -113,14 +111,14 @@
                                     Issuer:
                                 </div>
                                 <div class="col-sm-8 my-1 my-md-0 text-sm-end text-start">
-                                    <span v-if="typeof credential.issuer == 'string'"
-                                        class="badge text-bg-primary text-white">{{ credential.issuer }}</span>
+                                    <div v-if="typeof credential.issuer == 'string'">
+                                        <TrimmedBatch :value="credential.issuer" />
+                                    </div>
                                     <div v-else><span class="me-1"><img style="height: 1.8rem;"
                                                 :src="credential.issuer.image" /></span><span class="me-3">{{
                                                     credential.issuer.name
-                                                }}</span><span class="badge text-bg-primary text-white">{{
-    credential.issuer.id
-}}</span>
+                                                }}</span>
+                                        <TrimmedBatch :value="credential.issuer.id" />
                                     </div>
                                 </div>
                             </div>
@@ -198,14 +196,16 @@ import { credentialPDF } from '../pdf.js';
 import { getPlainCredential, getVerifiableType, VerifiableType } from '../utils.js';
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
-import QRModal from "./QRModal.vue";
-import Passport from "./Passport.vue";
+import QRModal from "@/components/QRModal.vue";
+import Passport from "@/components/Passport.vue";
+import TrimmedBatch from "@/components/TrimmedBatch.vue";
 
 export default {
     name: 'Verify',
     components: {
         QRModal,
-        Passport
+        Passport,
+        TrimmedBatch
     },
     data() {
         return {

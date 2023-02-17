@@ -4,7 +4,13 @@ VC Verifier Changelog
 WIP
 ---
 
+
+1.1.2 (2023-02-17)
+---
+
+- trim batch values + tooltips and make them click to copy
 - UI improvements
+- fix pdf not displaying pure VCs
 
 1.1.1 (2023-02-10)
 ---
