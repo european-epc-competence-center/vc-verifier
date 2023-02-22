@@ -6,9 +6,8 @@
                     <h5 class="mb-0">Verified Product Passport</h5>
                 </div>
                 <div class="col-3 text-end">
-                    <button @mouseover="hoverdownload = true" @mouseleave="hoverdownload = false"
-                        :disabled="renderingPDF" @click="downloadProductPassportPDF"
-                        class="btn btn-sm btn-outline-success">
+                    <button @mouseover="hoverdownload = true" @mouseleave="hoverdownload = false" :disabled="renderingPDF"
+                        @click="downloadProductPassportPDF" class="btn btn-sm btn-outline-success">
                         <div v-if="renderingPDF" class="spinner-border text-secondary" role="status"
                             style="width: 1rem; height: 1rem;">
                             <span class="visually-hidden">Verifying...</span>
@@ -27,7 +26,7 @@
                         <li v-for="(value, key) in getMainProps" :key="key" class="list-group-item">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <strong>{{ mainProps[key]}}</strong>
+                                    <strong>{{ mainProps[key] }}</strong>
                                 </div>
                                 <div class="col-md-6">
                                     <a v-if="$isURL($getCredentialValue(value))" :href="$getCredentialValue(value)">{{
@@ -62,7 +61,15 @@
                                 <table class="table table-striped mb-1">
                                     <TransitionGroup name="list" tag="tbody">
                                         <tr v-for="(value, key) in properties" :key="key">
-                                            <td><strong>{{ key }}</strong></td>
+                                            <td><strong>{{ key }}</strong> <a v-if="context.get(key)"
+                                                    :href="context.get(key)['@id']" tabindex="0"
+                                                    style="display: inline-block;" type="button" target="_blank"
+                                                    data-bs-container="body" data-bs-toggle="tooltip"
+                                                    :data-bs-title="context.get(key)['@id']">
+                                                    <small>
+                                                        <i class="bi bi-info-circle text-primary"></i>
+                                                    </small>
+                                                </a></td>
                                             <td>
                                                 <a v-if="$isURL($getCredentialValue(value))"
                                                     :href="$getCredentialValue(value)">{{
@@ -92,7 +99,8 @@ export default {
     name: 'ProductPassport',
     props: {
         properties: Object,
-        credentials: [Object]
+        credentials: [Object],
+        context: Map
     },
     data() {
         return {

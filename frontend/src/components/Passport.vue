@@ -1,8 +1,10 @@
 <template>
     <Transition name="slide-fade">
         <div v-if="Object.keys(verifiedProperties).length > 0">
-            <ProductPassport v-if="isProductPassport()" :properties="verifiedProperties" :credentials="credentials" />
-            <MergedProps v-else-if="(Object.keys(credentials).length > 1)" :properties="verifiedProperties" />
+            <ProductPassport v-if="isProductPassport()" :properties="verifiedProperties" :credentials="credentials"
+                :context="getContext()" />
+            <MergedProps v-else-if="(Object.keys(credentials).length > 1)" :properties="verifiedProperties"
+                :context="getContext()" />
         </div>
     </Transition>
 </template>
@@ -43,6 +45,13 @@ export default {
         },
     },
     methods: {
+        getContext() {
+            var context = new Map();
+            this.credentials.forEach((credential) => {
+                if (credential.context) context = new Map([...context, ...credential.context])
+            })
+            return context
+        },
         isProductPassport() {
             if (this.credentials.length < 1) return false;
             return this.credentials.filter(function (credential) {

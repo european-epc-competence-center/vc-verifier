@@ -4,7 +4,12 @@ VC Verifier Changelog
 WIP
 ---
 
-- show ld context in credential details
+
+1.2.0 (2023-02-22)
+---
+
+- show JSON-LD context in credential details
+- show JSON-LD context in product passport
 
 
 1.1.2 (2023-02-17)

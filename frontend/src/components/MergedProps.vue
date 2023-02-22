@@ -8,11 +8,18 @@
                 <li v-for="(value, key) in properties" :key="key" class="list-group-item">
                     <div class="row">
                         <div class="col-md-6">
-                            <strong>{{key}}</strong>
+                            <strong>{{ key }}</strong> <a v-if="context.get(key)" :href="context.get(key)['@id']"
+                                tabindex="0" style="display: inline-block;" type="button" target="_blank"
+                                data-bs-container="body" data-bs-toggle="tooltip" :data-bs-title="context.get(key)['@id']">
+                                <small>
+                                    <i class="bi bi-info-circle text-primary"></i>
+                                </small>
+                            </a>
                         </div>
                         <div class="col-md-6">
-                            <a v-if="$isURL($getCredentialValue(value))" :href="$getCredentialValue(value)">{{$getCredentialValue(value)}}</a>
-                            <p v-else class="m-0">{{$getCredentialValue(value)}}</p>
+                            <a v-if="$isURL($getCredentialValue(value))" :href="$getCredentialValue(value)">{{
+                                $getCredentialValue(value) }}</a>
+                            <p v-else class="m-0">{{ $getCredentialValue(value) }}</p>
                         </div>
                     </div>
                 </li>
@@ -26,10 +33,11 @@ export default {
     name: 'MergedProps',
     props: {
         properties: Object,
+        context: Map
     },
     data() {
         return {
-            
+
         }
     },
 }
