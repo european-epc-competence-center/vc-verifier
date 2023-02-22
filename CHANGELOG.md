@@ -4,6 +4,8 @@ VC Verifier Changelog
 WIP
 ---
 
+- show ld context in credential details
+
 
 1.1.2 (2023-02-17)
 ---

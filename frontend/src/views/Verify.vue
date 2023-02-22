@@ -37,17 +37,15 @@
                             <div class="credentialid mt-1"><a :href="credential.id">{{ credential.id }}</a></div>
                         </div>
                         <div class="col-2 text-end">
-                            <a v-if="credential.presentation && credential.presentation.verified != undefined"
-                                tabindex="0" style="display: inline-block;" type="button" class="me-3"
-                                data-bs-container="body" data-bs-toggle="tooltip"
-                                :data-bs-title="'Presentation ' + credential.presentation.status">
+                            <a v-if="credential.presentation && credential.presentation.verified != undefined" tabindex="0"
+                                style="display: inline-block;" type="button" class="me-3" data-bs-container="body"
+                                data-bs-toggle="tooltip" :data-bs-title="'Presentation ' + credential.presentation.status">
                                 <i v-if="credential.presentation.verified" style="font-size: 1.25rem;"
                                     class="bi bi-card-checklist text-success" role="img" aria-label="Verified"></i>
                                 <i v-else-if="credential.presentation.presentationResult" style="font-size: 1.25rem;"
-                                    class="bi bi-card-checklist text-warning" role="img"
-                                    aria-label="Partly verified"></i>
-                                <i v-else style="font-size: 1.25rem;" class="bi bi-card-checklist text-danger"
-                                    role="img" aria-label="Unverified"></i>
+                                    class="bi bi-card-checklist text-warning" role="img" aria-label="Partly verified"></i>
+                                <i v-else style="font-size: 1.25rem;" class="bi bi-card-checklist text-danger" role="img"
+                                    aria-label="Unverified"></i>
                             </a>
                             <a tabindex="0" style="display: inline-block;" type="button" data-bs-container="body"
                                 data-bs-toggle="tooltip"
@@ -81,10 +79,9 @@
                                         <TrimmedBatch :value="credential.presentation.holder" :color="'secondary'" />
                                     </div>
                                     <div v-else><span class="me-1"><img style="height: 1.8rem;"
-                                                :src="credential.presentation.holder.image" /></span><span
-                                            class="me-3">{{
-                                                credential.presentation.holder.name
-                                            }}</span>
+                                                :src="credential.presentation.holder.image" /></span><span class="me-3">{{
+                                                    credential.presentation.holder.name
+                                                }}</span>
                                         <TrimmedBatch :value="credential.presentation.holder.id" :color="'secondary'" />
                                     </div>
                                 </div>
@@ -151,7 +148,17 @@
                                         <table class="table table-striped mb-1">
                                             <tbody>
                                                 <tr v-for="(value, key) in credential.credentialSubject" :key="key">
-                                                    <td><strong>{{ key }}</strong></td>
+                                                    <td><strong>{{ key }}</strong> <a
+                                                            v-if="credential.context && credential.context.get(key)"
+                                                            :href="credential.context.get(key)['@id']" tabindex="0"
+                                                            style="display: inline-block;" type="button" target="_blank"
+                                                            data-bs-container="body" data-bs-toggle="tooltip"
+                                                            :data-bs-title="credential.context.get(key)['@id']">
+                                                            <small>
+                                                                <i class="bi bi-info-circle text-primary"></i>
+                                                            </small>
+                                                        </a>
+                                                    </td>
                                                     <td>
                                                         <a v-if="$isURL($getCredentialValue(value))"
                                                             :href="$getCredentialValue(value)">{{
@@ -193,7 +200,7 @@ import { Tooltip } from 'bootstrap';
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { credentialPDF } from '../pdf.js';
-import { getPlainCredential, getVerifiableType, VerifiableType } from '../utils.js';
+import { getPlainCredential, getVerifiableType, VerifiableType, getContext } from '../utils.js';
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 import QRModal from "@/components/QRModal.vue";
@@ -215,7 +222,8 @@ export default {
             credentialId: this.$route.query.credentialId ? decodeURIComponent(this.$route.query.credentialId) : undefined,
             subjectId: this.$route.query.subjectId ? decodeURIComponent(this.$route.query.subjectId) : undefined,
             progress: 0,
-            getPlainCredential: getPlainCredential
+            getPlainCredential: getPlainCredential,
+            getContext: getContext
         }
     },
     mounted() {
@@ -262,6 +270,14 @@ export default {
         }
     },
     methods: {
+        addCredential(credential) {
+            this.credentials.push(credential);
+            this.getContext(credential)
+                .then(context => {
+                    credential.context = context;
+                })
+                .catch(() => { })
+        },
         downloadCredentialPDF(credential) {
             // var win = window.open('', '_blank');
             credentialPDF(credential)
@@ -382,10 +398,10 @@ export default {
                         }
 
                         if (Array.isArray(verifiable.verifiableCredential)) this.credentials = this.credentials.concat(verifiable.verifiableCredential.map((credential) => { return { ...credential, presentation } }));
-                        else this.credentials.push({ ...verifiable.verifiableCredential, presentation });
+                        else this.addCredential({ ...verifiable.verifiableCredential, presentation });
 
                     } else {
-                        this.credentials.push(verifiable);
+                        this.addCredential(verifiable);
                     }
 
                     const res = await this.$api.post('/', [verifiable]);

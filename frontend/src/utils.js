@@ -1,3 +1,5 @@
+import jsonld from 'jsonld';
+
 export const VerifiableType = {
     CREDENTIAL: 'VerifiableCredential',
     PRESENTATION: 'VerifiablePresentation'
@@ -18,10 +20,16 @@ export function getPlainCredential(credential) {
     delete clean_credential.revoked;
     delete clean_credential.status;
     delete clean_credential.presentation;
+    delete clean_credential.context;
     return clean_credential;
 }
 
 export function getVerifiableType(verifiable) {
     if (verifiable.type.includes(VerifiableType.PRESENTATION)) return VerifiableType.PRESENTATION;
     return VerifiableType.CREDENTIAL;
+}
+
+export async function getContext(credential) {
+    const resolved = await jsonld.processContext(await jsonld.processContext(null, null), credential);
+    return resolved.mappings;
 }
