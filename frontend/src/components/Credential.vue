@@ -173,7 +173,7 @@ import TrimmedBatch from "@/components/TrimmedBatch.vue";
 import QRModal from "@/components/QRModal.vue";
 
 export default {
-    name: 'Passport',
+    name: 'Credential',
     props: {
         credential: Object,
     },
