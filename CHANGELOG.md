@@ -5,6 +5,12 @@ WIP
 ---
 
 
+1.2.1 (2023-02-24)
+---
+
+- fix context in presentations [#28](https://github.com/european-epc-competence-center/vc-verifier/issues/28)
+  
+
 1.2.0 (2023-02-22)
 ---
 
