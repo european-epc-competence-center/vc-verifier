@@ -106,7 +106,8 @@ export default {
             this.credentials.push(credential);
             this.getContext(credential)
                 .then(context => {
-                    credential.context = context;
+                    // credential reference does not refer actual credentials -> find it from credentials
+                    this.credentials.find(cred => cred.id == credential.id).context = context;
                 })
                 .catch((error) => { console.log(error) })
         },
@@ -193,16 +194,21 @@ export default {
                     if (getVerifiableType(verifiable) == VerifiableType.PRESENTATION) {
 
                         const presentation = {
-                            holder: verifiable.holder,
-                            challenge: verifiable.proof.challenge,
-                            domain: verifiable.proof.domain
+                            presentation:
+                            {
+                                holder: verifiable.holder,
+                                challenge: verifiable.proof.challenge,
+                                domain: verifiable.proof.domain
+                            }
                         }
 
-                        if (Array.isArray(verifiable.verifiableCredential)) verifiable.verifiableCredential.map((credential) => { return { ...credential, presentation } }).forEach((credential) => this.addCredential(credential));
+                        if (Array.isArray(verifiable.verifiableCredential)) verifiable.verifiableCredential.forEach(
+                            (credential) => this.addCredential({ ...credential, presentation })
+                        );
                         else this.addCredential({ ...verifiable.verifiableCredential, presentation });
 
                     } else {
-                        this.addCredential(verifiable);
+                        this.addCredential({ ...verifiable });
                     }
 
                     const res = await this.$api.post('/', [verifiable]);

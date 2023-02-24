@@ -191,9 +191,6 @@ export default {
             selector: "[data-bs-toggle='tooltip']"
         })
     },
-    computed: {
-
-    },
     methods: {
         downloadCredentialPDF(credential) {
             // var win = window.open('', '_blank');
