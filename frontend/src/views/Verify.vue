@@ -108,7 +108,7 @@ export default {
                 .then(context => {
                     credential.context = context;
                 })
-                .catch(() => { })
+                .catch((error) => { console.log(error) })
         },
         async fetchData() {
 
@@ -198,7 +198,7 @@ export default {
                             domain: verifiable.proof.domain
                         }
 
-                        if (Array.isArray(verifiable.verifiableCredential)) this.credentials = this.credentials.concat(verifiable.verifiableCredential.map((credential) => { return { ...credential, presentation } }));
+                        if (Array.isArray(verifiable.verifiableCredential)) verifiable.verifiableCredential.map((credential) => { return { ...credential, presentation } }).forEach((credential) => this.addCredential(credential));
                         else this.addCredential({ ...verifiable.verifiableCredential, presentation });
 
                     } else {
