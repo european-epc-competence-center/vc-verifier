@@ -4,6 +4,11 @@ VC Verifier Changelog
 WIP
 ---
 
+
+1.3.0 (2023-02-28)
+---
+
+- allow fetching context from ipfs
 - UI improvements
 
 

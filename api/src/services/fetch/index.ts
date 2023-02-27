@@ -5,10 +5,12 @@ const HEADERS = {
     'Accept': 'application/ld+json, application/json'
 }
 
+const IPFS_GATEWAYS = ['ipfs.io'].concat(process.env.IPFS_GATEWAYS ? process.env.IPFS_GATEWAYS.split(',') : []);
+
 
 export async function fetch_jsonld(url: string): Promise<object> {
 
-    const response = await fetch(url, { method: 'GET', headers: HEADERS});
+    const response = await fetch(url, { method: 'GET', headers: HEADERS });
 
     const contentType = response.headers.get("content-type");
 
@@ -24,7 +26,7 @@ export async function fetch_jsonld(url: string): Promise<object> {
 
     if (link && link.alternate && link.alternate.rel == 'alternate' && link.alternate.type == 'application/ld+json') {
 
-        const linkResponse = await fetch(url + link.alternate.url, { method: 'GET', headers: HEADERS});
+        const linkResponse = await fetch(url + link.alternate.url, { method: 'GET', headers: HEADERS });
 
         return await linkResponse.json();
 
@@ -32,13 +34,37 @@ export async function fetch_jsonld(url: string): Promise<object> {
 
     // try fetching json in any case
     return await response.json();
-    
+
 }
 
 export async function fetch_json(url: string): Promise<object> {
 
-    const response = await fetch(url, { method: 'GET', headers: HEADERS});
+    const response = await fetch(url, { method: 'GET', headers: HEADERS });
 
     return await response.json();
-    
+
+}
+
+export async function fetchIPFS(IPFSUrl: string): Promise<object> {
+
+    var document;
+
+    await Promise.race(IPFS_GATEWAYS.map(async (gateway) => {
+
+        return await fetch_jsonld(`https://${gateway}/ipfs/${IPFSUrl.split('ipfs://')[1]}`);
+
+    }))
+        .then((result) => {
+
+            document = result;
+
+        })
+        .catch((error) => {
+
+        })
+
+    if (!document) throw Error('Fetching from IPFS failed');
+
+    return document;
+
 }
