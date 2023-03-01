@@ -96,6 +96,7 @@ export class VerifyRoutes {
         try {
             var request_id = uuid()
             presentation_requests[request_id] = {
+                "verification": null, 
                 "nonce": uuid(),
                 "response_mode": "direct_post",
                 "response_type": "vp_token",
@@ -169,7 +170,11 @@ export class VerifyRoutes {
 
     verifyPresentation = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
         try {
-            console.log(req.body);
+            console.log("presentation received:", req.body);
+            var verifiable_presentation = req.body.vp_token;
+
+            presentation_requests[req.params.requestId].verification = verifiable_presentation
+
             return res.status(StatusCodes.OK).send();
 
         } catch (error) {

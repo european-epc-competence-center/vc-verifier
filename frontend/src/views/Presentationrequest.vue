@@ -39,6 +39,7 @@ export default {
       presentation_endpoint: '/openid-presentation',
       request_endpoint: '/openid-presentation-request',
       qr_code_value: '',
+      request_uri: '',
     }
   },
   async mounted() {
@@ -48,14 +49,14 @@ export default {
     async openid_presentation_request() {
       var request_id = await this.generate_request_in_backend()
       var endpoint = this.base_path + this.presentation_endpoint
-      var request_uri =
+      this.request_uri =
         this.base_path + this.request_endpoint + '/' + request_id
 
       var qr_code_value =
         'openid-presentation-request://?client_id=' +
         encodeURI(endpoint) +
         '&request_uri=' +
-        encodeURI(request_uri)
+        encodeURI(this.request_uri)
       console.log(qr_code_value)
       return qr_code_value
     },
@@ -65,6 +66,23 @@ export default {
         .then((re) => {
           console.log(re)
           return re.data.id
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+    },
+    async get_status() {
+      if (!this.request_uri) {
+        return
+      }
+      console.log('request uri', this.request_uri)
+      this.$api
+        .get(this.request_uri)
+        .then((re) => {
+          console.log(re)
+          var verifiable_presentation = re.data.verified
+          this.$store.dispatch('addVerifiables', [verifiable_presentation])
+          this.$router.push({ path: '/verify' })
         })
         .catch((error) => {
           console.log(error)
