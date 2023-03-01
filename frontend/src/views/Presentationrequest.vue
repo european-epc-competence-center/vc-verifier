@@ -45,7 +45,7 @@ export default {
   async mounted() {
     this.qr_code_value = await this.openid_presentation_request()
     this.intervalid = setInterval(function () {
-      get_status()
+      this.get_status()
     }, 1000)
   },
   methods: {
