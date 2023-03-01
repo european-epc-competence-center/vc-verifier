@@ -54,10 +54,10 @@ export default {
   },
   async mounted() {
     this.qr_code_value = await this.openid_presentation_request()
-    if(this.intervalid){
-        clearInterval(this.intervalid)
+    if (this.intervalid) {
+      clearInterval(this.intervalid)
     }
-    this.intervalid = setInterval(this.get_status, 1000)
+    this.intervalid = setInterval(this.get_status, 3000)
   },
   methods: {
     async openid_presentation_request() {
@@ -95,7 +95,9 @@ export default {
           this.$router.push({ path: '/verify' })
         })
         .catch((error) => {
-          console.log(error)
+          if (!error || !error.response || error.response.status !== 404) {
+            console.log(error)
+          }
         })
     },
   },
