@@ -6,6 +6,11 @@ import { Verifier, fetch_json } from '../../services/index.js';
 
 const VC_REGISTRY = process.env.VC_REGISTRY ? process.env.VC_REGISTRY : 'https://ssi.eecc.de/api/registry/vcs/';
 
+type MapType = {
+    [id: string]: any;
+}
+
+var presentation_requests: MapType = {};
 
 export class VerifyRoutes {
 
@@ -89,11 +94,8 @@ export class VerifyRoutes {
 
     generatePresentationRequest = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
         try {
-            if (!req.session.presentation_requests) {
-                req.session.presentation_requests = {}
-            }
             var request_id = uuid()
-            req.session.presentation_requests[request_id] = {
+            presentation_requests[request_id] = {
                 "id": uuid(),
                 "input_descriptors": [
                     {
@@ -127,7 +129,7 @@ export class VerifyRoutes {
 
             var result = {
                 "id": request_id,
-                "resource": req.session.presentation_requests[request_id]
+                "resource": presentation_requests[request_id]
             }
 
             console.log("returning new presentation request:", result)
@@ -142,14 +144,11 @@ export class VerifyRoutes {
 
     getPresentationRequest = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
         try {
-            if (!req.session.presentation_requests) {
-                req.session.presentation_requests = {}
-            }
             if (!req.params.requestId) {
                 return res.status(StatusCodes.BAD_REQUEST).send("No request id given");
             }
-            if (req.params.requestId in req.session.presentation_requests) {
-                return res.status(StatusCodes.OK).json(req.session.presentation_requests[req.params.requestId]);
+            if (req.params.requestId in presentation_requests) {
+                return res.status(StatusCodes.OK).json(presentation_requests[req.params.requestId]);
             }
 
             return res.status(StatusCodes.NOT_FOUND).send();
