@@ -163,6 +163,7 @@ export class VerifyRoutes {
             return res.status(StatusCodes.NOT_FOUND).send();
 
         } catch (error) {
+            console.warn(error)
             return res.status(StatusCodes.BAD_REQUEST).send(error);
         }
 
@@ -178,6 +179,7 @@ export class VerifyRoutes {
             return res.status(StatusCodes.OK).send();
 
         } catch (error) {
+            console.warn(error)
             return res.status(StatusCodes.BAD_REQUEST).send(error);
         }
 
