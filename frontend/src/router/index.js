@@ -15,6 +15,12 @@ const routes = [
           import( '@/views/Entry.vue'),
       },
       {
+        path: '/openid-presentation',
+        name: 'Presentationrequest',
+        component: () =>
+          import( '@/views/Presentationrequest.vue'),
+      },
+      {
         path: '/verify',
         name: 'Verify',
         component: () => import('@/views/Verify.vue'),
