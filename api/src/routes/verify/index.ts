@@ -1,5 +1,6 @@
 import { NextFunction, Request, response, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { v4 as uuid } from 'uuid';
 
 import { Verifier, fetch_json } from '../../services/index.js';
 
@@ -85,5 +86,79 @@ export class VerifyRoutes {
         }
 
     }
+
+    generatePresentationRequest = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+        try {
+            if (!req.session.presentation_requests) {
+                req.session.presentation_requests = {}
+            }
+            var request_id = uuid()
+            req.session.presentation_requests[request_id] = {
+                "id": uuid(),
+                "input_descriptors": [
+                    {
+                        "id": uuid(),
+                        "format": {
+                            "ldp_vc": {
+                                "proof_type": [
+                                    "Ed25519Signature2020"
+                                ]
+                            }
+                        },
+                        "constraints": {
+                            "fields": [
+                                {
+                                    "path": [
+                                        "$.type"
+                                    ],
+                                    "filter": {
+                                        "type": "array",
+                                        "contains": {
+                                            "type": "string",
+                                            "const": "EMailCredential"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+
+            var result = {
+                "id": request_id,
+                "resource": req.session.presentation_requests[request_id]
+            }
+
+            console.log("returning new presentation request:", result)
+
+            return res.status(StatusCodes.OK).json(result);
+        } catch (error) {
+            console.warn("error generating presentation request", error)
+            return res.status(StatusCodes.BAD_REQUEST).send(error);
+        }
+
+    }
+
+    getPresentationRequest = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+        try {
+            if (!req.session.presentation_requests) {
+                req.session.presentation_requests = {}
+            }
+            if (!req.params.requestId) {
+                return res.status(StatusCodes.BAD_REQUEST).send("No request id given");
+            }
+            if (req.params.requestId in req.session.presentation_requests) {
+                return res.status(StatusCodes.OK).json(req.session.presentation_requests[req.params.requestId]);
+            }
+
+            return res.status(StatusCodes.NOT_FOUND).send();
+
+        } catch (error) {
+            return res.status(StatusCodes.BAD_REQUEST).send(error);
+        }
+
+    }
+
 
 }

@@ -2,6 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser'
 import * as dotenv from 'dotenv';
+import session from "express-session";
+
+// Augment express-session with a custom SessionData object
+declare module "express-session" {
+    interface SessionData {
+        presentation_requests: any;
+    }
+}
 dotenv.config();
 
 
@@ -22,6 +30,14 @@ app.use(bodyParser.json())
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+
+const sessionMiddleware = session({
+    secret: "20161116-b81e-11ed-a110-f34ae04490aa",
+    resave: false,
+    saveUninitialized: false
+});
+
+app.use(sessionMiddleware);
 
 // public verify router
 app.use('/api/verifier', verifyRouter);
