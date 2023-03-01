@@ -96,35 +96,43 @@ export class VerifyRoutes {
         try {
             var request_id = uuid()
             presentation_requests[request_id] = {
-                "id": uuid(),
-                "input_descriptors": [
-                    {
-                        "id": uuid(),
-                        "format": {
-                            "ldp_vc": {
-                                "proof_type": [
-                                    "Ed25519Signature2020"
-                                ]
-                            }
-                        },
-                        "constraints": {
-                            "fields": [
-                                {
-                                    "path": [
-                                        "$.type"
-                                    ],
-                                    "filter": {
-                                        "type": "array",
-                                        "contains": {
-                                            "type": "string",
-                                            "const": "EMailCredential"
+                "nonce": uuid(),
+                "response_mode": "direct_post",
+                "response_type": "vp_token",
+                "client_id": "https://ssi.eecc.de/api/verifier/openid-presentation",
+                "redirect_uri": "https://ssi.eecc.de/api/verifier/openid-presentation",
+                "presentation_definition":
+                {
+                    "id": uuid(),
+                    "input_descriptors": [
+                        {
+                            "id": uuid(),
+                            "format": {
+                                "ldp_vc": {
+                                    "proof_type": [
+                                        "Ed25519Signature2020"
+                                    ]
+                                }
+                            },
+                            "constraints": {
+                                "fields": [
+                                    {
+                                        "path": [
+                                            "$.type"
+                                        ],
+                                        "filter": {
+                                            "type": "array",
+                                            "contains": {
+                                                "type": "string",
+                                                "const": "EMailCredential"
+                                            }
                                         }
                                     }
-                                }
-                            ]
+                                ]
+                            }
                         }
-                    }
-                ]
+                    ]
+                }
             }
 
             var result = {
