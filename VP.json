@@ -1,0 +1,60 @@
+{
+    "presentation_submission": "abc",
+    "vp_token": {
+        "@context": [
+            "https://www.w3.org/2018/credentials/v1",
+            "https://identity.foundation/presentation-exchange/submission/v1/"
+        ],
+        "type": [
+            "PresentationSubmission",
+            "VerifiablePresentation"
+        ],
+        "verifiableCredential": [
+            {
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1",
+                    "https://schema.org"
+                ],
+                "id": "did:key:z6MkvrFpBNCoYewiaeBLgjUDvLxUtnK5R6mqh5XPvLsrPsro",
+                "type": [
+                    "EMailCredential",
+                    "VerifiableCredential"
+                ],
+                "credentialSubject": {
+                    "email": "test@test.de",
+                    "id": "did:key:z6MkvrFpBNCoYewiaeBLgjUDvLxUtnK5R6mqh5XPvLsrPsro"
+                },
+                "issuer": "did:key:z6MkvrFpBNCoYewiaeBLgjUDvLxUtnK5R6mqh5XPvLsrPsro",
+                "issuanceDate": "2023-03-01T15:17:07.777628",
+                "proof": {
+                    "type": "Ed25519Signature2020",
+                    "proofPurpose": "assertionMethod",
+                    "verificationMethod": "did:key:z6MkvrFpBNCoYewiaeBLgjUDvLxUtnK5R6mqh5XPvLsrPsro#z6MkvrFpBNCoYewiaeBLgjUDvLxUtnK5R6mqh5XPvLsrPsro",
+                    "created": "2023-03-01T14:17:07.779849Z",
+                    "proofValue": "z2ytXXbtxJNAAZVzuSCiiawM3o1s6wS2mqwmLDpZRPpEv5Un82KyUZNX6YT2XsDCcDuUJMD3pKFbWtp7eBn3r9Vhu"
+                }
+            }
+        ],
+        "presentation_submission": {
+            "id": "e2f9ff95-36fb-4642-950a-1b426080a090",
+            "definition_id": "05c3d636-7c92-4898-80d5-7fd1e081ef5b",
+            "descriptor_map": [
+                {
+                    "id": "8e1914aa-03c4-44a8-a783-3d0da3a8ab63",
+                    "format": "ldp_vc",
+                    "path": "$.verifiableCredential[0]"
+                }
+            ]
+        },
+        "proof": [
+            {
+                "type": "Ed25519Signature2020",
+                "proofPurpose": "authentication",
+                "verificationMethod": "did:key:z6MkvrFpBNCoYewiaeBLgjUDvLxUtnK5R6mqh5XPvLsrPsro#z6MkvrFpBNCoYewiaeBLgjUDvLxUtnK5R6mqh5XPvLsrPsro",
+                "created": "2023-03-01T14:56:29.280619Z",
+                "challenge": "82d4cb36-11f6-4273-b9c6-df1ac0ff17e9",
+                "proofValue": "z5hrbHzZiqXHNpLq6i7zePEUcUzEbZKmWfNQzXcUXUrqF7bykQ7ACiWFyZdT2HcptF1zd1t7NhfQSdqrbPEjZceg7"
+            }
+        ]
+    }
+}

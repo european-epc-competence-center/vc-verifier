@@ -99,7 +99,6 @@ export class VerifyRoutes {
             var presentation_definition_id = uuid()
 
             presentation_requests[request_id] = {
-                "verification": null,
                 "nonce": uuid(),
                 "response_mode": "direct_post",
                 "response_type": "vp_token",
@@ -172,7 +171,10 @@ export class VerifyRoutes {
                 return res.status(StatusCodes.OK).json(presentation_requests[req.params.requestId]);
             }
 
-            return res.status(StatusCodes.NOT_FOUND).send();
+            console.log("No request with id", req.params.requestId)
+            console.log("Stored requests", presentation_requests)
+            
+            return res.status(StatusCodes.NOT_FOUND).send("Not found");
 
         } catch (error) {
             console.warn(error)
@@ -188,7 +190,7 @@ export class VerifyRoutes {
 
             presentations[verifiable_presentation.presentation_submission.definition_id] = verifiable_presentation
 
-            return res.status(StatusCodes.OK).send();
+            return res.status(StatusCodes.OK).send("Ok");
 
         } catch (error) {
             console.warn(error)
@@ -206,7 +208,7 @@ export class VerifyRoutes {
                 return res.status(StatusCodes.OK).json(presentations[req.params.presentationId]);
             }
 
-            return res.status(StatusCodes.NOT_FOUND).send();
+            return res.status(StatusCodes.NOT_FOUND).send("Presentation not found: " + req.params.presentationId);
 
         } catch (error) {
             console.warn(error)
