@@ -16,15 +16,24 @@
     <p class="m-3">
       Scan the QR Code with your wallet to present your credential.
     </p>
-    <a v-if="qr_code_value" :href="qr_code_value">
-      <qrcode-vue
-        :value="qr_code_value"
-        :margin="1"
-        :size="300"
-        level="M"
-        class="m-3"
-      />
-    </a>
+    <div v-if="qr_code_value">
+      <a :href="qr_code_value">
+        <qrcode-vue
+          :value="qr_code_value"
+          :margin="1"
+          :size="300"
+          level="M"
+          class="m-3"
+        />
+      </a>
+      <ul>
+        <li>
+          Get Presentation Request at:
+          <a :href="request_uri">{{ request_uri }}</a>
+        </li>
+        <li>Send Presentation to: {{ presentation_uri }}</li>
+      </ul>
+    </div>
     <div
       v-else
       class="spinner-border text-secondary"
@@ -45,10 +54,10 @@ export default {
     return {
       toast: useToast(),
       base_path: 'https://ssi.eecc.de/api/verifier',
-      presentation_endpoint: '/openid-presentation',
       request_endpoint: '/openid-presentation-request',
       qr_code_value: '',
       presentation_uri: '',
+      request_uri: '',
       intervalid: '',
     }
   },
@@ -75,6 +84,10 @@ export default {
             this.base_path +
             '/presentation/' +
             re.data.presentation_definition_id
+          this.request_uri =
+            this.base_path +
+            '/openid-presentation-request/' +
+            re.data.request_id
           return re.data
         })
         .catch((error) => {
