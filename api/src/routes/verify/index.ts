@@ -139,8 +139,16 @@ export class VerifyRoutes {
                 }
             }
 
+            var base_path = 'https://ssi.eecc.de/api/verifier'
+            var endpoint = base_path + '/openid-presentation'
+            var request_uri = base_path + '/openid-presentation-request/' + request_id
+
+            var request_uri = 'openid-presentation-request://?client_id=' +
+                encodeURI(endpoint) + '&request_uri=' + encodeURI(request_uri)
+
             var result = {
                 "request_id": request_id,
+                "request_uri": request_uri,
                 "presentation_definition_id": presentation_definition_id,
                 "resource": presentation_requests[request_id]
             }
