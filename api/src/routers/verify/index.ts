@@ -3,7 +3,7 @@ import { VerifyRoutes } from '../../routes/index.js';
 
 
 const verifyRoutes = new VerifyRoutes();
-const { fetchAndVerify, verify, verifySubjectsVCs, generatePresentationRequest, getPresentationRequest } = verifyRoutes
+const { fetchAndVerify, verify, verifySubjectsVCs, generatePresentationRequest, getPresentationRequest, verifyPresentation } = verifyRoutes
 
 export const verifyRouter = Router();
 
@@ -576,3 +576,14 @@ verifyRouter.get('/openid-presentation-request', generatePresentationRequest);
   }
 */
 verifyRouter.get('/openid-presentation-request/:requestId', getPresentationRequest);
+
+
+/**
+* POST /api/verifier/openid-presentation
+* @summary enpoint to receive presentations answering presentation requests
+* @tags open-id
+* @return {object} 404 - not found response - application/json
+* @return {VerifierResponse} 200 - success response - application/json
+* @example response - 200 
+*/
+verifyRouter.post('/openid-presentation', verifyPresentation);

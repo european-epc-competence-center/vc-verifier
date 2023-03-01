@@ -160,5 +160,16 @@ export class VerifyRoutes {
 
     }
 
+    verifyPresentation = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+        try {
+            console.log(req.body);
+            return res.status(StatusCodes.OK).send();
+
+        } catch (error) {
+            return res.status(StatusCodes.BAD_REQUEST).send(error);
+        }
+
+    }
+
 
 }
