@@ -3,7 +3,7 @@ import { VerifyRoutes } from '../../routes/index.js';
 
 
 const verifyRoutes = new VerifyRoutes();
-const { fetchAndVerify, verify, verifySubjectsVCs, generatePresentationRequest, getPresentationRequest, verifyPresentation } = verifyRoutes
+const { fetchAndVerify, verify, verifySubjectsVCs, generatePresentationRequest, getPresentationRequest, verifyPresentation, getPresentation} = verifyRoutes
 
 export const verifyRouter = Router();
 
@@ -61,7 +61,7 @@ export const verifyRouter = Router();
  * @property {boolean} verified.required - Boolean if the whole verification was successful
  */
 
-/**
+/** TODO
  * Create Resource response object
  * @summary Returns the id of a generated ressource and optionally the generated ressource
  * @typedef {object} CreateResourceResponse
@@ -587,3 +587,8 @@ verifyRouter.get('/openid-presentation-request/:requestId', getPresentationReque
 * @example response - 200 
 */
 verifyRouter.post('/openid-presentation', verifyPresentation);
+
+
+
+
+verifyRouter.get('/presentation/:presentationId', getPresentation);

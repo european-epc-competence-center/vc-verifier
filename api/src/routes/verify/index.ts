@@ -11,6 +11,7 @@ type MapType = {
 }
 
 var presentation_requests: MapType = {};
+var presentations: MapType = {};
 
 export class VerifyRoutes {
 
@@ -95,8 +96,10 @@ export class VerifyRoutes {
     generatePresentationRequest = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
         try {
             var request_id = uuid()
+            var presentation_definition_id = uuid()
+
             presentation_requests[request_id] = {
-                "verification": null, 
+                "verification": null,
                 "nonce": uuid(),
                 "response_mode": "direct_post",
                 "response_type": "vp_token",
@@ -104,7 +107,7 @@ export class VerifyRoutes {
                 "redirect_uri": "https://ssi.eecc.de/api/verifier/openid-presentation",
                 "presentation_definition":
                 {
-                    "id": uuid(),
+                    "id": presentation_definition_id,
                     "input_descriptors": [
                         {
                             "id": uuid(),
@@ -137,7 +140,8 @@ export class VerifyRoutes {
             }
 
             var result = {
-                "id": request_id,
+                "request_id": request_id,
+                "presentation_definition_id": presentation_definition_id,
                 "resource": presentation_requests[request_id]
             }
 
@@ -174,9 +178,27 @@ export class VerifyRoutes {
             console.log("presentation received:", req.body);
             var verifiable_presentation = req.body.vp_token;
 
-            presentation_requests[req.params.requestId].verification = verifiable_presentation
+            presentations[verifiable_presentation.presentation_submission.definition_id] = verifiable_presentation
 
             return res.status(StatusCodes.OK).send();
+
+        } catch (error) {
+            console.warn(error)
+            return res.status(StatusCodes.BAD_REQUEST).send(error);
+        }
+
+    }
+
+    getPresentation = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+        try {
+            if (!req.params.presentationId) {
+                return res.status(StatusCodes.BAD_REQUEST).send("No id given");
+            }
+            if (req.params.presentationId in presentations) {
+                return res.status(StatusCodes.OK).json(presentations[req.params.presentationId]);
+            }
+
+            return res.status(StatusCodes.NOT_FOUND).send();
 
         } catch (error) {
             console.warn(error)
