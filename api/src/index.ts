@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser'
 import * as dotenv from 'dotenv';
-import session from "express-session";
+import session from 'express-session';
 
 // Augment express-session with a custom SessionData object
 declare module "express-session" {
@@ -13,7 +13,7 @@ declare module "express-session" {
 dotenv.config();
 
 
-import { verifyRouter } from './routers/index.js';
+import { verifyRouter, openIdRouter } from './routers/index.js';
 
 
 // Swagger UI
@@ -39,8 +39,8 @@ const sessionMiddleware = session({
 
 app.use(sessionMiddleware);
 
-// public verify router
 app.use('/api/verifier', verifyRouter);
+app.use('/api/verifier/openid', openIdRouter);
 
 
 
