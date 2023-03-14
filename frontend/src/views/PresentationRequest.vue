@@ -18,8 +18,8 @@
             </div>
             <div class="row mx-md-3">
                 <div class="col-md-4">
-                    <select @change="registerPresentationRequest" id="credentialType" class="form-select"
-                        aria-label="Credential Type">
+                    <select v-model="credentialType" @change="registerPresentationRequest" id="credentialType"
+                        class="form-select" aria-label="Credential Type">
                         <option selected :value="undefined">All</option>
                         <option value="ProductPassportCredential">Product Passport Credential</option>
                     </select>
@@ -58,11 +58,19 @@ export default {
             generating: false,
             presentationRequestId: undefined,
             nonce: Math.random().toString(16).substring(2, 24),
-            credentialType: undefined
+            credentialType: undefined,
+            intervalId: undefined
         }
     },
     components: {
         QrcodeVue
+    },
+    mounted() {
+        if (this.intervalId) clearInterval(this.intervalId)
+        this.intervalId = setInterval(this.getPresentation, 3000);
+    },
+    beforeUnmount() {
+        if (this.intervalId) clearInterval(this.intervalId)
     },
     computed: {
         presentationDefinition() {
@@ -116,6 +124,27 @@ export default {
         }
     },
     methods: {
+        getPresentation() {
+            if (this.presentationRequestId) {
+                this.$api.get(this.$store.state.OPENID_ENDPOINT + 'presentation' + this.getRequestPath())
+                    .then((res) => {
+                        console.log(res.data)
+                        clearInterval(this.intervalId)
+                        this.intervalId = undefined
+                        // TODO store presentation and route to verify
+                    })
+                    .catch((error) => {
+                        if (error.response.status != 404) {
+                            this.toast.error(`Something went wrong fetching the presentation request!\n${error}`);
+                            console.error(error)
+                            clearInterval(this.intervalId)
+                            this.intervalId = undefined
+                        }
+                    }).finally(() => {
+
+                    });
+            }
+        },
         getRequestPath() {
             return this.presentationRequestId ? '/' + this.presentationRequestId : '';
         },
