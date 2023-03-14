@@ -4,6 +4,8 @@ VC Verifier Changelog
 WIP
 ---
 
+- add OpenId4VP functionality
+
 
 1.3.0 (2023-02-28)
 ---

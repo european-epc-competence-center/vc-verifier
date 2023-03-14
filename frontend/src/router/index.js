@@ -12,15 +12,20 @@ const routes = [
         path: '/',
         name: 'Entry',
         component: () =>
-          import( '@/views/Entry.vue'),
+          import('@/views/Entry.vue'),
       },
       {
         path: '/verify',
         name: 'Verify',
         component: () => import('@/views/Verify.vue'),
       },
+      {
+        path: '/request',
+        name: 'Presentation Request',
+        component: () => import('@/views/PresentationRequest.vue'),
+      },
     ]
-  }  
+  }
 ]
 
 const router = createRouter({
