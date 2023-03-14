@@ -6,7 +6,7 @@ export default createStore({
     version: '1.4.0',
     verifiables: [],
     VC_REGISTRY: process.env.VC_REGISTRY || 'https://ssi.eecc.de/api/registry/vcs/',
-    OPENID_ENDPOINT: process.env.OPENID_ENDPOINT || 'http://localhost:3002/api/openid/',
+    OPENID_ENDPOINT: process.env.OPENID_ENDPOINT || 'https://ssi.eecc.de/api/openid/',
     showQRModal: false
   },
   mutations: {
