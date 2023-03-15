@@ -22,6 +22,7 @@
                         class="form-select" aria-label="Credential Type">
                         <option selected :value="undefined">All</option>
                         <option value="ProductPassportCredential">Product Passport Credential</option>
+                        <option value="GS1GLNCredential">GS1 GLN Credential</option>
                     </select>
                     <label for="credentialType" class="form-label text-muted ms-1"><small>Credential type</small></label>
                 </div>
@@ -128,10 +129,12 @@ export default {
             if (this.presentationRequestId) {
                 this.$api.get(this.$store.state.OPENID_ENDPOINT + 'presentation' + this.getRequestPath())
                     .then((res) => {
-                        console.log(res.data)
                         clearInterval(this.intervalId)
                         this.intervalId = undefined
-                        // TODO store presentation and route to verify
+                        const presentationResponse = res.data
+                        const presentation = typeof presentationResponse.vp_token == 'string' ? JSON.parse(presentationResponse.vp_token) : presentationResponse.vp_token;
+                        this.$store.dispatch("addVerifiables", [presentation])
+                            .then(() => this.$router.push({ path: '/verify' }));
                     })
                     .catch((error) => {
                         if (error.response.status != 404) {
@@ -147,9 +150,6 @@ export default {
         },
         getRequestPath() {
             return this.presentationRequestId ? '/' + this.presentationRequestId : '';
-        },
-        submitFile() {
-            this.$router.push({ path: '/verify' })
         },
         registerPresentationRequest() {
             this.generating = true
