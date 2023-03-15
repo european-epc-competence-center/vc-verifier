@@ -9,7 +9,19 @@
             <a href="https://id.eecc.de"><img id="logo" src="@/assets/img/logo.png" /></a>
         </div>
         <div class="card-body" style="overflow-y: scroll;">
-            <p class="m-3">Select the credential/s using one of the options below.</p>
+            <div class="row m-3">
+                <div class="col-9">
+                    <p class="mb-0">Select the credential/s using one of the options below or send a presentation request.
+                    </p>
+                </div>
+                <div class="col-3 text-end">
+                    <router-link :to="{ path: 'request' }" class="btn btn-outline-primary" type="button"
+                        data-bs-container="body" data-bs-trigger="hover" data-bs-toggle="tooltip"
+                        data-bs-title="Generates an OpenId4VP presentation request"><i class="bi-send-check-fill" role="img"
+                            aria-label="Presentation request"></i>
+                    </router-link>
+                </div>
+            </div>
             <!--By json file-->
             <div class="card m-3 p-3 shadow">
                 <h5>Credential/Presentation Files</h5>
@@ -61,6 +73,7 @@
     </div>
 </template>
 <script>
+import { Tooltip } from 'bootstrap';
 import { useToast } from "vue-toastification";
 import ScanModal from "@/components/ScanModal.vue"
 
@@ -80,6 +93,10 @@ export default {
         }
     },
     mounted() {
+        new Tooltip(document.body, {
+            selector: "[data-bs-toggle='tooltip']",
+            trigger: 'hover'
+        })
         document.getElementById('scan-modal').addEventListener('hidden.bs.modal', () => { this.scan = '' });
     },
     methods: {
