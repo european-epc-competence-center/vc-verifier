@@ -15,10 +15,8 @@
                     </p>
                 </div>
                 <div class="col-3 text-end">
-                    <router-link :to="{ path: 'request' }" class="btn btn-outline-primary" type="button"
-                        data-bs-container="body" data-bs-trigger="hover" data-bs-toggle="tooltip"
-                        data-bs-title="Generates an OpenId4VP presentation request"><i class="bi-send-check-fill" role="img"
-                            aria-label="Presentation request"></i>
+                    <router-link :to="{ path: 'request' }" class="btn btn-outline-primary" type="button"><i
+                            class="bi-send-check-fill" role="img" aria-label="Presentation request"></i>
                     </router-link>
                 </div>
             </div>

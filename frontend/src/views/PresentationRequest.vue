@@ -29,8 +29,8 @@
             </div>
             <div class="row">
                 <div class="col-12 px-0 mt-3 text-center">
-                    <div v-if="generating" style="min-height: 300px;">
-                        <p class="m-5 text-muted">Registering presentation request</p>
+                    <div v-if="generating" class="my-3" style="min-height: 300px;">
+                        <p class="p-5 m-0 text-muted">Registering presentation request</p>
                         <div class="spinner-border text-primary m-5" role="status"
                             style="width: 5rem; height: 5rem; top: 150px;">
                             <span class="visually-hidden">Generating...</span>
@@ -38,9 +38,16 @@
                     </div>
                     <qrcode-vue v-else-if="presentationRequestId" :value="presentationRequestURI" :margin="1" :size="300"
                         level="M" class="my-3" id="presentation-request-canvas" />
-                    <div v-else style="min-height: 300px;">
+                    <div v-else class="my-3" style="min-height: 300px;">
                         <p class="p-5 text-muted">Please configure your presentation request</p>
                     </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 mt-3 text-center text-muted">
+                    <small>Using the <a
+                            href="https://openid.net/specs/openid-4-verifiable-presentations-1_0.html">OpenId4VC</a>
+                        protocol</small>
                 </div>
             </div>
         </div>

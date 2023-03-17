@@ -4,6 +4,8 @@ VC Verifier Changelog
 WIP
 ---
 
+- UI improvements
+
 1.4.0 (2023-03-15)
 ---
 
