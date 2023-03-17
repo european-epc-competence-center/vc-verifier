@@ -35,7 +35,7 @@
 <script>
 import { useToast } from "vue-toastification";
 import { Tooltip } from 'bootstrap';
-import { getVerifiableType, VerifiableType, getContext } from '../utils.js';
+import { getVerifiableType, VerifiableType, getContext, getHolder } from '../utils.js';
 
 
 import Passport from "@/components/Passport.vue";
@@ -196,9 +196,9 @@ export default {
                         const presentation = {
                             presentation:
                             {
-                                holder: verifiable.holder,
-                                challenge: verifiable.proof.challenge,
-                                domain: verifiable.proof.domain
+                                holder: getHolder(verifiable),
+                                challenge: Array.isArray(verifiable.proof) ? verifiable.proof[0].challenge : verifiable.proof.challenge,
+                                domain: Array.isArray(verifiable.proof) ? verifiable.proof[0].domain : verifiable.proof.domain
                             }
                         }
 
@@ -222,9 +222,9 @@ export default {
                         var presentation = {
                             verified: result.verified,
                             presentationResult: result.presentationResult.verified,
-                            holder: verifiable.holder,
-                            challenge: verifiable.proof.challenge,
-                            domain: verifiable.proof.domain,
+                            holder: getHolder(verifiable),
+                            challenge: Array.isArray(verifiable.proof) ? verifiable.proof[0].challenge : verifiable.proof.challenge,
+                            domain: Array.isArray(verifiable.proof) ? verifiable.proof[0].domain : verifiable.proof.domain,
                             status: 'verified!'
                         }
 
