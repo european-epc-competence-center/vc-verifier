@@ -4,6 +4,7 @@ VC Verifier Changelog
 WIP
 ---
 
+- fix IPFS promises
 - UI improvements
 
 1.4.0 (2023-03-15)

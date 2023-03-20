@@ -49,7 +49,7 @@ export async function fetchIPFS(IPFSUrl: string): Promise<object> {
 
     var document;
 
-    await Promise.race(IPFS_GATEWAYS.map(async (gateway) => {
+    await Promise.any(IPFS_GATEWAYS.map(async (gateway) => {
 
         return await fetch_jsonld(`https://${gateway}/ipfs/${IPFSUrl.split('ipfs://')[1]}`);
 
