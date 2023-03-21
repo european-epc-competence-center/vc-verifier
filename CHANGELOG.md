@@ -4,6 +4,10 @@ VC Verifier Changelog
 WIP
 ---
 
+
+1.4.1 (2023-03-21)
+---
+
 - add EECC IPFS gateways as default
 - fix IPFS promises
 - UI improvements
