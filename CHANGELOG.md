@@ -4,6 +4,7 @@ VC Verifier Changelog
 WIP
 ---
 
+- add EECC IPFS gateways as default
 - fix IPFS promises
 - UI improvements
 

@@ -5,7 +5,7 @@ const HEADERS = {
     'Accept': 'application/ld+json, application/json'
 }
 
-const IPFS_GATEWAYS = ['ipfs.io'].concat(process.env.IPFS_GATEWAYS ? process.env.IPFS_GATEWAYS.split(',') : []);
+const IPFS_GATEWAYS = ['ipfs.io', 'ipfs.ssi.eecc.de'].concat(process.env.IPFS_GATEWAYS ? process.env.IPFS_GATEWAYS.split(',') : []);
 
 
 export async function fetch_jsonld(url: string): Promise<object> {
