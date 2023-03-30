@@ -28,7 +28,7 @@ export class VerifyRoutes {
             return res.status(StatusCodes.OK).json(result);
 
         } catch (error) {
-            return res.status(StatusCodes.BAD_REQUEST).send(error);
+            return res.status(StatusCodes.BAD_REQUEST).send('Something went wrong!\n' + error);
         }
 
     }
@@ -81,7 +81,7 @@ export class VerifyRoutes {
             return res.status(StatusCodes.OK).json(results);
 
         } catch (error) {
-            return res.status(StatusCodes.BAD_REQUEST).send(error);
+            return res.status(StatusCodes.BAD_REQUEST).send('Something went wrong!\n' + error);
         }
 
     }

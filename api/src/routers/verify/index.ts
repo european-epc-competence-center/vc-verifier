@@ -37,7 +37,7 @@ export const verifyRouter = Router();
  * @property {array<string>} context.required - The JSON-LD context URIs of the presentation
  * @property {array<string>} type.required - The types of the presentation. Should be 'VerifiablePresentation'
  * @property {string} holder.required - The DID of the holder of the credentials, i.e. the presenter
- * @property {array<SignedCredential>} verifiableCredential.required - Array of included credentials
+ * @property {array<SignedCredential>} verifiableCredential - Array of included credentials
  * @property {object} proof.required - The cryptographic signature of the holder over the presentation
  */
 
@@ -111,7 +111,7 @@ verifyRouter.get('/vc/:vcid', fetchAndVerify);
  * @summary Verifies an array of verifiables
  * @tags Verify
  * @param {array<Verifiable>} request.body.required - Array of verifiables either of type SignedPresentation or SignedCredential - application/json
- * @return {array<object>} 200 - success response - application/json
+ * @return {array<VerifierResponse>} 200 - success response - application/json
  * @return {object} 400 - bad request response - application/json
  * 
  * @example request - Credential request
