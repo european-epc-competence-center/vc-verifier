@@ -55,7 +55,7 @@ export default {
         isProductPassport() {
             if (this.credentials.length < 1) return false;
             return this.credentials.filter(function (credential) {
-                return credential['@context'].some(c => typeof c == 'string' && c.startsWith('https://ssi.eecc.de/api/registry/context/productpassport'))
+                return credential['@context'].some(c => typeof c == 'string' && c.startsWith('https://ssi.eecc.de/api/registry/context') && c.includes('/productpassport'))
             }).length > 0;
         }
     }
