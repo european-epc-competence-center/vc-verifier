@@ -1,8 +1,8 @@
 <template>
-    <span class="badge text-white" :class="['text-bg-' + color]" tabindex="0" style="display: inline-block;"
-        type="button" data-bs-container="body" :data-bs-toggle="value.length > MAX_STRING_LENGTH ? 'tooltip' : ''"
-        :data-bs-title="value" @click="copyToClipboard">{{
-    trimString(value)
+    <span class="badge text-white" :class="['text-bg-' + color]" tabindex="0" style="display: inline-block;" type="button"
+        data-bs-container="body" :data-bs-toggle="trimmed ? 'tooltip' : ''" :data-bs-title="value"
+        @click="copyToClipboard">{{
+            trimString(value)
         }}</span>
 </template>
 
@@ -27,10 +27,15 @@ export default {
             toast: useToast(),
         }
     },
+    computed: {
+        trimmed() {
+            return this.value.length > this.MAX_STRING_LENGTH;
+        }
+    },
     methods: {
         trimString(string) {
-            if (string.length < this.MAX_STRING_LENGTH) return string;
-            return string.substring(0, this.MAX_STRING_LENGTH / 2 - 2) + "..." + string.substr(length - this.MAX_STRING_LENGTH / 2 + 2);
+            if (this.trimmed) return string.substring(0, this.MAX_STRING_LENGTH / 2 - 2) + "..." + string.substr(length - this.MAX_STRING_LENGTH / 2 + 2);
+            return string;
         },
         copyToClipboard() {
             navigator.clipboard.writeText(this.value);
