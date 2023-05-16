@@ -36,18 +36,25 @@ export class Verifier {
 
         const suite = getSuites(verifiable.proof);
 
-        if (verifiable.type.includes('VerifiableCredential')) return await verifyCredential({ credential: verifiable, suite, documentLoader, checkStatus });
+        let result;
+
+        if (verifiable.type.includes('VerifiableCredential')) result = await verifyCredential({ credential: verifiable, suite, documentLoader, checkStatus });
 
         if (verifiable.type.includes('VerifiablePresentation')) {
 
             // try to use challenge in proof if not provided in case no exchange protocol is used
             if (!challenge) challenge = (Array.isArray(verifiable.proof) ? verifiable.proof[0].challenge : verifiable.proof.challenge);
 
-            return await verify({ presentation: verifiable, suite, documentLoader, challenge, checkStatus });
+            result = await verify({ presentation: verifiable, suite, documentLoader, challenge, checkStatus });
 
         }
 
-        throw Error('Provided verifiable object is of unknown type!');
+        if (!result) throw Error('Provided verifiable object is of unknown type!');
+
+        // make non enumeratable errors enumeratable for the respsonse
+        if (result.error && !result.error.errors) result.error.name = result.error.message;
+
+        return result;
     }
 
 }

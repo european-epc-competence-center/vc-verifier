@@ -155,7 +155,7 @@ export default {
 
                 if (result.error) {
 
-                    message = 'Credential\n' + result.error.name + ': ';
+                    message = result.error.name + '\n';
 
                     if (result.error.errors) result.error.errors.forEach((e) => {
 
