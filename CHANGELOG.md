@@ -5,6 +5,17 @@ WIP
 ---
 
 
+1.5.0 (2023-05-31)
+---
+
+- add selective disclosure credential verification
+
+
+1.4.2 (2023-05-02)
+---
+
+- update dpp recognition
+
 1.4.2 (2023-03-30)
 ---
 
