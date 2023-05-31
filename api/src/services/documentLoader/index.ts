@@ -33,7 +33,7 @@ const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async 
                 contextUrl: null,
                 documentUrl: url,
                 // deliver verification method with the DID doc context
-                document: Object.assign(verificationMethodDoc, { '@context': didDocument['@context'] }),
+                document: Object.assign(verificationMethodDoc, { '@context': verificationMethodDoc['@context'] || didDocument['@context'] }),
             };
 
         }

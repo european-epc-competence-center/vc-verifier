@@ -1,7 +1,9 @@
 
 type Proof = {
     type: string;
-    challenge: string | undefined;
+    challenge?: string;
+    domain?: string;
+    cryptosuite?: string;
 }
 
 type Verifiable = {
@@ -15,14 +17,14 @@ type CredentialSubject = {
 }
 
 type VerifiableCredential = Verifiable & {
-    id: URL;
+    id: string | URL;
     issuer: string | any;
     issuanceDate: string;
     credentialSubject: CredentialSubject;
 }
 
 type VerifiablePresentation = Verifiable & {
-    id: URL;
+    id: string | URL;
     holder: string | any;
     verifiableCredential: VerifiableCredential | VerifiableCredential[];
 }
