@@ -4,13 +4,26 @@ import { verifyCredential, verify } from '@digitalbazaar/vc';
 import { Ed25519Signature2020 } from '@digitalbazaar/ed25519-signature-2020';
 // @ts-ignore
 import { checkStatus } from '@digitalbazaar/vc-revocation-list';
+// @ts-ignore
+import * as ecdsaSd2023Cryptosuite from '@digitalbazaar/ecdsa-sd-2023-cryptosuite';
+// @ts-ignore
+import { DataIntegrityProof } from '@digitalbazaar/data-integrity';
+// @ts-ignore
+import jsigs from 'jsonld-signatures';
 
 import { documentLoader } from '../documentLoader/index.js';
+
+const { createVerifyCryptosuite } = ecdsaSd2023Cryptosuite;
+const { purposes: { AssertionProofPurpose } } = jsigs;
 
 function getSuite(proof: Proof): unknown[] {
 
     // Ed25519Signature2020 is backwards compatible to Ed25519Signature2018
     if (['Ed25519Signature2020', 'Ed25519Signature2018'].includes(proof.type)) return new Ed25519Signature2020();
+
+    if (proof.type == 'DataIntegrityProof') return new DataIntegrityProof({
+        cryptosuite: createVerifyCryptosuite()
+    });
 
     throw new Error(`${proof.type} not implemented`);
 
@@ -38,7 +51,22 @@ export class Verifier {
 
         let result;
 
-        if (verifiable.type.includes('VerifiableCredential')) result = await verifyCredential({ credential: verifiable, suite, documentLoader, checkStatus });
+        if (verifiable.type.includes('VerifiableCredential')) {
+
+            if ((Array.isArray(verifiable.proof) ? verifiable.proof[0].type : verifiable.proof.type) == 'DataIntegrityProof') {
+
+                result = await jsigs.verify(verifiable, {
+                    suite,
+                    purpose: new AssertionProofPurpose(),
+                    documentLoader
+                });
+
+            } else {
+
+                result = await verifyCredential({ credential: verifiable, suite, documentLoader, checkStatus });
+
+            }
+        }
 
         if (verifiable.type.includes('VerifiablePresentation')) {
 
