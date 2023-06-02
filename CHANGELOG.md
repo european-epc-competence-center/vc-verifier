@@ -4,9 +4,14 @@ VC Verifier Changelog
 WIP
 ---
 
+
+1.5.1 (2023-06-01)
+---
+
 - recognize ProductPassportCredential whn IPFS context
 - fix QR-Code overflow
 - support ipfs context fetching in frontend
+
 
 1.5.0 (2023-05-31)
 ---
