@@ -16,10 +16,12 @@ WIP
 
 - update dpp recognition
 
+
 1.4.2 (2023-03-30)
 ---
 
 - fix error message
+
 
 1.4.1 (2023-03-21)
 ---
@@ -27,6 +29,7 @@ WIP
 - add EECC IPFS gateways as default
 - fix IPFS promises
 - UI improvements
+
 
 1.4.0 (2023-03-15)
 ---
