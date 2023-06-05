@@ -29,6 +29,7 @@
     "@digitalbazaar/data-integrity": "^1.4.0",
     "@digitalbazaar/did-method-key": "^3.0.0",
     "@digitalbazaar/ecdsa-sd-2023-cryptosuite": "^1.0.2",
+    "@digitalbazaar/ed25519-signature-2018": "^4.0.0",
     "@digitalbazaar/ed25519-signature-2020": "^5.0.0",
     "@digitalbazaar/vc": "^5.0.0",
     "@digitalbazaar/vc-revocation-list": "^5.0.0",

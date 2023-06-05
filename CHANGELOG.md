@@ -4,6 +4,8 @@ VC Verifier Changelog
 WIP
 ---
 
+- use hash of proof as COM identifier
+- support Ed25519Signature2018 crypto suite
 
 1.5.1 (2023-06-01)
 ---

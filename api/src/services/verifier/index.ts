@@ -1,6 +1,8 @@
 // @ts-ignore
 import { verifyCredential, verify } from '@digitalbazaar/vc';
 // @ts-ignore
+import { Ed25519Signature2018 } from '@digitalbazaar/ed25519-signature-2018';
+// @ts-ignore
 import { Ed25519Signature2020 } from '@digitalbazaar/ed25519-signature-2020';
 // @ts-ignore
 import { checkStatus } from '@digitalbazaar/vc-revocation-list';
@@ -18,14 +20,18 @@ const { purposes: { AssertionProofPurpose } } = jsigs;
 
 function getSuite(proof: Proof): unknown[] {
 
-    // Ed25519Signature2020 is backwards compatible to Ed25519Signature2018
-    if (['Ed25519Signature2020', 'Ed25519Signature2018'].includes(proof.type)) return new Ed25519Signature2020();
+    switch (proof.type) {
 
-    if (proof.type == 'DataIntegrityProof') return new DataIntegrityProof({
-        cryptosuite: createVerifyCryptosuite()
-    });
+        case 'Ed25519Signature2018': return new Ed25519Signature2018();
 
-    throw new Error(`${proof.type} not implemented`);
+        case 'Ed25519Signature2020': return new Ed25519Signature2020();
+
+        case 'DataIntegrityProof': return new DataIntegrityProof({
+            cryptosuite: createVerifyCryptosuite()
+        });
+
+        default: throw new Error(`${proof.type} not implemented`);
+    }
 
 }
 
