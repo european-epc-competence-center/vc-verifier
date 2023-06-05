@@ -1,7 +1,7 @@
 <template>
     <div class="card shadow m-3"
         :class="[getStateColor(credential) != 'success' ? `border-${getStateColor(credential)}` : '']">
-        <QRModal :id="getCredCompId('modal', credential.id)" v-bind:value="getPlainCredential(credential)" />
+        <QRModal :id="getCredCompId('modal')" v-bind:value="getPlainCredential(credential)" />
         <div class="card-header p-3">
             <div class="row justify-content-between align-items-center">
                 <div class="col-8">
@@ -100,18 +100,17 @@
                     </div>
                 </div>
             </div>
-            <div class="accordion" :id="getCredCompId('acc', credential.id)">
+            <div class="accordion" :id="getCredCompId('acc')">
                 <div class="accordion-item">
-                    <h2 class="accordion-header" :id="getCredCompId('itemhead', credential.id)">
+                    <h2 class="accordion-header" :id="getCredCompId('itemhead')">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            :data-bs-target="getCredCompId('#item', credential.id)" aria-expanded="false"
-                            :aria-controls="getCredCompId('item', credential.id)">
+                            :data-bs-target="getCredCompId('#item')" aria-expanded="false"
+                            :aria-controls="getCredCompId('item')">
                             Details
                         </button>
                     </h2>
-                    <div :id="getCredCompId('item', credential.id)" class="accordion-collapse collapse"
-                        :aria-labelledby="getCredCompId('itemhead', credential.id)"
-                        :data-bs-parent="getCredCompId('#acc', credential.id)">
+                    <div :id="getCredCompId('item')" class="accordion-collapse collapse"
+                        :aria-labelledby="getCredCompId('itemhead')" :data-bs-parent="getCredCompId('#acc')">
                         <div class="accordion-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-striped mb-1">
@@ -152,9 +151,8 @@
                 <button @click="downloadCredential(credential)" type="button" style="border-right: none;"
                     class="btn btn-outline-primary"><i class="bi-filetype-json" role="img"
                         aria-label="JSON Download"></i></button>
-                <button data-bs-toggle="modal" :data-bs-target="getCredCompId('#modal', credential.id)" role="button"
-                    type="button" class="btn btn-outline-primary"><i class="bi-qr-code" role="img"
-                        aria-label="QR-Code"></i></button>
+                <button data-bs-toggle="modal" :data-bs-target="getCredCompId('#modal')" role="button" type="button"
+                    class="btn btn-outline-primary"><i class="bi-qr-code" role="img" aria-label="QR-Code"></i></button>
             </div>
         </div>
     </div>
@@ -167,6 +165,7 @@ import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { credentialPDF } from '../pdf.js';
 import { getPlainCredential } from '../utils.js';
+import * as JsHashes from 'jshashes';
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 import TrimmedBatch from "@/components/TrimmedBatch.vue";
@@ -197,7 +196,7 @@ export default {
             credentialPDF(credential)
                 .then((pdf) => {
                     // return pdfMake.createPdf(pdf).open({}, win);
-                    return pdfMake.createPdf(pdf).download(this.getCredCompId('credential', credential.id) + '.pdf');
+                    return pdfMake.createPdf(pdf).download(this.getCredCompId('credential') + '.pdf');
                 })
                 .catch((error) => {
                     this.toast.error(`Something went wrong creating the pdf!\n${error}`);
@@ -212,14 +211,15 @@ export default {
         },
         downloadCredential(credential) {
 
-            const fileName = this.getCredCompId('credential', credential.id);
+            const fileName = this.getCredCompId('credential');
             const exportType = 'json';
             exportFromJSON({ data: getPlainCredential(credential), fileName, exportType });
 
         },
-        getCredCompId(type, id) {
+        getCredCompId(type) {
 
-            const cleanString = id.replace(/^[^a-z]+|[^\w:]+/gi, "-").toString();
+            const idString = this.credential.id || new JsHashes.SHA256().hex(JSON.stringify(this.credential.proof));
+            const cleanString = idString.replace(/^[^a-z]+|[^\w:]+/gi, "-").toString();
             return type + '-' + cleanString.substr(cleanString.length - 5, cleanString.length);
 
         }
