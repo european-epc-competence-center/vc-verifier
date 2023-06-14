@@ -152,7 +152,6 @@ describe("Verifier API Test for Credentials", () => {
     test("Verify revoked credential", async () => {
         const res = await request(app).post("/api/verifier").send([revokedCredential]);
         expect(res.statusCode).toEqual(200);
-        console.log(res.body)
         expect(res.body[0]).toHaveProperty('verified');
         expect(res.body[0].verified).toBe(false);
         expect(res.body[0]).toHaveProperty('statusResult');
