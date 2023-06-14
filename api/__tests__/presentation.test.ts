@@ -164,9 +164,13 @@ describe("Verifier API Test for Presentations", () => {
         });
     });
 
-    test("Falsify single presentation without challenge", async () => {
-        const res = await request(app).post("/api/verifier").query({ domain: 'ssi.eecc.de/verifier' }).send([domainPresentation]);
-        expect(res.statusCode).toEqual(400);
+    test("Falsify single presentation with wrong challenge", async () => {
+        const res = await request(app).post("/api/verifier").query({ challenge: 'falseChallenge', domain: 'ssi.eecc.de/verifier' }).send([domainPresentation]);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body[0]).toHaveProperty('verified');
+        expect(res.body[0].verified).toBe(false);
+        expect(res.body[0]).toHaveProperty('error');
+        expect(res.body[0].error.name).toBe('VerificationError');
     });
 
 });
