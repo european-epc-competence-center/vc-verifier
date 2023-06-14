@@ -1,3 +1,4 @@
+[![Tests](https://github.com/european-epc-competence-center/vc-verifier/actions/workflows/tests.yml/badge.svg)](https://github.com/european-epc-competence-center/vc-verifier/actions)
 [![Building All Containers](https://github.com/european-epc-competence-center/vc-verifier/actions/workflows/build-all.yml/badge.svg)](https://github.com/orgs/european-epc-competence-center/packages?repo_name=vc-verifier)
 
 # VC Verifier

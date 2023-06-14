@@ -30,6 +30,10 @@ app.use('/api/verifier', verifyRouter);
 
 const port = process.env.PORT ? Number.parseInt(process.env.PORT) : 3000
 
-const server = app.listen(port, async () => {
-    console.log(`Started API Server on port ${port}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+    const server = app.listen(port, async () => {
+        console.log(`Started API Server on port ${port}`);
+    });
+}
+
+export default app;
