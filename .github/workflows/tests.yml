@@ -9,7 +9,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Node.JS Tests
+      - name: API Tests
+        working-directory: ./api
         uses: actions/setup-node@v3
         with:
           node-version: 18
