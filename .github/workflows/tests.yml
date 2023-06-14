@@ -10,9 +10,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: API Tests
-        working-directory: ./api
         uses: actions/setup-node@v3
         with:
           node-version: 18
+      
       - run: npm ci
+        working-directory: ./api
       - run: npm test
+        working-directory: ./api
