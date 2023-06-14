@@ -64,7 +64,7 @@ const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async 
             // cache and warn if external
             if (!TRUSTED_CONTEXT_DOMAINS.some((trusted) => url.startsWith(trusted))) {
 
-                console.warn(`Fetched and cached @context from ${url}. Use with care!`);
+                // console.log(`Fetched and cached @context from ${url}. Use with care!`);
 
                 cache.set(url, document);
 

@@ -17,10 +17,11 @@ export class VerifyRoutes {
 
             try {
 
-                credential = await fetch_json(req.params.vcid) as Verifiable;
+                credential = await fetch_json(decodeURIComponent(req.params.vcid)) as Verifiable;
 
             } catch (error) {
-                return res.status(StatusCodes.NOT_FOUND);
+                console.log(error)
+                return res.status(StatusCodes.NOT_FOUND).send('Credential not found!\n' + error);
             }
 
             const result = await Verifier.verify(credential);
