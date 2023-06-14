@@ -38,13 +38,17 @@ export class VerifyRoutes {
 
         try {
 
-            const challenge = req.query.challenge || req.query.nonce
+            // Support W3C and JWT namespaces
+            const challenge = req.query.challenge || req.query.nonce;
+            const domain = req.query.domain || req.query.audience || req.query.aud;
 
             if (challenge && typeof challenge != 'string') throw new Error('The challenge/nonce must be provided as a string!');
 
+            if (domain && typeof domain != 'string') throw new Error('The domain/audience must be provided as a string!');
+
             let tasks = Promise.all(req.body.map(function (verifialbe: Verifiable) {
 
-                return Verifier.verify(verifialbe, challenge);
+                return Verifier.verify(verifialbe, challenge, domain);
 
             }));
 

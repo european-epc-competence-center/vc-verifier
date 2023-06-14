@@ -51,7 +51,7 @@ function getSuites(proof: Proof | Proof[]): unknown[] {
 
 export class Verifier {
 
-    static async verify(verifiable: Verifiable, challenge?: string): Promise<any> {
+    static async verify(verifiable: Verifiable, challenge?: string, domain?: string): Promise<any> {
 
         const suite = getSuites(verifiable.proof);
 
@@ -79,7 +79,7 @@ export class Verifier {
             // try to use challenge in proof if not provided in case no exchange protocol is used
             if (!challenge) challenge = (Array.isArray(verifiable.proof) ? verifiable.proof[0].challenge : verifiable.proof.challenge);
 
-            result = await verify({ presentation: verifiable, suite, documentLoader, challenge, checkStatus });
+            result = await verify({ presentation: verifiable, suite, documentLoader, challenge, domain, checkStatus });
 
         }
 
