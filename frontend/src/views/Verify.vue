@@ -211,7 +211,7 @@ export default {
                         this.addCredential({ ...verifiable });
                     }
 
-                    const res = await this.$api.post('/', [verifiable]);
+                    const res = await this.$api.post('/', [verifiable], { params: { challenge: this.$route.query.challenge } });
 
                     const result = res.data[0];
 

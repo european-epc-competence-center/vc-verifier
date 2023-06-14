@@ -141,7 +141,7 @@ export default {
                         const presentationResponse = res.data
                         const presentation = typeof presentationResponse.vp_token == 'string' ? JSON.parse(presentationResponse.vp_token) : presentationResponse.vp_token;
                         this.$store.dispatch("addVerifiables", [presentation])
-                            .then(() => this.$router.push({ path: '/verify' }));
+                            .then(() => this.$router.push({ path: '/verify', query: { challenge: this.nonce } }));
                     })
                     .catch((error) => {
                         if (error.response.status != 404) {

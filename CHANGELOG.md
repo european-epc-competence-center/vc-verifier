@@ -5,6 +5,7 @@ WIP
 ---
 
 - always use id hash as the credential identifier
+- add proof challenge as query param
 
 
 1.5.2 (2023-06-05)

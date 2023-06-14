@@ -37,9 +37,13 @@ export class VerifyRoutes {
 
         try {
 
+            const challenge = req.query.challenge || req.query.nonce
+
+            if (challenge && typeof challenge != 'string') throw new Error('The challenge/nonce must be provided as a string!');
+
             let tasks = Promise.all(req.body.map(function (verifialbe: Verifiable) {
 
-                return Verifier.verify(verifialbe);
+                return Verifier.verify(verifialbe, challenge);
 
             }));
 
