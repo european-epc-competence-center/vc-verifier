@@ -216,12 +216,9 @@ export default {
             exportFromJSON({ data: getPlainCredential(credential), fileName, exportType });
 
         },
-        getCredCompId(type) {
-
-            const idString = this.credential.id || new JsHashes.SHA256().hex(JSON.stringify(this.credential.proof));
-            const cleanString = idString.replace(/^[^a-z]+|[^\w:]+/gi, "-").toString();
-            return type + '-' + cleanString.substr(cleanString.length - 5, cleanString.length);
-
+        getCredCompId(prefix) {
+            const idHash = new JsHashes.SHA256().hex(this.credential.id || JSON.stringify(this.credential.proof));
+            return prefix + '-' + idHash.substr(idHash.length - 5, idHash.length);
         }
     }
 }

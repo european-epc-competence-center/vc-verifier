@@ -4,6 +4,8 @@ VC Verifier Changelog
 WIP
 ---
 
+- always use id hash as the credential identifier
+
 
 1.5.2 (2023-06-05)
 ---
