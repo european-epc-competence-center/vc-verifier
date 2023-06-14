@@ -18,7 +18,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Meta API Image
-        id: meta_indy_node
+        id: meta_api
         uses: docker/metadata-action@v3
         with:
           images: ghcr.io/european-epc-competence-center/vc-verifier/vc_verifier_api
@@ -35,19 +35,18 @@ jobs:
             org.opencontainers.image.description=API container of the verifiable credential verifier service.
             org.opencontainers.image.vendor=EECC
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
-          file: api/Dockerfile
           context: ./api
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta_indy_node.outputs.tags }}
-          labels: ${{ steps.meta_indy_node.outputs.labels }}
+          tags: ${{ steps.meta_api.outputs.tags }}
+          labels: ${{ steps.meta_api.outputs.labels }}
 
   build_frontend:
     name: Build frontend
@@ -56,7 +55,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Meta Frontend Image
-        id: meta_indy_node
+        id: meta_frontend
         uses: docker/metadata-action@v3
         with:
           images: ghcr.io/european-epc-competence-center/vc-verifier/vc_verifier_frontend
@@ -73,18 +72,14 @@ jobs:
             org.opencontainers.image.description=Frontend container of the verifiable credential verifier service.
             org.opencontainers.image.vendor=EECC
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push image
-        uses: docker/build-push-action@v2
-        env:
-          ENV_SECRET: ${{ secrets.ENV_SECRET }} #naming used below
-          ENV_SECRET_1: ${{ secrets.ENV_SECRET_1 }}
+        uses: docker/build-push-action@v4
         with:
-          file: frontend/Dockerfile
           context: ./frontend
           build-args: |
             PUBLIC_PATH=verifier
@@ -92,6 +87,6 @@ jobs:
             BASE_URL=https://ssi.eecc.de
             VERIFIER_API=https://ssi.eecc.de/api/verifier
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta_indy_node.outputs.tags }}
-          labels: ${{ steps.meta_indy_node.outputs.labels }}
+          tags: ${{ steps.meta_frontend.outputs.tags }}
+          labels: ${{ steps.meta_frontend.outputs.labels }}
 
