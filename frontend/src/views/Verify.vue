@@ -66,7 +66,7 @@ export default {
 
         this.fetchData()
             .then(() => {
-                this.verify()
+                this.verifyAll()
             })
             .catch((error) => {
                 this.toast.error(`Something went wrong fetching the credential!\n${error}`);
@@ -75,6 +75,9 @@ export default {
             });
     },
     computed: {
+        storeVerifiables() {
+            return this.$store.state.verifiables;
+        },
         getOrderedCredentials() {
             return [...this.credentials].sort((a, b) => {
                 let da = new Date(a.issuanceDate),
@@ -101,15 +104,36 @@ export default {
             else return 'Loading credentials ...'
         }
     },
+    watch: {
+        storeVerifiables(newVerifiables) {
+            if (newVerifiables.length > 0) {
+                this.addVerifiables(newVerifiables);
+            }
+        }
+    },
     methods: {
         addCredential(credential) {
-            this.credentials.push(credential);
+            let existingCredentialIndex = this.credentials.findIndex(cred => cred.id == credential.id);
+            if (existingCredentialIndex != -1) {
+                // replace more valuable credentials
+                const oldFields = Object.keys(this.credentials[existingCredentialIndex].credentialSubject);
+                const newFields = Object.keys(credential.credentialSubject);
+                if (oldFields.length < newFields.length) {
+                    this.credentials[existingCredentialIndex] = credential;
+                    this.toast.success(`Successfully disclosed ${newFields.filter(x => !oldFields.includes(x)).join(', ')}!`)
+                }
+            } else this.credentials.push(credential);
             this.getContext(credential)
                 .then(context => {
                     // credential reference does not refer actual credentials -> find it from credentials
                     this.credentials.find(cred => cred.id == credential.id).context = context;
                 })
                 .catch((error) => { console.log(error) })
+        },
+        async addVerifiables(verifiables) {
+            // this.verifiables = this.verifiables.concat(verifiables);
+            this.$store.dispatch("resetVerifiables");
+            verifiables.map(async v => await this.verify(v));
         },
         async fetchData() {
 
@@ -125,8 +149,8 @@ export default {
                 return
             }
 
-            if (this.$store.state.verifiables.length > 0) {
-                this.verifiables = this.$store.state.verifiables;
+            if (this.storeVerifiables.length > 0) {
+                this.verifiables = this.storeVerifiables;
                 this.$store.dispatch("resetVerifiables");
                 return
             }
@@ -177,7 +201,83 @@ export default {
             Object.assign(credential, credentialResult);
 
         },
-        async verify() {
+        async verify(verifiable) {
+
+            if (getVerifiableType(verifiable) == VerifiableType.PRESENTATION) {
+
+                const presentation = {
+                    presentation:
+                    {
+                        holder: getHolder(verifiable),
+                        challenge: Array.isArray(verifiable.proof) ? verifiable.proof[0].challenge : verifiable.proof.challenge,
+                        domain: Array.isArray(verifiable.proof) ? verifiable.proof[0].domain : verifiable.proof.domain
+                    }
+                }
+
+                if (Array.isArray(verifiable.verifiableCredential)) verifiable.verifiableCredential.forEach(
+                    (credential) => this.addCredential({ ...credential, presentation })
+                );
+                else this.addCredential({ ...verifiable.verifiableCredential, presentation });
+
+            } else {
+                this.addCredential({ ...verifiable });
+            }
+
+            const res = await this.$api.post('/', [verifiable], { params: { challenge: this.$route.query.challenge } });
+
+            const result = res.data[0];
+
+            // verifiable is a presentations
+            if (getVerifiableType(verifiable) == VerifiableType.PRESENTATION) {
+
+                // build presentation object with important properties for attaching to the credential
+                var presentation = {
+                    verified: result.verified,
+                    presentationResult: result.presentationResult.verified,
+                    holder: getHolder(verifiable),
+                    challenge: Array.isArray(verifiable.proof) ? verifiable.proof[0].challenge : verifiable.proof.challenge,
+                    domain: Array.isArray(verifiable.proof) ? verifiable.proof[0].domain : verifiable.proof.domain,
+                    status: 'verified!'
+                }
+
+                if (presentation.presentationResult && !presentation.verified) {
+                    presentation.status = 'partially verified!'
+                    this.toast.warning(`Presentation${presentation.holder ? ' of holder ' + presentation.holder.id || presentation.holder + ' ' : ' '}contains invalid credentials!`);
+                }
+
+                if (result.error) {
+
+                    presentation.status = result.error.name + ': ';
+
+                    if (result.error.errors) result.error.errors.forEach((e) => {
+
+                        presentation.status += e.message + '\n';
+
+                    })
+
+                    this.toast.error(`Verification of presentation${presentation.holder ? ' of holder ' + presentation.holder.id || presentation.holder + ' ' : ' '} failed!\n${presentation.status}`);
+
+                }
+
+                // contains array of credentials
+                if (Array.isArray(verifiable.verifiableCredential))
+                    verifiable.verifiableCredential.forEach(
+                        credential => this.assignResult(
+                            credential.id,
+                            result.credentialResults.find(credRes => credRes.credentialId == credential.id),
+                            presentation
+                        ));
+
+                // contains single credential object
+                else this.assignResult(verifiable.verifiableCredential.id, result[0], presentation);
+
+            }
+
+            else this.assignResult(verifiable.id, result)
+
+            verifiable.verified = result.verified;
+        },
+        async verifyAll() {
 
             if (this.verifiables.length == 0) {
                 this.toast.warning('No verifiables provided for verification!');
@@ -191,79 +291,7 @@ export default {
                 // forEach throws 'cannot convert undefined to object' error
                 const verifyTasks = Promise.all(this.verifiables.map(async (verifiable) => {
 
-                    if (getVerifiableType(verifiable) == VerifiableType.PRESENTATION) {
-
-                        const presentation = {
-                            presentation:
-                            {
-                                holder: getHolder(verifiable),
-                                challenge: Array.isArray(verifiable.proof) ? verifiable.proof[0].challenge : verifiable.proof.challenge,
-                                domain: Array.isArray(verifiable.proof) ? verifiable.proof[0].domain : verifiable.proof.domain
-                            }
-                        }
-
-                        if (Array.isArray(verifiable.verifiableCredential)) verifiable.verifiableCredential.forEach(
-                            (credential) => this.addCredential({ ...credential, presentation })
-                        );
-                        else this.addCredential({ ...verifiable.verifiableCredential, presentation });
-
-                    } else {
-                        this.addCredential({ ...verifiable });
-                    }
-
-                    const res = await this.$api.post('/', [verifiable], { params: { challenge: this.$route.query.challenge } });
-
-                    const result = res.data[0];
-
-                    // verifiable is a presentations
-                    if (getVerifiableType(verifiable) == VerifiableType.PRESENTATION) {
-
-                        // build presentation object with important properties for attaching to the credential
-                        var presentation = {
-                            verified: result.verified,
-                            presentationResult: result.presentationResult.verified,
-                            holder: getHolder(verifiable),
-                            challenge: Array.isArray(verifiable.proof) ? verifiable.proof[0].challenge : verifiable.proof.challenge,
-                            domain: Array.isArray(verifiable.proof) ? verifiable.proof[0].domain : verifiable.proof.domain,
-                            status: 'verified!'
-                        }
-
-                        if (presentation.presentationResult && !presentation.verified) {
-                            presentation.status = 'partially verified!'
-                            this.toast.warning(`Presentation${presentation.holder ? ' of holder ' + presentation.holder.id || presentation.holder + ' ' : ' '}contains invalid credentials!`);
-                        }
-
-                        if (result.error) {
-
-                            presentation.status = result.error.name + ': ';
-
-                            if (result.error.errors) result.error.errors.forEach((e) => {
-
-                                presentation.status += e.message + '\n';
-
-                            })
-
-                            this.toast.error(`Verification of presentation${presentation.holder ? ' of holder ' + presentation.holder.id || presentation.holder + ' ' : ' '} failed!\n${presentation.status}`);
-
-                        }
-
-                        // contains array of credentials
-                        if (Array.isArray(verifiable.verifiableCredential))
-                            verifiable.verifiableCredential.forEach(
-                                credential => this.assignResult(
-                                    credential.id,
-                                    result.credentialResults.find(credRes => credRes.credentialId == credential.id),
-                                    presentation
-                                ));
-
-                        // contains single credential object
-                        else this.assignResult(verifiable.verifiableCredential.id, result[0], presentation);
-
-                    }
-
-                    else this.assignResult(verifiable.id, result)
-
-                    verifiable.verified = result.verified;
+                    await this.verify(verifiable);
 
                     this.progress += 1
 

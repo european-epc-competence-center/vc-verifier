@@ -9,6 +9,14 @@
                     <div class="credentialid mt-1"><a :href="credential.id">{{ credential.id }}</a></div>
                 </div>
                 <div class="col-2 text-end">
+                    <a v-if="SDCredential" tabindex="0" style="display: inline-block;" type="button" class="me-3"
+                        data-bs-container="body" data-bs-toggle="tooltip" data-bs-html="true"
+                        :data-bs-title="'<strong>Selective disclosure credential</strong><br>' + (disclosed ? 'Already disclosed' : 'Go to details to request more disclosure')">
+                        <i v-if="disclosed" style="font-size: 1.25rem;" class="bi bi-eye-fill text-primary" role="img"
+                            aria-label="SD-Credentials"></i>
+                        <i v-else style="font-size: 1.25rem;" class="bi bi-eye-slash-fill text-secondary" role="img"
+                            aria-label="SD-Credentials"></i>
+                    </a>
                     <a v-if="credential.presentation && credential.presentation.verified != undefined" tabindex="0"
                         style="display: inline-block;" type="button" class="me-3" data-bs-container="body"
                         data-bs-toggle="tooltip" :data-bs-title="'Presentation ' + credential.presentation.status">
@@ -114,7 +122,7 @@
                         <div class="accordion-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-striped mb-1">
-                                    <tbody>
+                                    <TransitionGroup name="list" tag="tbody">
                                         <tr v-for="(value, key) in credential.credentialSubject" :key="key">
                                             <td><strong>{{ key }}</strong> <a
                                                     v-if="credential.context && credential.context.get(key)"
@@ -135,8 +143,17 @@
                                                 <p v-else class="m-0">{{ $getCredentialValue(value) }}</p>
                                             </td>
                                         </tr>
-                                    </tbody>
+                                    </TransitionGroup>
                                 </table>
+                                <div v-if="SDCredential" class="row m-3 justify-content-center">
+                                    <div class="col-md-6 text-center">
+                                        <button @click="requestDisclosure" type="button" class="btn btn-outline-primary"
+                                            data-bs-container="body" data-bs-toggle="tooltip"
+                                            data-bs-title="Make authenticated request to request disclosure of more data fields of this selective disclosure credential"><i
+                                                class="bi-file-earmark-lock2-fill" role="img" aria-label="PDF Download"></i>
+                                            Disclose more</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -168,6 +185,7 @@ import { getPlainCredential } from '../utils.js';
 import * as JsHashes from 'jshashes';
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
+import { useToast } from "vue-toastification";
 import TrimmedBatch from "@/components/TrimmedBatch.vue";
 import QRModal from "@/components/QRModal.vue";
 
@@ -182,6 +200,7 @@ export default {
     },
     data() {
         return {
+            toast: useToast(),
             getPlainCredential: getPlainCredential
         }
     },
@@ -189,6 +208,15 @@ export default {
         new Tooltip(document.body, {
             selector: "[data-bs-toggle='tooltip']"
         })
+    },
+    computed: {
+        SDCredential() {
+            const proof = Array.isArray(this.credential.proof) ? this.credential.proof[0] : this.credential.proof;
+            return proof.type == 'DataIntegrityProof'
+        },
+        disclosed() {
+            return this.$store.state.disclosedCredentials.includes(this.credential.id);
+        }
     },
     methods: {
         downloadCredentialPDF(credential) {
@@ -219,6 +247,10 @@ export default {
         getCredCompId(prefix) {
             const idHash = new JsHashes.SHA256().hex(this.credential.id || JSON.stringify(this.credential.proof));
             return prefix + '-' + idHash.substr(idHash.length - 5, idHash.length);
+        },
+        requestDisclosure() {
+            if (this.disclosed) this.toast.info('Credential already disclosed!')
+            else this.$store.dispatch("makeAuthenticatedRequest", this.credential.id);
         }
     }
 }
