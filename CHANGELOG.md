@@ -5,6 +5,12 @@ WIP
 ---
 
 
+1.6.0 (2023-06-19)
+---
+
+- add ability to request disclosure of single credentials
+
+
 1.5.3 (2023-06-14)
 ---
 
