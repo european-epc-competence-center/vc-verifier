@@ -1,7 +1,8 @@
 <template>
     <div class="card shadow m-3"
         :class="[getStateColor(credential) != 'success' ? `border-${getStateColor(credential)}` : '']">
-        <QRModal :id="getCredCompId('modal')" v-bind:value="getPlainCredential(credential)" />
+        <QRModal :id="getCredCompId('qr-modal')" :value="getPlainCredential(credential)" />
+        <DiscloseModal :id="getCredCompId('disclose-modal')" :credential="credential" :requestURL="credential.id" />
         <div class="card-header p-3">
             <div class="row justify-content-between align-items-center">
                 <div class="col-8">
@@ -147,9 +148,8 @@
                                 </table>
                                 <div v-if="SDCredential" class="row m-3 justify-content-center">
                                     <div class="col-md-6 text-center">
-                                        <button @click="requestDisclosure" type="button" class="btn btn-outline-primary"
-                                            data-bs-container="body" data-bs-toggle="tooltip"
-                                            data-bs-title="Make authenticated request to request disclosure of more data fields of this selective disclosure credential"><i
+                                        <button type="button" class="btn btn-outline-primary"
+                                        data-bs-toggle="modal" :data-bs-target="getCredCompId('#disclose-modal')"><i
                                                 class="bi-file-earmark-lock2-fill" role="img" aria-label="PDF Download"></i>
                                             Disclose more</button>
                                     </div>
@@ -168,7 +168,7 @@
                 <button @click="downloadCredential(credential)" type="button" style="border-right: none;"
                     class="btn btn-outline-primary"><i class="bi-filetype-json" role="img"
                         aria-label="JSON Download"></i></button>
-                <button data-bs-toggle="modal" :data-bs-target="getCredCompId('#modal')" role="button" type="button"
+                <button data-bs-toggle="modal" :data-bs-target="getCredCompId('#qr-modal')" role="button" type="button"
                     class="btn btn-outline-primary"><i class="bi-qr-code" role="img" aria-label="QR-Code"></i></button>
             </div>
         </div>
@@ -188,6 +188,7 @@ pdfMake.vfs = pdfFonts.pdfMake.vfs;
 import { useToast } from "vue-toastification";
 import TrimmedBatch from "@/components/TrimmedBatch.vue";
 import QRModal from "@/components/QRModal.vue";
+import DiscloseModal from "./DiscloseModal.vue";
 
 export default {
     name: 'Credential',
@@ -196,7 +197,8 @@ export default {
     },
     components: {
         TrimmedBatch,
-        QRModal
+        QRModal,
+        DiscloseModal
     },
     data() {
         return {
@@ -247,10 +249,6 @@ export default {
         getCredCompId(prefix) {
             const idHash = new JsHashes.SHA256().hex(this.credential.id || JSON.stringify(this.credential.proof));
             return prefix + '-' + idHash.substr(idHash.length - 5, idHash.length);
-        },
-        requestDisclosure() {
-            if (this.disclosed) this.toast.info('Credential already disclosed!')
-            else this.$store.dispatch("makeAuthenticatedRequest", this.credential.id);
         }
     }
 }

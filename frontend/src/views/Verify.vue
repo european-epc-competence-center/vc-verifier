@@ -120,8 +120,8 @@ export default {
                 const newFields = Object.keys(credential.credentialSubject);
                 if (oldFields.length < newFields.length) {
                     this.credentials[existingCredentialIndex] = credential;
-                    this.toast.success(`Successfully disclosed ${newFields.filter(x => !oldFields.includes(x)).join(', ')}!`)
-                }
+                    this.toast.success(`Successfully disclosed ${newFields.filter(x => !oldFields.includes(x)).join(', ')}!`);
+                } else this.toast.warning('No additional information was disclosed!')
             } else this.credentials.push(credential);
             this.getContext(credential)
                 .then(context => {

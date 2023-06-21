@@ -4,6 +4,8 @@ VC Verifier Changelog
 WIP
 ---
 
+- rework SD request UI for OID4VC
+
 
 1.6.0 (2023-06-19)
 ---

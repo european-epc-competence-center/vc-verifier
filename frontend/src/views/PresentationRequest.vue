@@ -56,6 +56,7 @@
 <script>
 import { useToast } from 'vue-toastification';
 import QrcodeVue from 'qrcode.vue'
+import { getPresentationDefinition } from '../utils.js';
 
 export default {
     name: 'PresentationRequest',
@@ -82,37 +83,7 @@ export default {
     },
     computed: {
         presentationDefinition() {
-            return {
-                "id": "eecc_verifier_request",
-                "input_descriptors": [
-                    {
-                        "id": "eecc_verifier_request_" + this.credentialType || "",
-                        "format": {
-                            "ldp_vc": {
-                                "proof_type": [
-                                    "Ed25519Signature2020"
-                                ]
-                            }
-                        },
-                        "constraints": {
-                            "fields": [
-                                {
-                                    "path": [
-                                        "$.type"
-                                    ],
-                                    "filter": {
-                                        "type": "array",
-                                        "contains": {
-                                            "type": "string",
-                                            "const": this.credentialType
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
+            return getPresentationDefinition(this.credentialType)
         },
         presentationRequest() {
             return {

@@ -1,5 +1,4 @@
 import { createStore } from 'vuex'
-import { demoAuthPresentation } from './demoAuth'
 import api from '../api'
 
 
@@ -33,11 +32,9 @@ export default createStore({
     resetVerifiables() {
       this.commit('resetVerifiables');
     },
-    makeAuthenticatedRequest(context, url, authPresentation) {
-      // mock authentication if not present
-      if (!authPresentation) authPresentation = demoAuthPresentation;
+    makeAuthenticatedRequest(context, payload) {
       // folowing OID4VP with authVP extension
-      api.post(url, { vp: authPresentation })
+      api.post(payload.url, { vp: payload.authPresentation })
         .then((res) => {
           this.commit('addVerifiables', res.data)
           this.commit('addDisclosedCredential', res.data)
