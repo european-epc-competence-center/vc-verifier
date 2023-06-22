@@ -6,6 +6,12 @@ WIP
 
 
 
+1.6.2 (2023-06-22)
+---
+
+- fix authentication removed after disclosure
+
+
 1.6.1 (2023-06-22)
 ---
 

@@ -110,11 +110,9 @@ export default {
         updateDemoAuth(event) {
             this.useDemoAuth = event.target.checked;
             this.authentication = this.useDemoAuth ? this.demoAuth : undefined;
-            console.log(this.authentication)
         },
         requestDisclosure() {
             this.$store.dispatch("makeAuthenticatedRequest", { url: this.requestURL, authPresentation: this.authentication });
-            this.authentication = undefined;
             Modal.getInstance(document.getElementById(this.id)).hide()
         }
     }
