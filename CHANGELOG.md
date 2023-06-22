@@ -4,6 +4,11 @@ VC Verifier Changelog
 WIP
 ---
 
+
+
+1.6.1 (2023-06-22)
+---
+
 - allow OID4VP for authenticated request
 - rework SD request UI for OID4VC
 - allow custom credential types for OID4VP
