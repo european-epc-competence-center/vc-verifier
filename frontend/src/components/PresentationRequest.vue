@@ -50,7 +50,7 @@ export default {
     mounted() {
         if (this.intervalId) clearInterval(this.intervalId);
         this.intervalId = setInterval(this.getPresentation, 3000);
-        if (this.mode != 'verify') this.registerPresentationRequest();
+        this.registerPresentationRequest();
     },
     beforeUnmount() {
         if (this.intervalId) clearInterval(this.intervalId)

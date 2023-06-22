@@ -14,7 +14,7 @@
                         <div class="col-1 ps-0">
                             <div class="form-check form-switch">
                                 <input @change="updateDemoAuth($event)" class="form-check-input" type="checkbox"
-                                    id="flexSwitchCheckDefault" :checked="authentication">
+                                    id="useDemoSwitch" :checked="authentication">
                             </div>
                         </div>
                     </div>

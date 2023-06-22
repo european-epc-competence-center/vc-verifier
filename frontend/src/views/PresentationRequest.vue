@@ -18,12 +18,21 @@
             </div>
             <div class="row mx-md-3">
                 <div class="col-md-4">
-                    <select v-model="credentialType" id="credentialType" class="form-select" aria-label="Credential Type">
+                    <input v-if="enableCustomCredentialType" v-model="customCredentialType" id="credentialType" type="text"
+                        class="form-control" placeholder="CustomCredential" aria-label="credentialType">
+                    <select v-else v-model="credentialType" id="credentialType" class="form-select"
+                        aria-label="Credential Type">
                         <option selected :value="undefined">All</option>
                         <option value="ProductPassportCredential">Product Passport Credential</option>
-                        <option value="GS1GLNCredential">GS1 GLN Credential</option>
                     </select>
-                    <label for="credentialType" class="form-label text-muted ms-1"><small>Credential type</small></label>
+                    <label for="credentialType" class="form-label text-muted ms-1">
+                        <div class="form-check form-switch">
+                            <input v-model="enableCustomCredentialType" class="form-check-input" type="checkbox"
+                                id="customCredentialTypeSwitch">
+                            <label class="form-check-label" for="customCredentialTypeSwitch"><small>Custom credential
+                                    type</small></label>
+                        </div>
+                    </label>
                 </div>
             </div>
             <PresentationRequest :credentialType="credentialType" />
@@ -38,13 +47,28 @@ export default {
     data() {
         return {
             credentialType: undefined,
+            customCredentialType: undefined,
+            enableCustomCredentialType: false,
+            customChangeTimeout: undefined
         }
     },
     components: {
         PresentationRequest
     },
+    watch: {
+        customCredentialType() {
+            this.setCustomCredentialType();
+        },
+        enableCustomCredentialType(newValue) {
+            if (newValue && this.customCredentialType) this.credentialType = this.customCredentialType;
+            else this.credentialType = undefined;
+        }
+    },
     methods: {
-
+        setCustomCredentialType() {
+            if (this.customChangeTimeout) clearTimeout(this.customChangeTimeout);
+            this.customChangeTimeout = setTimeout(() => this.credentialType = this.customCredentialType, 500);
+        }
     }
 }
 </script>
