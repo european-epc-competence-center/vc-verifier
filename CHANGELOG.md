@@ -4,6 +4,7 @@ VC Verifier Changelog
 WIP
 ---
 
+- allow OID4VP for authenticated request
 - rework SD request UI for OID4VC
 
 

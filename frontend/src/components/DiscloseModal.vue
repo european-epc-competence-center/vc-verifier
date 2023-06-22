@@ -6,7 +6,7 @@
                     <h1 class="modal-title fs-5">Request Disclosure</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body text-center pt-1" style="height: 70vh; overflow-y: scroll;">
+                <div class="modal-body text-center pt-1" style="height: 70vh; overflow-y: scroll; overflow-x: hidden;">
                     <div class="row justify-content-end mb-5">
                         <div class="col-11 text-end">
                             <small class="text-muted">Use demo authentication</small>
@@ -18,15 +18,15 @@
                             </div>
                         </div>
                     </div>
-                    <h5>For</h5>
-                    <h5><strong>{{ credential.type[1] }}</strong></h5>
+                    <h5>For disclosing</h5>
+                    <h5 class="my-3"><strong>{{ credential.type[1] }}</strong></h5>
                     <div v-if="authentication">
-                        <h5>with</h5>
-                        <h5><strong>{{ authHolder }}</strong></h5>
+                        <h5>by authenticating as</h5>
+                        <h5 class="my-3"><strong>{{ authHolder }}</strong></h5>
                         <div v-if="authCredentials">
-                            <h5>presenting</h5>
+                            <h5>and presenting the following credentials</h5>
                             <ol class="list-group list-group my-5 mx-md-3">
-                                <li v-for="vc in  authCredentials " :key="vc.id"
+                                <li v-for="vc in authCredentials " :key="vc.id"
                                     class="list-group-item d-flex justify-content-between align-items-start">
                                     <div class="ms-2 me-auto text-start">
                                         <div class="fw-bold text-primary">{{ vc.type[1] }}</div>
@@ -44,12 +44,13 @@
                     </div>
                     <div v-else class="row align-items-center" style="height: 30vh;">
                         <div class="col-12">
-                            Please provide authentication with OID4VP
+                            <h5>authenticate with your wallet</h5>
+                            <PresentationRequest mode="authenticate" />
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer justify-content-center">
-                    <button :disabled="!authentication || disclosed" @click="requestDisclosure" type="button"
+                    <button :disabled="!authentication" @click="requestDisclosure" type="button"
                         class="btn btn-outline-primary">Request <i class="bi-send-fill" role="img"
                             aria-label="Request"></i></button>
                 </div>
@@ -59,6 +60,7 @@
 </template>
 
 <script>
+import PresentationRequest from './PresentationRequest.vue';
 import { demoAuthPresentation } from '@/store/demoAuth';
 import { Modal } from 'bootstrap';
 
@@ -69,14 +71,24 @@ export default {
         requestURL: String,
         credential: Object
     },
+    components: {
+        PresentationRequest
+    },
     data() {
         return {
-            useDemoAuth: false,
-            demoAuth: demoAuthPresentation,
-            authentication: undefined
+            useDemoAuth: true,
+            demoAuth: demoAuthPresentation
         }
     },
     computed: {
+        authentication: {
+            get() {
+                return this.$store.state.authentication;
+            },
+            set(auth) {
+                this.$store.commit('updateAuthentication', auth);
+            }
+        },
         disclosed() {
             if (this.credential) return this.$store.state.disclosedCredentials.includes(this.credential.id);
             return false;
@@ -98,6 +110,7 @@ export default {
         updateDemoAuth(event) {
             this.useDemoAuth = event.target.checked;
             this.authentication = this.useDemoAuth ? this.demoAuth : undefined;
+            console.log(this.authentication)
         },
         requestDisclosure() {
             this.$store.dispatch("makeAuthenticatedRequest", { url: this.requestURL, authPresentation: this.authentication });

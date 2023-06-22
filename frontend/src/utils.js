@@ -83,36 +83,3 @@ export async function getContext(credential) {
     return resolved.mappings;
 }
 
-export function getPresentationDefinition(credentialType) {
-    return {
-        "id": "eecc_verifier_request",
-        "input_descriptors": [
-            {
-                "id": "eecc_verifier_request_" + credentialType || "",
-                "format": {
-                    "ldp_vc": {
-                        "proof_type": [
-                            "Ed25519Signature2020"
-                        ]
-                    }
-                },
-                "constraints": {
-                    "fields": [
-                        {
-                            "path": [
-                                "$.type"
-                            ],
-                            "filter": {
-                                "type": "array",
-                                "contains": {
-                                    "type": "string",
-                                    "const": credentialType
-                                }
-                            }
-                        }
-                    ]
-                }
-            }
-        ]
-    }
-}

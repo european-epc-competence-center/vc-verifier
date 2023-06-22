@@ -1,10 +1,12 @@
 import { createStore } from 'vuex'
 import api from '../api'
+import { demoAuthPresentation } from './demoAuth';
 
 
 export default createStore({
   state: {
     version: '1.6.0',
+    authentication: demoAuthPresentation,
     verifiables: [],
     disclosedCredentials: [],
     VC_REGISTRY: process.env.VC_REGISTRY || 'https://ssi.eecc.de/api/registry/vcs/',
@@ -12,6 +14,9 @@ export default createStore({
     showQRModal: false
   },
   mutations: {
+    updateAuthentication(state, payload) {
+      state.authentication = payload;
+    },
     showQRModal(state, payload) {
       state.showQRModal = payload.value;
     },
