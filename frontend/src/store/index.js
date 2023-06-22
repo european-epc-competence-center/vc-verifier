@@ -10,15 +10,11 @@ export default createStore({
     verifiables: [],
     disclosedCredentials: [],
     VC_REGISTRY: process.env.VC_REGISTRY || 'https://ssi.eecc.de/api/registry/vcs/',
-    OPENID_ENDPOINT: process.env.OPENID_ENDPOINT || 'https://ssi.eecc.de/api/openid/',
-    showQRModal: false
+    OPENID_ENDPOINT: process.env.OPENID_ENDPOINT || 'https://ssi.eecc.de/api/openid/'
   },
   mutations: {
     updateAuthentication(state, payload) {
       state.authentication = payload;
-    },
-    showQRModal(state, payload) {
-      state.showQRModal = payload.value;
     },
     addVerifiables(state, verifiables) {
       state.verifiables = state.verifiables.concat(Array.isArray(verifiables) ? verifiables : [verifiables])

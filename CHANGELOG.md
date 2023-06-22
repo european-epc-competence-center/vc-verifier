@@ -6,6 +6,7 @@ WIP
 
 - allow OID4VP for authenticated request
 - rework SD request UI for OID4VC
+- small improvements
 
 
 1.6.0 (2023-06-19)
