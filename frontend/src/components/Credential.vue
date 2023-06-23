@@ -10,7 +10,7 @@
                     <div class="credentialid mt-1"><a :href="credential.id">{{ credential.id }}</a></div>
                 </div>
                 <div class="col-2 text-end">
-                    <a v-if="SDCredential" tabindex="0" style="display: inline-block;" type="button" class="me-3"
+                    <a v-if="SDCredential" tabindex="0" style="display: inline-block;" type="button"
                         data-bs-container="body" data-bs-toggle="tooltip" data-bs-html="true"
                         :data-bs-title="'<strong>Selective disclosure credential</strong><br>' + (disclosed ? 'Already disclosed' : 'Go to details to request more disclosure')">
                         <i v-if="disclosed" style="font-size: 1.25rem;" class="bi bi-eye-fill text-primary" role="img"
@@ -19,8 +19,8 @@
                             aria-label="SD-Credentials"></i>
                     </a>
                     <a v-if="credential.presentation && credential.presentation.verified != undefined" tabindex="0"
-                        style="display: inline-block;" type="button" class="me-3" data-bs-container="body"
-                        data-bs-toggle="tooltip" :data-bs-title="'Presentation ' + credential.presentation.status">
+                        style="display: inline-block;" type="button" data-bs-container="body" data-bs-toggle="tooltip"
+                        :data-bs-title="'Presentation ' + credential.presentation.status">
                         <i v-if="credential.presentation.verified" style="font-size: 1.25rem;"
                             class="bi bi-card-checklist text-success" role="img" aria-label="Verified"></i>
                         <i v-else-if="credential.presentation.presentationResult" style="font-size: 1.25rem;"
@@ -28,8 +28,9 @@
                         <i v-else style="font-size: 1.25rem;" class="bi bi-card-checklist text-danger" role="img"
                             aria-label="Unverified"></i>
                     </a>
-                    <a tabindex="0" style="display: inline-block;" type="button" data-bs-container="body"
-                        data-bs-toggle="tooltip" :data-bs-title="credential.status ? credential.status : 'Verifying...'">
+                    <a tabindex="0" class="ms-1 ms-sm-3" style="display: inline-block;" type="button"
+                        data-bs-container="body" data-bs-toggle="tooltip"
+                        :data-bs-title="credential.status ? credential.status : 'Verifying...'">
                         <i v-if="credential.verified == true" style="font-size: 1.25rem;"
                             class="bi bi-check-circle-fill text-success" role="img" aria-label="Verified"></i>
                         <i v-else-if="credential.verified == false && !credential.revoked" style="font-size: 1.25rem;"
@@ -148,8 +149,8 @@
                                 </table>
                                 <div v-if="SDCredential" class="row m-3 justify-content-center">
                                     <div class="col-md-6 text-center">
-                                        <button type="button" class="btn btn-outline-primary"
-                                        data-bs-toggle="modal" :data-bs-target="getCredCompId('#disclose-modal')"><i
+                                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                                            :data-bs-target="getCredCompId('#disclose-modal')"><i
                                                 class="bi-file-earmark-lock2-fill" role="img" aria-label="PDF Download"></i>
                                             Disclose more</button>
                                     </div>
