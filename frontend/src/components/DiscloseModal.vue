@@ -76,7 +76,6 @@ export default {
     },
     data() {
         return {
-            useDemoAuth: true,
             demoAuth: demoAuthPresentation
         }
     },
@@ -108,8 +107,7 @@ export default {
             }).filter((x) => x).join('<br>');
         },
         updateDemoAuth(event) {
-            this.useDemoAuth = event.target.checked;
-            this.authentication = this.useDemoAuth ? this.demoAuth : undefined;
+            this.authentication = event.target.checked ? this.demoAuth : undefined;
         },
         requestDisclosure() {
             this.$store.dispatch("makeAuthenticatedRequest", { url: this.requestURL, authPresentation: this.authentication });

@@ -47,9 +47,15 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer justify-content-center">
-                    <button data-bs-dismiss="modal" type="button" class="btn btn-outline-secondary">Refresh</button>
-                    <button data-bs-dismiss="modal" type="button" class="btn btn-outline-primary">&nbsp;Okay&nbsp;</button>
+                <div class="modal-footer row justify-content-center">
+                    <div class="col-6 col-md-5 col-lg-3">
+                        <button @click="this.authentication = undefined" type="button"
+                            class="btn btn-outline-secondary w-100">Re-authenticate <i class="bi-arrow-repeat"></i></button>
+                    </div>
+                    <div class="col-6 col-md-5 col-lg-3">
+                        <button data-bs-dismiss="modal" type="button" class="btn btn-outline-primary w-100">Okay
+                            <i class="bi-check-circle-fill"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -71,7 +77,6 @@ export default {
     },
     data() {
         return {
-            useDemoAuth: true,
             demoAuth: demoAuthPresentation
         }
     },
@@ -99,8 +104,7 @@ export default {
             }).filter((x) => x).join('<br>');
         },
         updateDemoAuth(event) {
-            this.useDemoAuth = event.target.checked;
-            this.authentication = this.useDemoAuth ? this.demoAuth : undefined;
+            this.authentication = event.target.checked ? this.demoAuth : undefined;
         },
         requestDisclosure() {
             this.$store.dispatch("makeAuthenticatedRequest", { url: this.requestURL, authPresentation: this.authentication });
