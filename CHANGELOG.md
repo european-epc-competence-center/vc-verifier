@@ -4,6 +4,10 @@ VC Verifier Changelog
 WIP
 ---
 
+
+1.6.3 (2023-06-27)
+---
+
 - UI improvements
 - add global authentication on entry page
 

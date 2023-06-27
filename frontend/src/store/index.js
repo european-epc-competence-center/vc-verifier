@@ -5,7 +5,7 @@ import { demoAuthPresentation } from './demoAuth';
 
 export default createStore({
   state: {
-    version: '1.6.2',
+    version: '1.6.3',
     authentication: demoAuthPresentation,
     verifiables: [],
     disclosedCredentials: [],
