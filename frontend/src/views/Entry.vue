@@ -16,7 +16,7 @@
                 </div>
                 <div class="col-3 text-end">
                     <button data-bs-toggle="modal" type="button" data-bs-target="#auth-modal"
-                        class="btn btn-outline-primary mt-1"><i class="bi-person-vcard-fill" data-bs-container="body"
+                        class="btn btn-outline-primary ms-1 mt-1"><i class="bi-person-vcard-fill" data-bs-container="body"
                             data-bs-toggle="tooltip" data-bs-title="Authenticate"></i></button>
                     <router-link :to="{ path: 'request' }" class="btn btn-outline-primary ms-1 mt-1" type="button"><i
                             class="bi-send-check-fill" role="img" aria-label="Presentation request"></i>
