@@ -1,6 +1,6 @@
 <template>
     <div id="maincard" class="card m-md-auto shadow">
-        <div class="card-header text-center p-3 pb-1">
+        <div class="card-header text-center p-1 p-md-3 pb-1">
             <router-link to="/"><i id="backbutton" style="font-size: 2rem;" class="bi-arrow-left-square-fill mx-3 my-1"
                     role="img" aria-label="API Docs"></i></router-link>
             <h3 class="mb-0 mx-5">Verifiable Credential Verifier</h3>
@@ -10,7 +10,7 @@
                     aria-label="API Docs"></i></a>
             <a href="https://id.eecc.de"><img id="logo" src="@/assets/img/logo.png" /></a>
         </div>
-        <div class="card-body p-3" style="overflow-y: scroll;">
+        <div class="card-body p-1 p-md-3" style="overflow-y: scroll;">
             <div class="alert alert-primary m-3 mb-5 text-center" role="alert">
                 <p class="m-0" v-html="getInfoString"></p>
                 <Transition name="fade">

@@ -1,6 +1,6 @@
 <template>
     <div id="maincard" class="card m-md-auto shadow">
-        <div class="card-header text-center p-3 pb-1">
+        <div class="card-header text-center p-1 p-md-3 pb-1">
             <h3 class="mb-0 mx-5">Credential Selector</h3>
             <a href="https://github.com/european-epc-competence-center/vc-verifier"><i class="bi-github mx-3" role="img"
                     aria-label="GitHub"></i></a>
@@ -8,7 +8,7 @@
                     aria-label="API Docs"></i></a>
             <a href="https://id.eecc.de"><img id="logo" src="@/assets/img/logo.png" /></a>
         </div>
-        <div class="card-body" style="overflow-y: scroll;">
+        <div class="card-body p-1 p-md-3" style="overflow-y: scroll;">
             <div class="row m-3">
                 <div class="col-9">
                     <p class="mb-0">Select the credential/s using one of the options below or send a presentation request.
@@ -16,9 +16,9 @@
                 </div>
                 <div class="col-3 text-end">
                     <button data-bs-toggle="modal" type="button" data-bs-target="#auth-modal"
-                        class="btn btn-outline-primary"><i class="bi-person-vcard-fill" data-bs-container="body"
+                        class="btn btn-outline-primary mt-1"><i class="bi-person-vcard-fill" data-bs-container="body"
                             data-bs-toggle="tooltip" data-bs-title="Authenticate"></i></button>
-                    <router-link :to="{ path: 'request' }" class="btn btn-outline-primary ms-1" type="button"><i
+                    <router-link :to="{ path: 'request' }" class="btn btn-outline-primary ms-1 mt-1" type="button"><i
                             class="bi-send-check-fill" role="img" aria-label="Presentation request"></i>
                     </router-link>
                 </div>

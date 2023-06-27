@@ -48,8 +48,8 @@
                     </div>
                 </div>
                 <div class="modal-footer justify-content-center">
-                    <button :disabled="!authentication" data-bs-dismiss="modal" type="button"
-                        class="btn btn-outline-secondary">Close</button>
+                    <button data-bs-dismiss="modal" type="button" class="btn btn-outline-secondary">Refresh</button>
+                    <button data-bs-dismiss="modal" type="button" class="btn btn-outline-primary">&nbsp;Okay&nbsp;</button>
                 </div>
             </div>
         </div>
