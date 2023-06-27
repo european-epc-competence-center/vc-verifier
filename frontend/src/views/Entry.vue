@@ -15,7 +15,10 @@
                     </p>
                 </div>
                 <div class="col-3 text-end">
-                    <router-link :to="{ path: 'request' }" class="btn btn-outline-primary" type="button"><i
+                    <button data-bs-toggle="modal" type="button" data-bs-target="#auth-modal"
+                        class="btn btn-outline-primary"><i class="bi-person-vcard-fill" data-bs-container="body"
+                            data-bs-toggle="tooltip" data-bs-title="Authenticate"></i></button>
+                    <router-link :to="{ path: 'request' }" class="btn btn-outline-primary ms-1" type="button"><i
                             class="bi-send-check-fill" role="img" aria-label="Presentation request"></i>
                     </router-link>
                 </div>
@@ -66,20 +69,23 @@
                     <div class="form-text">Provide the subject id for which the credentials shall be queried</div>
                 </form>
             </div>
+            <AuthModal id="auth-modal" />
             <ScanModal :scan="scan" />
         </div>
     </div>
 </template>
 <script>
-import { Tooltip } from 'bootstrap';
+import { Tooltip } from "bootstrap";
 import { useToast } from "vue-toastification";
+
+import AuthModal from "@/components/AuthModal.vue";
 import ScanModal from "@/components/ScanModal.vue"
 
-import 'bootstrap/js/dist/modal'
 
 export default {
     name: 'Entry',
     components: {
+        AuthModal,
         ScanModal
     },
     data() {

@@ -34,8 +34,8 @@
 
 <script>
 import { useToast } from "vue-toastification";
-import { Tooltip } from 'bootstrap';
-import { getVerifiableType, VerifiableType, getContext, getHolder } from '../utils.js';
+import { Tooltip } from "bootstrap";
+import { getVerifiableType, VerifiableType, getContext, getHolder } from "../utils.js";
 
 
 import Passport from "@/components/Passport.vue";

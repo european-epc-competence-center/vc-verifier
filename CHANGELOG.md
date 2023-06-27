@@ -5,7 +5,7 @@ WIP
 ---
 
 - UI improvements
-
+- add global authentication on entry page
 
 
 1.6.2 (2023-06-22)

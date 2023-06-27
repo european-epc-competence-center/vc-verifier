@@ -32,9 +32,9 @@
 </template>
 
 <script>
-import { QrcodeStream, QrcodeDropZone } from 'vue3-qrcode-reader'
+import { QrcodeStream, QrcodeDropZone } from "vue3-qrcode-reader";
 import { useToast } from "vue-toastification";
-import { Modal } from 'bootstrap';
+import { Modal } from "bootstrap";
 
 export default {
     name: 'ScanModal',
