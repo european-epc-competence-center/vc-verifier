@@ -14,7 +14,7 @@
                         <div class="col-1 ps-0">
                             <div class="form-check form-switch">
                                 <input @change="updateDemoAuth($event)" class="form-check-input" type="checkbox"
-                                    id="useDemoSwitch" :checked="authentication">
+                                    id="useDemoSwitch" :checked="isDemoAuth">
                             </div>
                         </div>
                     </div>
@@ -43,18 +43,21 @@
                     <div v-else class="row align-items-center" style="height: 30vh;">
                         <div class="col-12">
                             <h5>Authenticate with your wallet</h5>
-                            <PresentationRequest mode="authenticate" />
+                            <PresentationRequest v-if="active" mode="authenticate" />
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer row justify-content-center">
                     <div class="col-6 col-md-5 col-lg-3">
-                        <button @click="this.authentication = undefined" type="button"
+                        <button :disabled="!authentication" @click="this.authentication = undefined" type="button"
                             class="btn btn-outline-secondary w-100">Re-authenticate <i class="bi-arrow-repeat"></i></button>
                     </div>
                     <div class="col-6 col-md-5 col-lg-3">
-                        <button data-bs-dismiss="modal" type="button" class="btn btn-outline-primary w-100">Okay
+                        <button v-if="authentication" data-bs-dismiss="modal" type="button"
+                            class="btn btn-outline-primary w-100">Apply
                             <i class="bi-check-circle-fill"></i></button>
+                        <button v-else data-bs-dismiss="modal" type="button" class="btn btn-outline-secondary w-100">Discard
+                            <i class="bi-x-octagon"></i></button>
                     </div>
                 </div>
             </div>
@@ -65,7 +68,7 @@
 <script>
 import PresentationRequest from "./PresentationRequest.vue";
 import { demoAuthPresentation } from "@/store/demoAuth";
-import { Modal } from "bootstrap";
+import { isDemoAuth } from "../utils.js";
 
 export default {
     name: 'AuthModal',
@@ -77,10 +80,19 @@ export default {
     },
     data() {
         return {
-            demoAuth: demoAuthPresentation
+            demoAuth: demoAuthPresentation,
+            active: false
         }
     },
+    mounted() {
+        const modal = document.getElementById(this.id)
+        modal.addEventListener('show.bs.modal', () => this.active = true)
+        modal.addEventListener('hide.bs.modal', () => this.active = false)
+    },
     computed: {
+        isDemoAuth() {
+            return isDemoAuth(this.authentication);
+        },
         authentication: {
             get() {
                 return this.$store.state.authentication;
@@ -106,10 +118,6 @@ export default {
         updateDemoAuth(event) {
             this.authentication = event.target.checked ? this.demoAuth : undefined;
         },
-        requestDisclosure() {
-            this.$store.dispatch("makeAuthenticatedRequest", { url: this.requestURL, authPresentation: this.authentication });
-            Modal.getInstance(document.getElementById(this.id)).hide()
-        }
     }
 }
 </script>

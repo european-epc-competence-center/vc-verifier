@@ -14,7 +14,7 @@
                         <div class="col-1 ps-0">
                             <div class="form-check form-switch">
                                 <input @change="updateDemoAuth($event)" class="form-check-input" type="checkbox"
-                                    id="useDemoSwitch" :checked="authentication">
+                                    id="useDemoSwitch" :checked="isDemoAuth">
                             </div>
                         </div>
                     </div>
@@ -45,7 +45,7 @@
                     <div v-else class="row align-items-center" style="height: 30vh;">
                         <div class="col-12">
                             <h5>authenticate with your wallet</h5>
-                            <PresentationRequest mode="authenticate" />
+                            <PresentationRequest v-if="active" mode="authenticate" />
                         </div>
                     </div>
                 </div>
@@ -63,6 +63,7 @@
 import PresentationRequest from './PresentationRequest.vue';
 import { demoAuthPresentation } from '@/store/demoAuth';
 import { Modal } from 'bootstrap';
+import { isDemoAuth } from "../utils.js";
 
 export default {
     name: 'DiscloseModal',
@@ -76,10 +77,19 @@ export default {
     },
     data() {
         return {
-            demoAuth: demoAuthPresentation
+            demoAuth: demoAuthPresentation,
+            active: false
         }
     },
+    mounted() {
+        const modal = document.getElementById(this.id)
+        modal.addEventListener('show.bs.modal', () => this.active = true)
+        modal.addEventListener('hide.bs.modal', () => this.active = false)
+    },
     computed: {
+        isDemoAuth() {
+            return isDemoAuth(this.authentication);
+        },
         authentication: {
             get() {
                 return this.$store.state.authentication;

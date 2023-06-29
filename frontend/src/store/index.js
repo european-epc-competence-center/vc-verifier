@@ -1,12 +1,12 @@
 import { createStore } from 'vuex'
 import api from '../api'
-import { demoAuthPresentation } from './demoAuth';
+
 
 
 export default createStore({
   state: {
-    version: '1.6.3',
-    authentication: demoAuthPresentation,
+    version: '1.6.4',
+    authentication: undefined,
     verifiables: [],
     disclosedCredentials: [],
     VC_REGISTRY: process.env.VC_REGISTRY || 'https://ssi.eecc.de/api/registry/vcs/',

@@ -5,6 +5,13 @@ WIP
 ---
 
 
+1.6.4 (2023-06-29)
+---
+
+- use authentication for inital fetchif present
+- general improvements to authentication
+
+
 1.6.3 (2023-06-27)
 ---
 

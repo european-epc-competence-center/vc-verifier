@@ -75,6 +75,9 @@ export default {
             });
     },
     computed: {
+        authenctication() {
+            return this.$store.state.authentication;
+        },
         storeVerifiables() {
             return this.$store.state.verifiables;
         },
@@ -135,16 +138,18 @@ export default {
             this.$store.dispatch("resetVerifiables");
             verifiables.map(async v => await this.verify(v));
         },
+        async fetchAuth(url) {
+            return this.authenctication ? await this.$api.post(url, { vp: this.authenctication }) : await this.$api.get(url);
+        },
         async fetchData() {
-
             if (this.credentialId) {
-                const res = await this.$api.get(this.credentialId);
+                const res = await this.fetchAuth(this.credentialId);
                 this.verifiables.push(res.data);
                 return
             }
 
             if (this.subjectId) {
-                const res = await this.$api.get(this.$store.state.VC_REGISTRY + encodeURIComponent(this.subjectId));
+                const res = await this.fetchAuth(this.$store.state.VC_REGISTRY + encodeURIComponent(this.subjectId));
                 this.verifiables = res.data
                 return
             }

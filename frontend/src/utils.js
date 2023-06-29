@@ -1,4 +1,5 @@
 import jsonld from 'jsonld';
+import { demoAuthPresentation } from './store/demoAuth';
 
 export const VerifiableType = {
     CREDENTIAL: 'VerifiableCredential',
@@ -81,5 +82,9 @@ const documentLoader = async (url) => {
 export async function getContext(credential) {
     const resolved = await jsonld.processContext(await jsonld.processContext(null, null), credential, { documentLoader });
     return resolved.mappings;
+}
+
+export function isDemoAuth(auth) {
+    return auth != undefined && JSON.stringify(auth) == JSON.stringify(demoAuthPresentation);
 }
 
