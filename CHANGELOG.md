@@ -4,11 +4,13 @@ VC Verifier Changelog
 WIP
 ---
 
+- deduce credential type more accurately
+
 
 1.6.4 (2023-06-29)
 ---
 
-- use authentication for inital fetchif present
+- use authentication for inital fetch if present
 - general improvements to authentication
 
 

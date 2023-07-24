@@ -32,6 +32,10 @@ export function getVerifiableType(verifiable) {
     return VerifiableType.CREDENTIAL;
 }
 
+export function getCredentialType(credential) {
+    return credential.type.length > 1 ? credential.type.filter((c) => c != 'VerifiableCredential')[0] : credential.type[0];
+}
+
 export function getHolder(presentation) {
     if (presentation.holder) return presentation.holder;
     const proof = Array.isArray(presentation.proof) ? presentation.proof[0] : presentation.proof

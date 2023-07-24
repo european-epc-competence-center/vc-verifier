@@ -6,7 +6,7 @@
         <div class="card-header p-3">
             <div class="row justify-content-between align-items-center">
                 <div class="col-8">
-                    <h5 class="mb-0 text-primary">{{ credential.type[1] || credential.type[0] }}</h5>
+                    <h5 class="mb-0 text-primary">{{ getCredentialType(credential) }}</h5>
                     <div class="credentialid mt-1"><a :href="credential.id">{{ credential.id }}</a></div>
                 </div>
                 <div class="col-2 text-end">
@@ -182,7 +182,7 @@ import { Tooltip } from 'bootstrap';
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { credentialPDF } from '../pdf.js';
-import { getPlainCredential } from '../utils.js';
+import { getPlainCredential, getCredentialType } from '../utils.js';
 import * as JsHashes from 'jshashes';
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
@@ -204,7 +204,8 @@ export default {
     data() {
         return {
             toast: useToast(),
-            getPlainCredential: getPlainCredential
+            getPlainCredential: getPlainCredential,
+            getCredentialType: getCredentialType
         }
     },
     mounted() {
@@ -215,7 +216,7 @@ export default {
     computed: {
         SDCredential() {
             const proof = Array.isArray(this.credential.proof) ? this.credential.proof[0] : this.credential.proof;
-            return proof.type == 'DataIntegrityProof'
+            return proof.cryptosuite && proof.cryptosuite == 'ecdsa-sd-2023';
         },
         disclosed() {
             return this.$store.state.disclosedCredentials.includes(this.credential.id);
