@@ -5,6 +5,7 @@ WIP
 ---
 
 - deduce credential type more accurately
+- add query params to swagger
 
 
 1.6.4 (2023-06-29)
