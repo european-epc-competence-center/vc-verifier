@@ -111,6 +111,8 @@ verifyRouter.get('/vc/:vcid', fetchAndVerify);
  * @summary Verifies an array of verifiables
  * @tags Verify
  * @param {array<Verifiable>} request.body.required - Array of verifiables either of type SignedPresentation or SignedCredential - application/json
+ * @param {string} challenge.query - The presentation challenge/nonce to verify against. Will be set to the challenge in the presentation if not present.
+ * @param {string} domain.query - The presentation domain/audience to verify against. No check will be made if not present.
  * @return {array<VerifierResponse>} 200 - success response - application/json
  * @return {object} 400 - bad request response - application/json
  * 
