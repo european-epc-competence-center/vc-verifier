@@ -310,7 +310,7 @@ export default {
                 return
 
             } catch (error) {
-                this.toast.error(`Something went wrong verifying the credentials!\n${error}`);
+                this.toast.error(error.response ? error.response.data : `Something went wrong verifying the credentials!\n${error}`);
             }
 
         }

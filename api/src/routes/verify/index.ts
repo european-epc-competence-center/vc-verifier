@@ -58,7 +58,7 @@ export class VerifyRoutes {
             return res.status(StatusCodes.OK).json(results);
 
         } catch (error) {
-            return res.status(StatusCodes.BAD_REQUEST).send('Something went wrong!\n' + error);
+            return res.status(StatusCodes.BAD_REQUEST).send('Something went wrong verifying!\n' + error);
         }
 
     }
