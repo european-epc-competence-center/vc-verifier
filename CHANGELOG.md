@@ -4,6 +4,10 @@ VC Verifier Changelog
 WIP
 ---
 
+
+1.6.5 (2023-08-30)
+---
+
 - deduce credential type more accurately
 - add query params to swagger
 - update dependencies
