@@ -1,5 +1,6 @@
 
 import parseLink from 'parse-link-header';
+import fetch from 'node-fetch';
 
 const HEADERS = {
     'Accept': 'application/ld+json, application/json'
@@ -8,7 +9,7 @@ const HEADERS = {
 const IPFS_GATEWAYS = ['ipfs.io', 'ipfs.ssi.eecc.de'].concat(process.env.IPFS_GATEWAYS ? process.env.IPFS_GATEWAYS.split(',') : []);
 
 
-export async function fetch_jsonld(url: string): Promise<object> {
+export async function fetch_jsonld(url: string): Promise<any> {
 
     const response = await fetch(url, { method: 'GET', headers: HEADERS });
 
@@ -37,7 +38,7 @@ export async function fetch_jsonld(url: string): Promise<object> {
 
 }
 
-export async function fetch_json(url: string): Promise<object> {
+export async function fetch_json(url: string): Promise<any> {
 
     const response = await fetch(url, { method: 'GET', headers: HEADERS });
 
@@ -45,7 +46,7 @@ export async function fetch_json(url: string): Promise<object> {
 
 }
 
-export async function fetchIPFS(IPFSUrl: string): Promise<object> {
+export async function fetchIPFS(IPFSUrl: string): Promise<any> {
 
     var document;
 
