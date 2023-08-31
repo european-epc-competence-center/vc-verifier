@@ -5,7 +5,9 @@ import { Ed25519Signature2018 } from '@digitalbazaar/ed25519-signature-2018';
 // @ts-ignore
 import { Ed25519Signature2020 } from '@digitalbazaar/ed25519-signature-2020';
 // @ts-ignore
-import { checkStatus } from '@digitalbazaar/vc-revocation-list';
+import { checkStatus as checkStatus2020 } from '@digitalbazaar/vc-revocation-list';
+// @ts-ignore
+import { checkStatus as checkStatus2021 } from '@digitalbazaar/vc-status-list';
 // @ts-ignore
 import * as ecdsaSd2023Cryptosuite from '@digitalbazaar/ecdsa-sd-2023-cryptosuite';
 // @ts-ignore
@@ -49,6 +51,26 @@ function getSuites(proof: Proof | Proof[]): unknown[] {
 
 }
 
+function getCheckStatus(credentialStatus?: CredentialStatus[] | CredentialStatus): any | undefined {
+    // no status provided
+    if (!credentialStatus) return undefined;
+
+    let statusTypes = [];
+
+    if (Array.isArray(credentialStatus)) {
+        statusTypes = credentialStatus.map(cs => cs.type);
+    }
+    else statusTypes = [credentialStatus.type]
+
+    if (statusTypes.includes('StatusList2021Entry')) return checkStatus2021;
+
+    if (statusTypes.includes('RevocationList2020Status')) return checkStatus2020;
+
+    throw new Error(`${statusTypes} not implemented`);
+
+}
+
+
 export class Verifier {
 
     static async verify(verifiable: Verifiable, challenge?: string, domain?: string): Promise<any> {
@@ -57,6 +79,8 @@ export class Verifier {
 
         let result;
 
+        const checkStatus = getCheckStatus(verifiable.credentialStatus);
+
         if (verifiable.type.includes('VerifiableCredential')) {
 
             if ((Array.isArray(verifiable.proof) ? verifiable.proof[0].type : verifiable.proof.type) == 'DataIntegrityProof') {
@@ -64,7 +88,9 @@ export class Verifier {
                 result = await jsigs.verify(verifiable, {
                     suite,
                     purpose: new AssertionProofPurpose(),
-                    documentLoader
+                    documentLoader,
+                    // give it to jsigs anyway - does not get verified
+                    checkStatus
                 });
 
             } else {

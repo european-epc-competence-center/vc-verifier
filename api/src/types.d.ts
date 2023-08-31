@@ -6,9 +6,17 @@ type Proof = {
     cryptosuite?: string;
 }
 
+type CredentialStatus = {
+    id: string | URL,
+    type: string;
+    statusListIndex: string | number;
+    statusListCredential: string | URL;
+}
+
 type Verifiable = {
     '@context': (string | any)[];
     type: string[];
+    credentialStatus: CredentialStatus[] | CredentialStatus;
     proof: Proof | Proof[];
 }
 
