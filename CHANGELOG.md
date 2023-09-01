@@ -4,6 +4,8 @@ VC Verifier Changelog
 WIP
 ---
 
+- support status-list-2021
+- 
 
 1.6.5 (2023-08-30)
 ---
