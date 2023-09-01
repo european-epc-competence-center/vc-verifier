@@ -21,6 +21,7 @@ export function getPlainCredential(credential) {
     var clean_credential = { ...credential };
     delete clean_credential.verified;
     delete clean_credential.revoked;
+    delete clean_credential.suspended;
     delete clean_credential.status;
     delete clean_credential.presentation;
     delete clean_credential.context;

@@ -176,9 +176,20 @@ export default {
 
                 if (result.statusResult && !result.statusResult.verified) {
 
-                    credentialResult.revoked = true;
+                    // TODO also make status arrays recognize suspension
+                    if (credential.credentialStatus.statusPurpose && credential.credentialStatus.statusPurpose == 'suspension') {
 
-                    message = 'Credential revoked!';
+                        credentialResult.suspended = true;
+
+                        message = 'Credential suspended!';
+
+                    } else {
+
+                        credentialResult.revoked = true;
+
+                        message = 'Credential revoked!';
+
+                    }
 
                 }
 

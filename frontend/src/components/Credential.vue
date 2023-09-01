@@ -33,10 +33,12 @@
                         :data-bs-title="credential.status ? credential.status : 'Verifying...'">
                         <i v-if="credential.verified == true" style="font-size: 1.25rem;"
                             class="bi bi-check-circle-fill text-success" role="img" aria-label="Verified"></i>
-                        <i v-else-if="credential.verified == false && !credential.revoked" style="font-size: 1.25rem;"
-                            class="bi bi-x-circle-fill text-danger" role="img" aria-label="Unverified"></i>
                         <i v-else-if="credential.revoked" style="font-size: 1.25rem;"
-                            class="bi bi-sign-turn-left text-warning" role="img" aria-label="Revoked"></i>
+                            class="bi bi-sign-turn-left text-danger" role="img" aria-label="Revoked"></i>
+                        <i v-else-if="credential.suspended" style="font-size: 1.25rem;"
+                            class="bi bi-clock-history text-warning" role="img" aria-label="Suspended"></i>
+                        <i v-else-if="credential.verified == false" style="font-size: 1.25rem;"
+                            class="bi bi-x-circle-fill text-danger" role="img" aria-label="Unverified"></i>
                         <div v-else class="spinner-border text-secondary" role="status"
                             style="width: 1.25rem; height: 1.25rem;">
                             <span class="visually-hidden">Verifying...</span>
@@ -237,8 +239,8 @@ export default {
                 });
         },
         getStateColor(credential) {
-            if (credential.revoked) return 'warning';
-            if (!credential.verified) return 'error';
+            if (credential.suspended) return 'warning';
+            if (!credential.verified || credential.revoked) return 'danger';
             return 'success';
         },
         downloadCredential(credential) {
