@@ -2,7 +2,7 @@ import request from "supertest";
 
 import app from "../src/index";
 
-const revokedCredential: any = {
+const revoked2020Credential: any = {
     "@context": [
         "https://www.w3.org/2018/credentials/v1",
         "https://ssi.eecc.de/api/registry/context/productpassport",
@@ -32,6 +32,84 @@ const revokedCredential: any = {
         "proofPurpose": "assertionMethod",
         "verificationMethod": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
         "proofValue": "z4vkGt3B7x1p31kJpTrhwe8EGsTEmd48M4Jrzco86iw4n9pHRsx4wbwbNG14s39Vjxi9LzcQ9Ym595dZ54vetLrPS"
+    }
+}
+
+const revoked2021Credential: any = {
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "ipfs://QmSsQwjhtA86KEAdUoUpwqHysTiTmoScdUes5BcjTEmHEf",
+        "https://ssi.eecc.de/api/registry/context",
+        "https://w3id.org/vc/status-list/2021/v1",
+        "https://w3id.org/security/suites/ed25519-2020/v1"
+    ],
+    "id": "https://ssi.eecc.de/api/registry/vc/d8810623-e522-4962-bbc9-54dfd6aa9b8b",
+    "type": [
+        "VerifiableCredential",
+        "GS1PrefixLicenceCredential"
+    ],
+    "issuer": {
+        "id": "did:web:ssi.eecc.de",
+        "image": "https://id.eecc.de/assets/img/logo_big.png",
+        "name": "EECC"
+    },
+    "issuanceDate": "2023-09-01T13:58:11Z",
+    "credentialStatus": {
+        "id": "https://ssi.eecc.de/api/registry/vc/revocation/did:web:ssi.eecc.de/1#0",
+        "type": "StatusList2021Entry",
+        "statusPurpose": "revocation",
+        "statusListIndex": 0,
+        "statusListCredential": "https://ssi.eecc.de/api/registry/vc/revocation/did:web:ssi.eecc.de/1"
+    },
+    "credentialSubject": {
+        "id": "https://test.de/test1",
+        "licenceValue": "1"
+    },
+    "proof": {
+        "type": "Ed25519Signature2020",
+        "created": "2023-09-01T13:58:11Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+        "proofValue": "z4QnfqAyD3mDHWwYRmXpAWkcnk3QkhhGuy4yNXY94S9iydTSjPYkNkkto1CBB5KYFqnvpmR7YC1mMVpSpegeJnZJq"
+    }
+}
+
+const suspended2021Credential: any = {
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://ref.gs1.org/gs1/vc/licence-context/",
+        "https://ssi.eecc.de/api/registry/context",
+        "https://w3id.org/vc/status-list/2021/v1",
+        "https://w3id.org/security/suites/ed25519-2020/v1"
+    ],
+    "id": "https://ssi.eecc.de/api/registry/vc/918aad61-4087-4495-9341-074655af6902",
+    "type": [
+        "VerifiableCredential",
+        "GS1PrefixLicenceCredential"
+    ],
+    "issuer": {
+        "id": "did:web:ssi.eecc.de",
+        "image": "https://id.eecc.de/assets/img/logo_big.png",
+        "name": "EECC"
+    },
+    "issuanceDate": "2023-09-01T14:07:10Z",
+    "credentialStatus": {
+        "id": "https://ssi.eecc.de/api/registry/vc/suspension/did:web:ssi.eecc.de/1#0",
+        "type": "StatusList2021Entry",
+        "statusPurpose": "suspension",
+        "statusListIndex": 0,
+        "statusListCredential": "https://ssi.eecc.de/api/registry/vc/suspension/did:web:ssi.eecc.de/1"
+    },
+    "credentialSubject": {
+        "id": "https://test.de/test1",
+        "alternativeLicenceValue": "1"
+    },
+    "proof": {
+        "type": "Ed25519Signature2020",
+        "created": "2023-09-01T14:07:10Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+        "proofValue": "z361uVV9KVfpEWgf5HYss9WrBiRhzUDBpigcSLhYLqCwsV3v8e3VetVCHG4BCHaU7RN1V2RMx7nQRR2ikziwT6Apx"
     }
 }
 
@@ -150,7 +228,31 @@ describe("Verifier API Test for Credentials", () => {
      * Test StatusList2020 revoked credential
      */
     test("Verify revoked credential", async () => {
-        const res = await request(app).post("/api/verifier").send([revokedCredential]);
+        const res = await request(app).post("/api/verifier").send([revoked2020Credential]);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body[0]).toHaveProperty('verified');
+        expect(res.body[0].verified).toBe(false);
+        expect(res.body[0]).toHaveProperty('statusResult');
+        expect(res.body[0].statusResult.verified).toBe(false);
+    });
+
+    /**
+     * Test StatusList2021 revoked credential
+     */
+    test("Verify revoked credential", async () => {
+        const res = await request(app).post("/api/verifier").send([revoked2021Credential]);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body[0]).toHaveProperty('verified');
+        expect(res.body[0].verified).toBe(false);
+        expect(res.body[0]).toHaveProperty('statusResult');
+        expect(res.body[0].statusResult.verified).toBe(false);
+    });
+
+    /**
+     * Test StatusList2021 suspended credential
+     */
+    test("Verify suspended credential", async () => {
+        const res = await request(app).post("/api/verifier").send([suspended2021Credential]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
         expect(res.body[0].verified).toBe(false);
