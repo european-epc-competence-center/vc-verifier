@@ -4,8 +4,13 @@ VC Verifier Changelog
 WIP
 ---
 
+
+1.7.0 (2023-09-08)
+---
+
 - support status-list-2021
 - introduce own logo
+
 
 1.6.5 (2023-08-30)
 ---
