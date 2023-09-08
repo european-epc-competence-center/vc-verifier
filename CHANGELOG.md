@@ -4,7 +4,11 @@ VC Verifier Changelog
 WIP
 ---
 
+1.7.1 (2023-09-08)
+---
+
 - fix danger border on pending
+- borderless icon
 
 
 1.7.0 (2023-09-08)
