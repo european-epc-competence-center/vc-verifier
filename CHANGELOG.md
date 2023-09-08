@@ -4,6 +4,8 @@ VC Verifier Changelog
 WIP
 ---
 
+- fix danger border on pending
+
 
 1.7.0 (2023-09-08)
 ---

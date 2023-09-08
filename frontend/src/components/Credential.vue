@@ -240,7 +240,7 @@ export default {
         },
         getStateColor(credential) {
             if (credential.suspended) return 'warning';
-            if (!credential.verified) return 'danger';
+            if (credential.verified === false) return 'danger';
             return 'success';
         },
         downloadCredential(credential) {
