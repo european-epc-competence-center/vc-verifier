@@ -105,7 +105,7 @@ async function getFooter() {
                 },
                 {
                     width: 'auto',
-                    image: await getBase64ImageFromURL(require('@/assets/img/logo.png')),
+                    image: await getBase64ImageFromURL(require('@/assets/img/eecc_logo.png')),
                     fit: [50, 50],
                     alignment: 'center'
                 },

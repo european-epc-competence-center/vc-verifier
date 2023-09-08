@@ -5,7 +5,7 @@ WIP
 ---
 
 - support status-list-2021
-- 
+- introduce own logo
 
 1.6.5 (2023-08-30)
 ---

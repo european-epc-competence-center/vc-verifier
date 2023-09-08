@@ -72,6 +72,13 @@ body {
     right: .2rem;
     top: .2rem;
     height: calc(3.2rem + 1vw);
+    margin: .2rem;
+
+    @media (max-width: 768px) {
+        margin: 0;
+        right: .1rem;
+        top: .1rem;
+    }
 }
 
 #productpassportimg {

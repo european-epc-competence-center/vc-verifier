@@ -1,15 +1,28 @@
 [![Tests](https://github.com/european-epc-competence-center/vc-verifier/actions/workflows/tests.yml/badge.svg)](https://github.com/european-epc-competence-center/vc-verifier/actions)
 [![Building All Containers](https://github.com/european-epc-competence-center/vc-verifier/actions/workflows/build-all.yml/badge.svg)](https://github.com/orgs/european-epc-competence-center/packages?repo_name=vc-verifier)
 
+<div align="center">
+
+  <!-- PROJECT LOGO -->
+  <p>
+    <a href="https://ssi.eecc.de/verifier">
+      <img src="assets/logo.png" alt="EECC VC Verifier" style="max-width:140px">
+    </a>
+  </p>
+
+</div>
+
+
 # VC Verifier
 
-The [EECC Verifier](https://ssi.eecc.de/verifier/) for verifiable credentials provides a verification API as well as the corresponding UI. It's primary purpose is to aggregate data from various VCs and display them in a comprehensible manner as a product passport. [See here for an example.](https://ssi.eecc.de/verifier/#/verify?subjectId=https%3A%2F%2Fid.eecc.de/01/04012345999990/10/20210401-A/21/XYZ-1234)
+The [EECC VC Verifier](https://ssi.eecc.de/verifier/) for Verifiable Credentials (VCs) provides a verification API as well as the corresponding UI. Its primary purpose is to aggregate data from various VCs and display them in a comprehensible manner as a product passport. [See here for an example.](https://ssi.eecc.de/verifier/#/verify?subjectId=https%3A%2F%2Fid.eecc.de/01/04012345999990/10/20210401-A/21/XYZ-1234)
 
 This tool uses the libraries by [Digital Bazaar, Inc.](https://github.com/digitalbazaar), in particular
 
-- https://github.com/digitalbazaar/vc-js
+- https://github.com/digitalbazaar/vc
 - https://github.com/digitalbazaar/ed25519-signature-2020
 - https://github.com/digitalbazaar/vc-revocation-list
+- https://github.com/digitalbazaar/vc-status-list
 - https://github.com/digitalbazaar/ecdsa-sd-2023-cryptosuite
 
 in order to verify signatures of [W3C conformal verifiable credentials](https://www.w3.org/TR/vc-data-model/) in JSON-LD form.
