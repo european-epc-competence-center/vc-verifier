@@ -6,7 +6,7 @@
   <!-- PROJECT LOGO -->
   <p>
     <a href="https://ssi.eecc.de/verifier">
-      <img src="assets/logo.png" alt="EECC VC Verifier" style="max-width:140px">
+      <img src="assets/logo.png" alt="EECC VC Verifier" width="140">
     </a>
   </p>
 
