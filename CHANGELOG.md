@@ -5,7 +5,7 @@ WIP
 ---
 
 
-1.7.1 (2023-09-11)
+1.7.2 (2023-09-11)
 ---
 
 - fix statusList in presentation
