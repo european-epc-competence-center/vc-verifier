@@ -51,6 +51,32 @@ function getSuites(proof: Proof | Proof[]): unknown[] {
 
 }
 
+function getPresentationStatus(presentation: VerifiablePresentation): CredentialStatus[] | CredentialStatus | undefined {
+
+    const credentials = (
+        Array.isArray(presentation.verifiableCredential)
+            ? presentation.verifiableCredential
+            : [presentation.verifiableCredential]
+    )
+        .filter((credential: VerifiableCredential) => credential.credentialStatus);
+
+    if (credentials.length == 0) return undefined;
+
+    if (credentials.length == 1) return credentials[0].credentialStatus;
+
+    const statusTypes = credentials.map((credential: VerifiableCredential) => {
+        return Array.isArray(credential.credentialStatus)
+            ? credential.credentialStatus.map((credentialStatus: CredentialStatus) => credentialStatus.type)
+            : credential.credentialStatus.type
+    });
+
+    // disallow multiple status types
+    if (new Set(statusTypes.flat(1)).size > 1) throw new Error('Currently only on status type is allowed within one presentation!');
+
+    return credentials[0].credentialStatus;
+
+}
+
 function getCheckStatus(credentialStatus?: CredentialStatus[] | CredentialStatus): any | undefined {
     // no status provided
     if (!credentialStatus) return undefined;
@@ -79,13 +105,15 @@ export class Verifier {
 
         let result;
 
-        const checkStatus = getCheckStatus(verifiable.credentialStatus);
-
         if (verifiable.type.includes('VerifiableCredential')) {
 
-            if ((Array.isArray(verifiable.proof) ? verifiable.proof[0].type : verifiable.proof.type) == 'DataIntegrityProof') {
+            const credential = verifiable as VerifiableCredential;
 
-                result = await jsigs.verify(verifiable, {
+            const checkStatus = getCheckStatus(credential.credentialStatus);
+
+            if ((Array.isArray(credential.proof) ? credential.proof[0].type : credential.proof.type) == 'DataIntegrityProof') {
+
+                result = await jsigs.verify(credential, {
                     suite,
                     purpose: new AssertionProofPurpose(),
                     documentLoader,
@@ -95,17 +123,24 @@ export class Verifier {
 
             } else {
 
-                result = await verifyCredential({ credential: verifiable, suite, documentLoader, checkStatus });
+                result = await verifyCredential({ credential, suite, documentLoader, checkStatus });
 
             }
         }
 
         if (verifiable.type.includes('VerifiablePresentation')) {
 
-            // try to use challenge in proof if not provided in case no exchange protocol is used
-            if (!challenge) challenge = (Array.isArray(verifiable.proof) ? verifiable.proof[0].challenge : verifiable.proof.challenge);
+            const presentation = verifiable as VerifiablePresentation;
 
-            result = await verify({ presentation: verifiable, suite, documentLoader, challenge, domain, checkStatus });
+            // try to use challenge in proof if not provided in case no exchange protocol is used
+            if (!challenge) challenge = (Array.isArray(presentation.proof) ? presentation.proof[0].challenge : presentation.proof.challenge);
+
+
+            const checkStatus = getCheckStatus(
+                getPresentationStatus(presentation)
+            );
+
+            result = await verify({ presentation, suite, documentLoader, challenge, domain, checkStatus });
 
         }
 

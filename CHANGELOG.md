@@ -4,6 +4,9 @@ VC Verifier Changelog
 WIP
 ---
 
+- fix statusList in presentation
+
+
 1.7.1 (2023-09-08)
 ---
 
