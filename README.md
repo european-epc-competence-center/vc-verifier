@@ -27,6 +27,10 @@ This tool uses the libraries by [Digital Bazaar, Inc.](https://github.com/digita
 
 in order to verify signatures of [W3C conformal verifiable credentials](https://www.w3.org/TR/vc-data-model/) in JSON-LD form.
 
+For SD-JWT the tool uses:
+
+- https://github.com/transmute-industries/vc-jwt-sd
+
 
 ## Functionalities
 

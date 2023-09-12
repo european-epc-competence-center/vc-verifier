@@ -4,6 +4,8 @@ VC Verifier Changelog
 WIP
 ---
 
+- add support for SD-JWT
+
 
 1.7.2 (2023-09-11)
 ---
