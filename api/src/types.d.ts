@@ -36,3 +36,7 @@ type VerifiablePresentation = Verifiable & {
     holder: string | any;
     verifiableCredential: VerifiableCredential | VerifiableCredential[];
 }
+
+type VerificationResult = {
+    verified: boolean;
+}
