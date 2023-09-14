@@ -7,42 +7,48 @@ const TRUSTED_CONTEXT_DOMAINS: [string] = ['https://ssi.eecc.de']
 
 const cache = new Map();
 
+const dereferenceDID = async (url: string): Promise<any> => {
+
+    const [did, verificationMethod] = url.split('#')
+
+    // fetch document
+    const didDocument: any = (await getResolver().resolve(url)).didDocument
+
+    // if a verifcation method of the DID document is queried (not yet implemented in the official resolver)
+    if (verificationMethod && didDocument) {
+
+        const verificationMethodDoc: any | undefined = didDocument.verificationMethod.filter(function (method: any) {
+            return method.id === url || method.id === verificationMethod;
+        })[0];
+
+        if (!verificationMethodDoc)
+            throw new jsonldSignatures.VerificationError(
+                new Error(`${verificationMethod} is an unknown verification method for ${did}`)
+            );
+
+        return {
+            contextUrl: null,
+            documentUrl: url,
+            // deliver verification method with the DID doc context
+            document: Object.assign(verificationMethodDoc, { '@context': verificationMethodDoc['@context'] || didDocument['@context'] }),
+        };
+
+    }
+
+    return {
+        contextUrl: null,
+        documentUrl: url,
+        document: didDocument,
+    };
+
+}
+
 const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async (url: string) => {
 
     // Fetch did documents
     if (url.startsWith('did:')) {
 
-        const [did, verificationMethod] = url.split('#')
-
-        // fetch document
-        const didDocument: any = (await getResolver().resolve(url)).didDocument
-
-        // if a verifcation method of the DID document is queried (not yet implemented in the official resolver)
-        if (verificationMethod && didDocument) {
-
-            const verificationMethodDoc: any | undefined = didDocument.verificationMethod.filter(function (method: any) {
-                return method.id === url || method.id === verificationMethod;
-            })[0];
-
-            if (!verificationMethodDoc)
-                throw new jsonldSignatures.VerificationError(
-                    new Error(`${verificationMethod} is an unknown verification method for ${did}`)
-                );
-
-            return {
-                contextUrl: null,
-                documentUrl: url,
-                // deliver verification method with the DID doc context
-                document: Object.assign(verificationMethodDoc, { '@context': verificationMethodDoc['@context'] || didDocument['@context'] }),
-            };
-
-        }
-
-        return {
-            contextUrl: null,
-            documentUrl: url,
-            document: didDocument,
-        };
+        return await dereferenceDID(url);
     }
 
     let document = cache.get(url);
@@ -82,4 +88,4 @@ const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async 
 
 });
 
-export { documentLoader }
+export { documentLoader, dereferenceDID }

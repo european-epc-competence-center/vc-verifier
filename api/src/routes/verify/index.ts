@@ -46,9 +46,9 @@ export class VerifyRoutes {
 
             if (domain && typeof domain != 'string') throw new Error('The domain/audience must be provided as a string!');
 
-            let tasks = Promise.all(req.body.map(function (verifialbe: Verifiable) {
+            let tasks = Promise.all(req.body.map(function (verifiable: Verifiable) {
 
-                return Verifier.verify(verifialbe, challenge, domain);
+                return Verifier.verify(verifiable, challenge, domain);
 
             }));
 

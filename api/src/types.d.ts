@@ -39,4 +39,5 @@ type VerifiablePresentation = Verifiable & {
 
 type VerificationResult = {
     verified: boolean;
+    error?: any;
 }

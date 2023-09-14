@@ -8,6 +8,15 @@ const HEADERS = {
 
 const IPFS_GATEWAYS = ['ipfs.io', 'ipfs.ssi.eecc.de'].concat(process.env.IPFS_GATEWAYS ? process.env.IPFS_GATEWAYS.split(',') : []);
 
+export function isURL(value: string | URL): boolean {
+    let url;
+    try {
+        url = new URL(value);
+    } catch (_) {
+        return false;
+    }
+    return url.protocol === "http:" || url.protocol === "https:";
+}
 
 export async function fetch_jsonld(url: string): Promise<any> {
 

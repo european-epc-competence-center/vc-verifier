@@ -34,6 +34,7 @@
     "@digitalbazaar/vc": "^6.0.2",
     "@digitalbazaar/vc-revocation-list": "^5.0.0",
     "@digitalbazaar/vc-status-list": "^7.0.0",
+    "@transmute/vc-jwt-sd": "^0.0.4",
     "cors": "^2.8.5",
     "did-resolver": "^4.1.0",
     "dotenv": "^16.3.1",
