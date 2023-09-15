@@ -1,6 +1,6 @@
 import { DIDDocument, DIDResolutionResult, DIDResolver, ParsedDID } from 'did-resolver';
 // @ts-ignore
-import { resolve as JWKResolve } from '@or13/did-jwk';
+import JWK from '@or13/did-jwk';
 
 
 export function getResolver(): Record<string, DIDResolver> {
@@ -13,7 +13,7 @@ export function getResolver(): Record<string, DIDResolver> {
 
         do {
             try {
-                didDocument = await JWKResolve(did);
+                didDocument = JWK.resolve(did);
             } catch (error) {
                 err = `resolver_error: DID must resolve to a valid https URL containing a JSON document: ${error}`
                 break
@@ -51,6 +51,6 @@ export function getResolver(): Record<string, DIDResolver> {
         }
     }
 
-    return { key: resolve }
+    return { jwk: resolve }
 }
 

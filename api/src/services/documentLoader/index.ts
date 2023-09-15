@@ -17,14 +17,14 @@ const dereferenceDID = async (url: string): Promise<any> => {
     // if a verifcation method of the DID document is queried (not yet implemented in the official resolver)
     if (verificationMethod && didDocument) {
 
+        if (url.startsWith('did:jwk')) console.log(didDocument)
+
         const verificationMethodDoc: any | undefined = didDocument.verificationMethod.filter(function (method: any) {
-            return method.id === url || method.id === verificationMethod;
+            return method.id === url || method.id === '#' + verificationMethod;
         })[0];
 
         if (!verificationMethodDoc)
-            throw new jsonldSignatures.VerificationError(
-                new Error(`${verificationMethod} is an unknown verification method for ${did}`)
-            );
+            throw new Error(`${verificationMethod} is an unknown verification method for ${did}`);
 
         return {
             contextUrl: null,
