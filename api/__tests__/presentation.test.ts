@@ -2,6 +2,8 @@ import request from "supertest";
 
 import app from "../src/index";
 
+const sdJWTPresentation: string = "eyJhbGciOiJFUzM4NCIsImtpZCI6ImRpZDpqd2s6ZXlKcmRIa2lPaUpGUXlJc0luZ2lPaUpJWTNRd1gyTmliRzVzYkV0VFYxOWFVVnBtUlhkRGIwbFFaRlpWYW1kTlNXMW1OWEZzUkRKVWVEaG1TM0ZLUTFoeVYxSnlOMVZwU2xCWGVsTldhbXBHSWl3aWVTSTZJbTAxTlhka1ZUbG1hVXROWDFWQmR6WlpTMWs1Ym1kdGEyZzRlbWhKVG1JM1V6bFhTVzVtTFhvelIxaENOR3RST0dJNGVtOVBla3RvWjB0elRqTm9jRzBpTENKamNuWWlPaUpRTFRNNE5DSjkjMCJ9.eyJhcnJheV93aXRoX3JlY3Vyc2l2ZV9zZCI6WyJib3JpbmciLHsiZm9vIjoiYmFyIiwiX3NkIjpbInFnSG0yNjAyTlFZQjh4Z0RISmEwRTZIeDJxZnM0UWNzRURqREcyRDlaOUUiXX0sW3siLi4uIjoiNWExUFRkX0xJUVd0djVBMWdxM0R5QXZyQTh0QnlVZDJaMHF0SlJGSzF4RSJ9LHsiLi4uIjoiWW1tN0d4MnZNSlVHaDVjQ2tsZUpkaEV3MWVlTHNLRWF2SVZFT1hBMXVOUSJ9XV0sInRlc3QyIjpbeyIuLi4iOiJ2RDYzS2Z1bGFUT2NlNlh6WUlsXy1RSGFCUUVxR1lfVXA0S1lCell5QUJZIn0seyIuLi4iOiI1Z3Q4ZzlkMlNXVUZIZklZYWJXUFM5TlIxTTVNb3pKbnoyNUlGR01tdmhjIn1dLCJfc2RfYWxnIjoic2hhLTI1NiIsImlzcyI6ImRpZDpqd2s6ZXlKcmRIa2lPaUpGUXlJc0luZ2lPaUpJWTNRd1gyTmliRzVzYkV0VFYxOWFVVnBtUlhkRGIwbFFaRlpWYW1kTlNXMW1OWEZzUkRKVWVEaG1TM0ZLUTFoeVYxSnlOMVZwU2xCWGVsTldhbXBHSWl3aWVTSTZJbTAxTlhka1ZUbG1hVXROWDFWQmR6WlpTMWs1Ym1kdGEyZzRlbWhKVG1JM1V6bFhTVzVtTFhvelIxaENOR3RST0dJNGVtOVBla3RvWjB0elRqTm9jRzBpTENKamNuWWlPaUpRTFRNNE5DSjkiLCJpYXQiOjE2OTQ3Njk1NDUsImV4cCI6MTcyNjM5MTk0NSwiY25mIjp7Imp3ayI6eyJrdHkiOiJFQyIsImNydiI6IlAtMzg0IiwieCI6InNoY24xeE43ODBLRWRuZVFVVXZ3bUhmQUM0Y0VWb2ZGSjlWc002RDlfLTdlaGtLdVdUN2NSUTZ3R0ZnU3hWbFEiLCJ5IjoiSHl2V1NYc25sT3RvRzJzNjB6a0ZTN2FmR01oU0pXUW5TX3BRaURfN0ptNHNQd3RMSnVnMy1OOW5pQjJOVl9DXyJ9fX0.JoD9gePif8jfnlf-45KwNMe1TuHWKWbWqbECzPHeY9vQVBMd3Sd0VrB2aXSlyKqDkZPPpQsVk5nSC3ofOEUAm7HHfHN42Vzr3-4XNPfoTJmarPZNFMtbjgWayBWyUuSX~WyI0SHdhRHk1dU9SczdMbjZ0b1NpR0N3IiwgImJheiIsIHsicXV4IjogInF1dXgifV0~WyJvdVl4cUZMRGZxZW5VUHptUWZBWEh3IiwgImJhciJd~WyJUMHpiWURfR1FSVVdocjJuYjc2SmpRIiwgImZvbyJd~WyJRRldFR1ZwNlNpZ19rdzJHYml1dnZBIiwgImJhciJd~eyJhbGciOiJFUzM4NCIsInR5cCI6ImtiK2p3dCJ9.eyJub25jZSI6Ijk4NzY1NDMyMTAiLCJhdWQiOiJkaWQ6d2ViOnZlcmlmaWVyLmV4YW1wbGUiLCJpYXQiOjE2OTQ3Njk1NDV9.zl9qYTnspJXq1EhMsQmgSfKixyVdruYX0JdGC26SygAKlvjL5UlUKb6LhjxF_tGw3MV5WIXdfGODlqjHmynPnRNAh8snXxn4j1ONUhuNHDqbxBEhGZKXIEJyIjj2Ibcf"
+
 const multiPresentation: any = {
     "@context": [
         "https://www.w3.org/2018/credentials/v1",
@@ -240,6 +242,14 @@ describe("Verifier API Test for Presentations", () => {
         expect(res.body[0].verified).toBe(false);
         expect(res.body[0]).toHaveProperty('error');
         expect(res.body[0].error.name).toBe('VerificationError');
+    });
+
+    test("Verify single SD-JWT presentation with challenge & domain", async () => {
+        const res = await request(app).post("/api/verifier").query({ nonce: '9876543210', aud: 'did:web:verifier.example' }).send([sdJWTPresentation]);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body[0]).toHaveProperty('verified');
+        console.log(res.body[0])
+        expect(res.body[0].verified).toBe(true);
     });
 
 });

@@ -1,11 +1,12 @@
 import SD from '@transmute/vc-jwt-sd';
-import { Digest } from '@transmute/vc-jwt-sd/dist/types';
-
+import moment from 'moment';
 import crypto from "crypto";
 import { base64url, decodeProtectedHeader, decodeJwt } from "jose";
 import { dereferenceDID } from '../documentLoader/index.js';
 
-const digester = (name: 'sha-256' = 'sha-256'): Digest => {
+const vcjwtsd = (SD as any).default;
+
+const digester = (name: 'sha-256' = 'sha-256'): any => {
     if (name !== 'sha-256') {
         throw new Error('hash function not supported')
     }
@@ -20,7 +21,7 @@ const digester = (name: 'sha-256' = 'sha-256'): Digest => {
 
 export async function verifySDJWT(verifiable: string, nonce?: string, aud?: string): Promise<VerificationResult> {
 
-    const parsed = SD.Parse.compact(verifiable)
+    const parsed = vcjwtsd.Parse.compact(verifiable);
 
     const decodedHeader = decodeProtectedHeader(parsed.jwt)
 
@@ -39,15 +40,20 @@ export async function verifySDJWT(verifiable: string, nonce?: string, aud?: stri
 
         const absoluteDidUrl = kid && kid.startsWith(iss) ? kid : `${iss}#${kid}`
 
-        const { publicKeyJwk } = (await dereferenceDID(absoluteDidUrl)).document;
+        console.log(await dereferenceDID(absoluteDidUrl))
 
-        const verifier = new SD.Verifier({
+        let { publicKeyJwk } = (await dereferenceDID(absoluteDidUrl)).document;
+
+        // in case of did:key use jwk from jwt
+        if (!publicKeyJwk) publicKeyJwk = (decodedPayload.cnf as any).jwk;
+
+        const verifier = new vcjwtsd.Verifier({
             alg,
             digester: digester(),
             verifier: {
                 verify: async (token: string) => {
-                    const parsed = SD.Parse.compact(token)
-                    const verifier = await SD.JWS.verifier(publicKeyJwk)
+                    const parsed = vcjwtsd.Parse.compact(token)
+                    const verifier = await vcjwtsd.JWS.verifier(publicKeyJwk)
                     return verifier.verify(parsed.jwt)
                 }
             }
@@ -58,10 +64,14 @@ export async function verifySDJWT(verifiable: string, nonce?: string, aud?: stri
             aud
         })
 
-        // TODO do sematic checks iat&exp 
+        const now = moment().unix()
+
+        if (now < verified.claimset.iat) throw new Error('Credential is not yet valid!')
+        if (verified.claimset.exp && now > verified.claimset.exp) throw new Error('Credential expired!')
 
     } catch (error: any) {
-        return { verified: false, error };
+        console.log(error)
+        return { verified: false, error: error.message };
     }
 
     return { verified: true };
