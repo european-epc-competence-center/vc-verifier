@@ -40,8 +40,6 @@ export async function verifySDJWT(verifiable: string, nonce?: string, aud?: stri
 
         const absoluteDidUrl = kid && kid.startsWith(iss) ? kid : `${iss}#${kid}`
 
-        console.log(await dereferenceDID(absoluteDidUrl))
-
         let { publicKeyJwk } = (await dereferenceDID(absoluteDidUrl)).document;
 
         // in case of did:key use jwk from jwt
@@ -68,6 +66,8 @@ export async function verifySDJWT(verifiable: string, nonce?: string, aud?: stri
 
         if (now < verified.claimset.iat) throw new Error('Credential is not yet valid!')
         if (verified.claimset.exp && now > verified.claimset.exp) throw new Error('Credential expired!')
+
+        console.log(verified.claimset)
 
     } catch (error: any) {
         console.log(error)
