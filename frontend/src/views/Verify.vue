@@ -219,24 +219,31 @@ export default {
         },
         async verify(verifiable) {
 
-            if (getVerifiableType(verifiable) == VerifiableType.PRESENTATION) {
+            // jwt vs json format
+            if (typeof verifiable == 'string') {
+                this.addCredential({ jwt: verifiable });
+            }
+            else {
 
-                const presentation = {
-                    presentation:
-                    {
-                        holder: getHolder(verifiable),
-                        challenge: Array.isArray(verifiable.proof) ? verifiable.proof[0].challenge : verifiable.proof.challenge,
-                        domain: Array.isArray(verifiable.proof) ? verifiable.proof[0].domain : verifiable.proof.domain
+                if (getVerifiableType(verifiable) == VerifiableType.PRESENTATION) {
+
+                    const presentation = {
+                        presentation:
+                        {
+                            holder: getHolder(verifiable),
+                            challenge: Array.isArray(verifiable.proof) ? verifiable.proof[0].challenge : verifiable.proof.challenge,
+                            domain: Array.isArray(verifiable.proof) ? verifiable.proof[0].domain : verifiable.proof.domain
+                        }
                     }
+
+                    if (Array.isArray(verifiable.verifiableCredential)) verifiable.verifiableCredential.forEach(
+                        (credential) => this.addCredential({ ...credential, presentation })
+                    );
+                    else this.addCredential({ ...verifiable.verifiableCredential, presentation });
+
+                } else {
+                    this.addCredential({ ...verifiable });
                 }
-
-                if (Array.isArray(verifiable.verifiableCredential)) verifiable.verifiableCredential.forEach(
-                    (credential) => this.addCredential({ ...credential, presentation })
-                );
-                else this.addCredential({ ...verifiable.verifiableCredential, presentation });
-
-            } else {
-                this.addCredential({ ...verifiable });
             }
 
             const res = await this.$api.post('/', [verifiable], { params: { challenge: this.$route.query.challenge } });

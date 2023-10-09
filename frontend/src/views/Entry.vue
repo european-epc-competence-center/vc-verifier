@@ -107,14 +107,22 @@ export default {
         onFileChange(e) {
             var files = Array.from(e.target.files || e.dataTransfer.files);
             files.forEach(file => {
-                if (file.type != 'application/json') this.toast.warning(`Credential '${file.name}'' must be provided as a json file!`);
+                console.log(file.type)
+                if (file.type != 'application/json') this.toast.warning(`Credential '${file.name}'' must be provided as a json or jwt file!`);
+
 
                 new Response(file).json().then(json => {
 
                     this.$store.dispatch("addVerifiables", Array.isArray(json) ? json : [json]);
 
                 }, () => {
-                    this.toast.warning(`'${file.name}' is not a json file!`);
+                    new Response(file).text().then(text => {
+
+                        this.$store.dispatch("addVerifiables", [text]);
+
+                    }, () => {
+                        this.toast.warning(`'${file.name}' is neither a json nor a jwt file!`);
+                    })
                 })
             })
         },
