@@ -5,6 +5,12 @@ WIP
 ---
 
 
+1.7.3 (2023-10-09)
+---
+
+- support empty presentations for proof of possession
+  
+
 1.7.2 (2023-09-11)
 ---
 

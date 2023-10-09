@@ -53,6 +53,8 @@ function getSuites(proof: Proof | Proof[]): unknown[] {
 
 function getPresentationStatus(presentation: VerifiablePresentation): CredentialStatus[] | CredentialStatus | undefined {
 
+    if (!presentation.verifiableCredential) return undefined;
+
     const credentials = (
         Array.isArray(presentation.verifiableCredential)
             ? presentation.verifiableCredential
