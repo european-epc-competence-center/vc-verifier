@@ -1,6 +1,11 @@
 import request from "supertest";
 
-import app from "../src/index";
+import server from "../src/index";
+
+afterAll(done => {
+    server.close();
+    done();
+});
 
 const multiPresentation: any = {
     "@context": [
@@ -198,7 +203,7 @@ const statusPresentation: any = {
 describe("Verifier API Test for Presentations", () => {
 
     test("Verify presentation with status", async () => {
-        const res = await request(app).post("/api/verifier").send([statusPresentation]);
+        const res = await request(server).post("/api/verifier").send([statusPresentation]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
         expect(res.body[0].verified).toBe(true);
@@ -210,7 +215,7 @@ describe("Verifier API Test for Presentations", () => {
     });
 
     test("Verify single presentation with challenge", async () => {
-        const res = await request(app).post("/api/verifier").query({ challenge: '12345' }).send([multiPresentation]);
+        const res = await request(server).post("/api/verifier").query({ challenge: '12345' }).send([multiPresentation]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
         expect(res.body[0].verified).toBe(true);
@@ -222,7 +227,7 @@ describe("Verifier API Test for Presentations", () => {
     });
 
     test("Verify single presentation with challenge & domain", async () => {
-        const res = await request(app).post("/api/verifier").query({ challenge: '12345', domain: 'ssi.eecc.de/verifier' }).send([domainPresentation]);
+        const res = await request(server).post("/api/verifier").query({ challenge: '12345', domain: 'ssi.eecc.de/verifier' }).send([domainPresentation]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
         expect(res.body[0].verified).toBe(true);
@@ -234,7 +239,7 @@ describe("Verifier API Test for Presentations", () => {
     });
 
     test("Falsify single presentation with wrong challenge", async () => {
-        const res = await request(app).post("/api/verifier").query({ challenge: 'falseChallenge', domain: 'ssi.eecc.de/verifier' }).send([domainPresentation]);
+        const res = await request(server).post("/api/verifier").query({ challenge: 'falseChallenge', domain: 'ssi.eecc.de/verifier' }).send([domainPresentation]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
         expect(res.body[0].verified).toBe(false);
