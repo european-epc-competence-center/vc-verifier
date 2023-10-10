@@ -4,6 +4,11 @@ VC Verifier Changelog
 WIP
 ---
 
+1.7.4 (2023-10-10)
+---
+
+- fix build node version
+
 
 1.7.3 (2023-10-09)
 ---
