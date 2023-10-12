@@ -21,7 +21,7 @@ export const verifyRouter = Router();
  * @summary Refers to W3C Credential
  * @typedef {object} SignedCredential
  * @property {array<string>} context.required - The JSON-LD context URIs of the credential
- * @property {string} id.required - The id of the the credential as an IRI
+ * @property {string} id - The id of the the credential as an IRI
  * @property {array<string>} type.required - The types of the credential
  * @property {string} issuer.required - The DID of the issuer of the credential
  * @property {string} issuanceDate.required - The issuance date of the credential in ISO format 2022-09-26T09:01:07.437Z 
@@ -36,7 +36,7 @@ export const verifyRouter = Router();
  * @typedef {object} SignedPresentation
  * @property {array<string>} context.required - The JSON-LD context URIs of the presentation
  * @property {array<string>} type.required - The types of the presentation. Should be 'VerifiablePresentation'
- * @property {string} holder.required - The DID of the holder of the credentials, i.e. the presenter
+ * @property {string} holder - The DID of the holder of the credentials, i.e. the presenter
  * @property {array<SignedCredential>} verifiableCredential - Array of included credentials
  * @property {object} proof.required - The cryptographic signature of the holder over the presentation
  */
