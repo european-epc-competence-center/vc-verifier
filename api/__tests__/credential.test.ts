@@ -232,7 +232,7 @@ describe("Verifier API Test for Credentials", () => {
     /**
      * Test StatusList2020 revoked credential
      */
-    test("Verify revoked credential", async () => {
+    test("Verify revoked credential - RevocationList2020", async () => {
         const res = await request(server).post("/api/verifier").send([revoked2020Credential]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
@@ -244,7 +244,7 @@ describe("Verifier API Test for Credentials", () => {
     /**
      * Test StatusList2021 revoked credential
      */
-    test("Verify revoked credential", async () => {
+    test("Verify revoked credential - StatusList2021", async () => {
         const res = await request(server).post("/api/verifier").send([revoked2021Credential]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');

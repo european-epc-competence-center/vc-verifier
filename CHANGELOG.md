@@ -6,7 +6,8 @@ WIP
 
 - add support for SD-JWT
 - add `did:jwk` support
-
+- introduce static contexts
+  
 
 1.7.4 (2023-10-10)
 ---
