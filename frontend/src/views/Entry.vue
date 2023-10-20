@@ -40,7 +40,7 @@
             </div>
             <!--By credential id-->
             <div class="card m-3 p-3 shadow">
-                <h5>Credential Id</h5>
+                <h5>Credential Id / VC-JWT</h5>
                 <form v-on:submit.prevent="submitId">
                     <div class="input-group">
                         <button @click="scan = 'credid'" data-bs-toggle="modal" type="button" data-bs-target="#scan-modal"
@@ -107,22 +107,18 @@ export default {
         onFileChange(e) {
             var files = Array.from(e.target.files || e.dataTransfer.files);
             files.forEach(file => {
-                console.log(file.type)
-                if (file.type != 'application/json') this.toast.warning(`Credential '${file.name}'' must be provided as a json or jwt file!`);
+                if (file.type != 'application/json' && file.type != 'text/plain') this.toast.warning(`Credential '${file.name}'' must be provided as a json or jwt file!`);
 
 
-                new Response(file).json().then(json => {
+                if (file.type == 'application/json') new Response(file).json().then(json => {
 
                     this.$store.dispatch("addVerifiables", Array.isArray(json) ? json : [json]);
 
-                }, () => {
-                    new Response(file).text().then(text => {
+                })
+                else new Response(file).text().then(text => {
 
-                        this.$store.dispatch("addVerifiables", [text]);
+                    this.$store.dispatch("addVerifiables", [{ jwt: text }]);
 
-                    }, () => {
-                        this.toast.warning(`'${file.name}' is neither a json nor a jwt file!`);
-                    })
                 })
             })
         },
@@ -130,7 +126,11 @@ export default {
             this.$router.push({ path: '/verify' })
         },
         submitId() {
-            this.$router.push({ path: '/verify', query: { credentialId: encodeURIComponent(this.credentialId) } })
+            if (this.credentialId.startsWith('http')) this.$router.push({ path: '/verify', query: { credentialId: encodeURIComponent(this.credentialId) } })
+            else {
+                this.$store.dispatch("addVerifiables", [{ jwt: this.credentialId }]);
+                this.$router.push({ path: '/verify' })
+            }
         },
         submitSubject() {
             this.$router.push({ path: '/verify', query: { subjectId: encodeURIComponent(this.subjectId) } })
