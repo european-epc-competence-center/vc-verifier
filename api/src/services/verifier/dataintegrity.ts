@@ -20,7 +20,6 @@ import { documentLoader } from '../documentLoader/index.js';
 const { createVerifyCryptosuite } = ecdsaSd2023Cryptosuite;
 const { purposes: { AssertionProofPurpose } } = jsigs;
 
-
 function getSuite(proof: Proof): unknown[] {
 
     switch (proof.type) {
@@ -53,6 +52,8 @@ function getSuites(proof: Proof | Proof[]): unknown[] {
 }
 
 function getPresentationStatus(presentation: VerifiablePresentation): CredentialStatus[] | CredentialStatus | undefined {
+
+    if (!presentation.verifiableCredential) return undefined;
 
     const credentials = (
         Array.isArray(presentation.verifiableCredential)
@@ -101,52 +102,52 @@ export async function verifyDataIntegrityProof(verifiable: Verifiable, challenge
 
     const suite = getSuites(verifiable.proof);
 
-        let result;
+    let result;
 
-        if (verifiable.type.includes('VerifiableCredential')) {
+    if (verifiable.type.includes('VerifiableCredential')) {
 
-            const credential = verifiable as VerifiableCredential;
+        const credential = verifiable as VerifiableCredential;
 
-            const checkStatus = getCheckStatus(credential.credentialStatus);
+        const checkStatus = getCheckStatus(credential.credentialStatus);
 
-            if ((Array.isArray(credential.proof) ? credential.proof[0].type : credential.proof.type) == 'DataIntegrityProof') {
+        if ((Array.isArray(credential.proof) ? credential.proof[0].type : credential.proof.type) == 'DataIntegrityProof') {
 
-                result = await jsigs.verify(credential, {
-                    suite,
-                    purpose: new AssertionProofPurpose(),
-                    documentLoader,
-                    // give it to jsigs anyway - does not get verified
-                    checkStatus
-                });
+            result = await jsigs.verify(credential, {
+                suite,
+                purpose: new AssertionProofPurpose(),
+                documentLoader,
+                // give it to jsigs anyway - does not get verified
+                checkStatus
+            });
 
-            } else {
+        } else {
 
-                result = await verifyCredential({ credential, suite, documentLoader, checkStatus });
-
-            }
-        }
-
-        if (verifiable.type.includes('VerifiablePresentation')) {
-
-            const presentation = verifiable as VerifiablePresentation;
-
-            // try to use challenge in proof if not provided in case no exchange protocol is used
-            if (!challenge) challenge = (Array.isArray(presentation.proof) ? presentation.proof[0].challenge : presentation.proof.challenge);
-
-
-            const checkStatus = getCheckStatus(
-                getPresentationStatus(presentation)
-            );
-
-            result = await verify({ presentation, suite, documentLoader, challenge, domain, checkStatus });
+            result = await verifyCredential({ credential, suite, documentLoader, checkStatus });
 
         }
+    }
 
-        if (!result) throw Error('Provided verifiable object is of unknown type!');
+    if (verifiable.type.includes('VerifiablePresentation')) {
 
-        // make non enumeratable errors enumeratable for the respsonse
-        if (result.error && !result.error.errors) result.error.name = result.error.message;
+        const presentation = verifiable as VerifiablePresentation;
 
-        return result;
+        // try to use challenge in proof if not provided in case no exchange protocol is used
+        if (!challenge) challenge = (Array.isArray(presentation.proof) ? presentation.proof[0].challenge : presentation.proof.challenge);
+
+
+        const checkStatus = getCheckStatus(
+            getPresentationStatus(presentation)
+        );
+
+        result = await verify({ presentation, suite, documentLoader, challenge, domain, checkStatus });
+
+    }
+
+    if (!result) throw Error('Provided verifiable object is of unknown type!');
+
+    // make non enumeratable errors enumeratable for the respsonse
+    if (result.error && !result.error.errors) result.error.name = result.error.message;
+
+    return result;
 
 }
