@@ -1,6 +1,11 @@
 import request from "supertest";
 
-import app from "../src/index";
+import server from "../src/index";
+
+afterAll(done => {
+    server.close();
+    done();
+});
 
 const revoked2020Credential: any = {
     "@context": [
@@ -192,14 +197,14 @@ const manipulatedCredential = Object.assign({ ...GS1LicenceCredential }, { issua
 describe("Verifier API Test for Credentials", () => {
 
     test("Verify vc by id", async () => {
-        const res = await request(app).get("/api/verifier/vc/https%253A%252F%252Fid.gs1.org%252Fvc%252Flicence%252Fgs1_prefix%252F05");
+        const res = await request(server).get("/api/verifier/vc/https%253A%252F%252Fid.gs1.org%252Fvc%252Flicence%252Fgs1_prefix%252F05");
         expect(res.statusCode).toEqual(200);
         expect(res.body).toHaveProperty('verified');
         expect(res.body.verified).toBe(true);
     });
 
     test("Verify single credential", async () => {
-        const res = await request(app).post("/api/verifier").send([GS1LicenceCredential]);
+        const res = await request(server).post("/api/verifier").send([GS1LicenceCredential]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
         expect(res.body[0].verified).toBe(true);
@@ -209,14 +214,14 @@ describe("Verifier API Test for Credentials", () => {
      * Test selective disclosure DataIntegrityProof credential 
      */
     test("Verify single DataIntegrityProof credential", async () => {
-        const res = await request(app).post("/api/verifier").send([SDCredential]);
+        const res = await request(server).post("/api/verifier").send([SDCredential]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
         expect(res.body[0].verified).toBe(true);
     });
 
     test("Verify multiple credentials", async () => {
-        const res = await request(app).post("/api/verifier").send([GS1LicenceCredential, GS1LicenceCredential]);
+        const res = await request(server).post("/api/verifier").send([GS1LicenceCredential, GS1LicenceCredential]);
         expect(res.statusCode).toEqual(200);
         res.body.forEach((el: any) => {
             expect(el).toHaveProperty('verified');
@@ -228,7 +233,7 @@ describe("Verifier API Test for Credentials", () => {
      * Test StatusList2020 revoked credential
      */
     test("Verify revoked credential", async () => {
-        const res = await request(app).post("/api/verifier").send([revoked2020Credential]);
+        const res = await request(server).post("/api/verifier").send([revoked2020Credential]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
         expect(res.body[0].verified).toBe(false);
@@ -240,7 +245,7 @@ describe("Verifier API Test for Credentials", () => {
      * Test StatusList2021 revoked credential
      */
     test("Verify revoked credential", async () => {
-        const res = await request(app).post("/api/verifier").send([revoked2021Credential]);
+        const res = await request(server).post("/api/verifier").send([revoked2021Credential]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
         expect(res.body[0].verified).toBe(false);
@@ -252,7 +257,7 @@ describe("Verifier API Test for Credentials", () => {
      * Test StatusList2021 suspended credential
      */
     test("Verify suspended credential", async () => {
-        const res = await request(app).post("/api/verifier").send([suspended2021Credential]);
+        const res = await request(server).post("/api/verifier").send([suspended2021Credential]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
         expect(res.body[0].verified).toBe(false);
@@ -261,7 +266,7 @@ describe("Verifier API Test for Credentials", () => {
     });
 
     test("Falsify single credential", async () => {
-        const res = await request(app).post("/api/verifier").send([manipulatedCredential]);
+        const res = await request(server).post("/api/verifier").send([manipulatedCredential]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
         expect(res.body[0].verified).toBe(false);

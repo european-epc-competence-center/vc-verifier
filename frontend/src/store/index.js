@@ -5,7 +5,7 @@ import api from '../api'
 
 export default createStore({
   state: {
-    version: '1.7.2',
+    version: '1.7.4',
     authentication: undefined,
     verifiables: [],
     disclosedCredentials: [],
