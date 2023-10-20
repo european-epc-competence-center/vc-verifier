@@ -250,7 +250,7 @@ describe("Verifier API Test for Presentations", () => {
     });
 
     test("Verify single SD-JWT presentation with challenge & domain", async () => {
-        const res = await request(app).post("/api/verifier").query({ nonce: '9876543210', aud: 'did:web:verifier.example' }).send([sdJWTPresentation]);
+        const res = await request(server).post("/api/verifier").query({ nonce: '9876543210', aud: 'did:web:verifier.example' }).send([sdJWTPresentation]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
         console.log(res.body[0])
