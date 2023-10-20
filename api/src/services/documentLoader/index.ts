@@ -2,10 +2,9 @@
 import jsonldSignatures from 'jsonld-signatures';
 import { getResolver } from './didresolver.js';
 import { fetch_jsonld, fetchIPFS } from '../fetch/index.js';
+import { contexts } from './context/index.js';
 
-const TRUSTED_CONTEXT_DOMAINS: [string] = ['https://ssi.eecc.de']
-
-const cache = new Map();
+const cache = contexts;
 
 const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async (url: string) => {
 
@@ -54,23 +53,13 @@ const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async 
 
             document = await fetchIPFS(url);
 
-            // always cache IPFS
-            cache.set(url, document);
-
         } else {
 
             document = await fetch_jsonld(url);
 
-            // cache and warn if external
-            if (!TRUSTED_CONTEXT_DOMAINS.some((trusted) => url.startsWith(trusted))) {
-
-                // console.log(`Fetched and cached @context from ${url}. Use with care!`);
-
-                cache.set(url, document);
-
-            }
-
         }
+
+        cache.set(url, document);
 
     }
 

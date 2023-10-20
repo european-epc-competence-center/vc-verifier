@@ -4,6 +4,9 @@ VC Verifier Changelog
 WIP
 ---
 
+- introduce static contexts
+  
+
 1.7.4 (2023-10-10)
 ---
 
