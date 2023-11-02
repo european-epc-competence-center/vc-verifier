@@ -73,7 +73,7 @@ function getPresentationStatus(presentation: VerifiablePresentation): Credential
     });
 
     // disallow multiple status types
-    if (new Set(statusTypes.flat(1)).size > 1) throw new Error('Currently only on status type is allowed within one presentation!');
+    if (new Set(statusTypes.flat(1)).size > 1) throw new Error('Currently only one status type is allowed within one presentation!');
 
     return credentials[0].credentialStatus;
 
