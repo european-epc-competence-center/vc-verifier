@@ -328,6 +328,7 @@ export default {
                 return
 
             } catch (error) {
+                console.log(error)
                 this.toast.error(error.response ? error.response.data : `Something went wrong verifying the credentials!\n${error}`);
             }
 

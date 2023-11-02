@@ -1,5 +1,6 @@
 import jsonld from 'jsonld';
 import { demoAuthPresentation } from './store/demoAuth';
+import { decodeProtectedHeader } from "jose";
 
 export const VerifiableType = {
     CREDENTIAL: 'VerifiableCredential',
@@ -41,6 +42,19 @@ export function getHolder(presentation) {
     if (presentation.holder) return presentation.holder;
     const proof = Array.isArray(presentation.proof) ? presentation.proof[0] : presentation.proof
     return proof.verificationMethod.split('#')[0];
+}
+
+export function SDJWTtoVP(jwt) {
+    console.log(jwt)
+    const decodedHeader = decodeProtectedHeader(jwt)
+    //const decodedJWT = decodeJwt(jwt)
+    console.log(decodedHeader)
+    //console.log(decodedJWT)
+    return {
+        jwt,
+        type: [VerifiableType.PRESENTATION],
+        holder: decodedHeader.kid.split('#')[0]
+    }
 }
 
 export async function fetchIPFS(IPFSUrl) {

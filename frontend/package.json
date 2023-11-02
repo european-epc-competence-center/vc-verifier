@@ -28,6 +28,7 @@
     "bootstrap": "^5.2.3",
     "bootstrap-icons": "^1.9.1",
     "export-from-json": "^1.7.0",
+    "jose": "^4.15.4",
     "jshashes": "^1.0.8",
     "jsonld": "^8.1.0",
     "pdfmake": "^0.2.7",

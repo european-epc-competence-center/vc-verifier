@@ -77,6 +77,7 @@
 <script>
 import { Tooltip } from "bootstrap";
 import { useToast } from "vue-toastification";
+import { SDJWTtoVP } from "../utils.js"
 
 import AuthModal from "@/components/AuthModal.vue";
 import ScanModal from "@/components/ScanModal.vue"
@@ -117,7 +118,7 @@ export default {
                 })
                 else new Response(file).text().then(text => {
 
-                    this.$store.dispatch("addVerifiables", [{ jwt: text }]);
+                    this.$store.dispatch("addVerifiables", [SDJWTtoVP(text)]);
 
                 })
             })
