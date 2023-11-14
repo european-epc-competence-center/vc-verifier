@@ -4,6 +4,10 @@ VC Verifier Changelog
 WIP
 ---
 
+
+1.7.5 (2023-11-14)
+---
+
 - introduce static contexts
 - manual status checks for SD credentials
   
