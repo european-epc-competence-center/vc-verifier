@@ -5,6 +5,7 @@ WIP
 ---
 
 - introduce static contexts
+- manual status checks for SD credentials
   
 
 1.7.4 (2023-10-10)

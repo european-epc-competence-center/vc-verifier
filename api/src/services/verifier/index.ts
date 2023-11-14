@@ -118,10 +118,23 @@ export class Verifier {
                 result = await jsigs.verify(credential, {
                     suite,
                     purpose: new AssertionProofPurpose(),
-                    documentLoader,
-                    // give it to jsigs anyway - does not get verified
-                    checkStatus
+                    documentLoader
                 });
+
+                // make manual status as long as not implemented in jsigs
+                if (checkStatus) {
+                    result.statusResult = await checkStatus({
+                        credential,
+                        documentLoader,
+                        suite,
+                        verifyStatusListCredential: true,
+                        verifyMatchingIssuers: false
+                    });
+                    if (!result.statusResult.verified) {
+                        result.verified = false;
+                    }
+                }
+
 
             } else {
 
