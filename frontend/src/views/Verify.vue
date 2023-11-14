@@ -207,7 +207,7 @@ export default {
 
                 credentialResult.status = message;
 
-                if (credentialResult.revoked) this.toast.warning(`${credential.type[1] || credential.type[0]} is revoked!`);
+                if (credentialResult.suspended) this.toast.warning(`${credential.type[1] || credential.type[0]} is suspended!`);
                 else this.toast.error(`Verification of ${credential.type[1] || credential.type[0]} failed!\n${message}`);
 
             } else {
