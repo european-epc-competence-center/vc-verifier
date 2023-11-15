@@ -4,6 +4,11 @@ VC Verifier Changelog
 WIP
 ---
 
+
+1.7.6 (2023-11-15)
+---
+
+- allow multi status credentials
 - update vc dependency
 
 

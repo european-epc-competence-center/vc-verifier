@@ -1,6 +1,6 @@
 {
   "name": "verifier_frontend",
-  "version": "1.7.5",
+  "version": "1.7.6",
   "description": "Vue frontend for the EECC vc verifier API",
   "scripts": {
     "build": "vue-cli-service build",
