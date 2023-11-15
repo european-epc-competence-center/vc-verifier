@@ -4,6 +4,8 @@ VC Verifier Changelog
 WIP
 ---
 
+- update vc dependency
+
 
 1.7.5 (2023-11-14)
 ---
