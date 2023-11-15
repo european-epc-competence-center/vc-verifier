@@ -4,6 +4,8 @@ VC Verifier Changelog
 WIP
 ---
 
+- prevent caching of status credentials in document loader
+
 
 1.7.6 (2023-11-15)
 ---

@@ -6,6 +6,8 @@ import { contexts } from './context/index.js';
 
 const cache = contexts;
 
+const uncachedStatusListCredentialTypes = ['RevocationList2020Credential', 'StatusList2021Credential']
+
 const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async (url: string) => {
 
     // Fetch did documents
@@ -59,7 +61,7 @@ const documentLoader: Promise<any> = jsonldSignatures.extendContextLoader(async 
 
         }
 
-        cache.set(url, document);
+        if (!document.type || !Array.isArray(document.type) || !uncachedStatusListCredentialTypes.some((t: string) => document.type.includes(t))) cache.set(url, document);
 
     }
 
