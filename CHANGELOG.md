@@ -4,7 +4,12 @@ VC Verifier Changelog
 WIP
 ---
 
+
+1.7.7 (2023-11-21)
+---
+
 - prevent caching of status credentials in document loader
+- support mutli status list results in UI
 
 
 1.7.6 (2023-11-15)

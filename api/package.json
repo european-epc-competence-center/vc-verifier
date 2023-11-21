@@ -1,6 +1,6 @@
 {
   "name": "vc-verifier",
-  "version": "1.7.6",
+  "version": "1.7.7",
   "description": "The EECC verifier for verifiable credentials which provides an verification API as well as the corresponding UI.",
   "main": "index.js",
   "type": "module",
@@ -32,8 +32,8 @@
     "@digitalbazaar/ed25519-signature-2018": "^4.0.0",
     "@digitalbazaar/ed25519-signature-2020": "^5.2.0",
     "@digitalbazaar/vc": "^6.2.0",
-    "@digitalbazaar/vc-revocation-list": "^5.0.0",
-    "@digitalbazaar/vc-status-list": "^7.0.0",
+    "@digitalbazaar/vc-revocation-list": "^5.0.1",
+    "@digitalbazaar/vc-status-list": "^7.1.0",
     "cors": "^2.8.5",
     "did-resolver": "^4.1.0",
     "dotenv": "^16.3.1",

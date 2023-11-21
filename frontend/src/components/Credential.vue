@@ -239,6 +239,7 @@ export default {
                 });
         },
         getStateColor(credential) {
+            if (credential.revoked) return 'danger';
             if (credential.suspended) return 'warning';
             if (credential.verified === false) return 'danger';
             return 'success';

@@ -176,18 +176,41 @@ export default {
 
                 if (result.statusResult && !result.statusResult.verified) {
 
-                    // TODO also make status arrays recognize suspension
-                    if (credential.credentialStatus.statusPurpose && credential.credentialStatus.statusPurpose == 'suspension') {
+                    if (result.statusResult.results) {
 
-                        credentialResult.suspended = true;
+                        const failedStatuses = result.statusResult.results.filter(r => !r.verified)
 
-                        message = 'Credential suspended!';
+                        if (failedStatuses.filter(fs => fs.credentialStatus.statusPurpose === 'suspension').length > 0) {
+
+                            credentialResult.suspended = true;
+
+                            message = 'Credential suspended!';
+
+                        }
+
+                        if (failedStatuses.filter(fs => fs.credentialStatus.statusPurpose === 'revocation').length > 0) {
+
+                            credentialResult.revoked = true;
+
+                            message = 'Credential revoked!';
+
+                        }
 
                     } else {
 
-                        credentialResult.revoked = true;
+                        if (credential.credentialStatus.statusPurpose && credential.credentialStatus.statusPurpose == 'suspension') {
 
-                        message = 'Credential revoked!';
+                            credentialResult.suspended = true;
+
+                            message = 'Credential suspended!';
+
+                        } else {
+
+                            credentialResult.revoked = true;
+
+                            message = 'Credential revoked!';
+
+                        }
 
                     }
 
