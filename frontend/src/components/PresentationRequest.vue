@@ -92,8 +92,8 @@ export default {
         input_descriptors: [
           {
             id:
-              'eecc_verifier_request_' + this.credentialType ||
-              'VerifiableCredential',
+              'eecc_verifier_request_' +
+              (this.credentialType || 'VerifiableCredential'),
             format: {
               ldp_vc: {
                 proof_type: ['Ed25519Signature2018', 'Ed25519Signature2020'],
@@ -136,7 +136,7 @@ export default {
     },
     presentationRequestURI() {
       return (
-        'openid-presentation-request://?client_id=' +
+        'openid4vp://?client_id=' +
         encodeURI(
           this.$store.state.OPENID_ENDPOINT +
             'presentation/' +
