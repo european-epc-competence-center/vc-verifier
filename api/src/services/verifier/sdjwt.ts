@@ -52,6 +52,12 @@ export async function verifySDJWT(
         header.kid as string
       );
       const verify = await ES256.getVerifier(publicKey);
+      if (nonce && payload.nonce !== nonce) {
+        return false;
+      }
+      if (aud && payload.aud !== aud) {
+        return false;
+      }
       return verify(data, signature);
     };
 
