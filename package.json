@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@sd-jwt/crypto-nodejs": "^0.6.1",
+    "@sd-jwt/sd-jwt-vc": "^0.6.1",
+    "@sd-jwt/types": "^0.6.1"
+  }
+}

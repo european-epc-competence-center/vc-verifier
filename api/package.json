@@ -37,6 +37,7 @@
     "@or13/did-jwk": "^0.0.4",
     "@transmute/vc-jwt-sd": "^0.0.4",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "did-resolver": "^4.1.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
