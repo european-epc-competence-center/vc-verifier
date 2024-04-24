@@ -45,7 +45,6 @@ export async function verifySDJWT(
      * @returns true if the signature is valid
      */
     const verifier: Verifier = async (data, signature) => {
-      return true;
       const decodedVC = await sdjwtInstance.decode(`${data}.${signature}`);
       const payload = decodedVC.jwt?.payload as JWTPayload;
       const header = decodedVC.jwt?.header as JWK;
