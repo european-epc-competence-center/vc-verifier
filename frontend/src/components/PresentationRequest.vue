@@ -98,7 +98,6 @@ export default {
               ldp_vc: {
                 proof_type: ['Ed25519Signature2018', 'Ed25519Signature2020'],
               },
-              'vc+sd-jwt': {},
             },
             constraints: {
               fields: [
@@ -113,6 +112,12 @@ export default {
                   },
                 },
               ],
+            },
+          },
+          {
+            id: 'eecc_verifier_request_sdjwt',
+            format: {
+              'vc+sd-jwt': {},
             },
           },
         ],
