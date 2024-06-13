@@ -4,6 +4,9 @@ VC Verifier Changelog
 WIP
 ---
 
+1.7.8 (2024-06-13)
+---
+
 - fix status verification for SD
 
 
