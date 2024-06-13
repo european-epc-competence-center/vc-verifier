@@ -47,6 +47,9 @@ function getSuites(proof: Proof | Proof[]): unknown[] {
         suites = [getSuite(proof)]
     }
 
+    // always for status verification
+    suites.push(new Ed25519Signature2020())
+
     return suites;
 
 }
