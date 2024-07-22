@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@gs1us/vc-verifier-rules": "^1.0.2"
+  }
+}
