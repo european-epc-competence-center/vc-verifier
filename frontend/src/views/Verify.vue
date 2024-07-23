@@ -35,7 +35,7 @@
 <script>
 import { useToast } from "vue-toastification";
 import { Tooltip } from "bootstrap";
-import { getVerifiableType, VerifiableType, getContext, getHolder } from "../utils.js";
+import { getVerifiableType, VerifiableType, getContext, getHolder, isGs1Credential } from "../utils.js";
 
 
 import Passport from "@/components/Passport.vue";
@@ -242,7 +242,11 @@ export default {
         },
         async verify(verifiable) {
 
+            let isGs1 = false;
+
             if (getVerifiableType(verifiable) == VerifiableType.PRESENTATION) {
+
+
 
                 const presentation = {
                     presentation:
@@ -253,18 +257,29 @@ export default {
                     }
                 }
 
-                if (Array.isArray(verifiable.verifiableCredential)) verifiable.verifiableCredential.forEach(
-                    (credential) => this.addCredential({ ...credential, presentation })
-                );
-                else this.addCredential({ ...verifiable.verifiableCredential, presentation });
+                if (Array.isArray(verifiable.verifiableCredential)) {
+                    isGs1 = verifiable.verifiableCredential.some(cred => isGs1Credential(cred))
+                    verifiable.verifiableCredential.forEach(
+                        (credential) => this.addCredential({ ...credential, presentation })
+                    );
+                } 
+                else  {
+                    isGs1 = isGs1Credential(verifiable.verifiableCredential)
+                    this.addCredential({ ...verifiable.verifiableCredential, presentation });
+                }
 
             } else {
+                isGs1 = isGs1Credential(verifiable)
                 this.addCredential({ ...verifiable });
             }
 
-            const res = await this.$api.post('/', [verifiable], { params: { challenge: this.$route.query.challenge } });
 
-            const result = res.data[0];
+
+            const res = await this.$api.post(isGs1 ? '/gs1' : '/', isGs1 ? verifiable : [verifiable], { params: { challenge: this.$route.query.challenge } });
+
+            const result = isGs1 ? res.data : res.data[0];
+
+            console.log(result)
 
             // verifiable is a presentations
             if (getVerifiableType(verifiable) == VerifiableType.PRESENTATION) {
@@ -272,7 +287,7 @@ export default {
                 // build presentation object with important properties for attaching to the credential
                 var presentation = {
                     verified: result.verified,
-                    presentationResult: result.presentationResult.verified,
+                    presentationResult: isGs1 ? result.verified : result.presentationResult.verified,
                     holder: getHolder(verifiable),
                     challenge: Array.isArray(verifiable.proof) ? verifiable.proof[0].challenge : verifiable.proof.challenge,
                     domain: Array.isArray(verifiable.proof) ? verifiable.proof[0].domain : verifiable.proof.domain,
@@ -299,14 +314,15 @@ export default {
                 }
 
                 // contains array of credentials
-                if (Array.isArray(verifiable.verifiableCredential))
+                if (Array.isArray(verifiable.verifiableCredential)) {
+                    const credentialResults = isGs1 ? result.result : result.credentialResults;
                     verifiable.verifiableCredential.forEach(
                         credential => this.assignResult(
                             credential.id,
-                            result.credentialResults.find(credRes => credRes.credentialId == credential.id),
+                            credentialResults.find(credRes => credRes.credentialId == credential.id),
                             presentation
                         ));
-
+                }
                 // contains single credential object
                 else this.assignResult(verifiable.verifiableCredential.id, result[0], presentation);
 

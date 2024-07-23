@@ -14,23 +14,7 @@ import {
 import { documentLoader } from "../documentLoader/index.js";
 import { Verifier } from "./index.js";
 
-export const gs1CredentialTypes = [
-  "OrganizationDataCredential",
-  "GS1PrefixLicenseCredential",
-  "GS1CompanyPrefixLicenseCredential",
-  "KeyCredential",
-  "ProductDataCredential",
-];
 
-export const gs1CredentialContext =
-  "https://ref.gs1.org/gs1/vc/license-context";
-
-export function isGs1Credential(credential: VerifiableCredential): boolean {
-  return (
-    credential["@context"].includes(gs1CredentialContext) &&
-    credential.type.some((type: string) => gs1CredentialTypes.includes(type))
-  );
-}
 export function getVerifierFunction(challenge?: string, domain?: string) {
   return async function (verifiable: any) {
     return await Verifier.verify(verifiable, challenge, domain);

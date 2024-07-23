@@ -16,11 +16,6 @@ import { DataIntegrityProof } from "@digitalbazaar/data-integrity";
 import jsigs from "jsonld-signatures";
 
 import { documentLoader } from "../documentLoader/index.js";
-import {
-  isGs1Credential,
-  checkGS1Credential,
-  verifyGS1Credentials,
-} from "./gs1.js";
 
 const { createVerifyCryptosuite } = ecdsaSd2023Cryptosuite;
 const {
