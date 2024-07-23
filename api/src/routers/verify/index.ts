@@ -511,4 +511,362 @@ verifyRouter.post("/", verify);
  */
 verifyRouter.get("/id/:subjectId", verifySubjectsVCs);
 
+/**
+ * POST /api/verifier/gs1
+ * @summary Verifies an gs1 verifiable
+ * @tags Verify
+ * @param {Verifiable} request.body.required - Array of verifiables either of type SignedPresentation or SignedCredential - application/json
+ * @param {string} challenge.query - The presentation challenge/nonce to verify against. Will be set to the challenge in the presentation if not present.
+ * @param {string} domain.query - The presentation domain/audience to verify against. No check will be made if not present.
+ * @return {array<VerifierResponse>} 200 - success response - application/json
+ * @return {object} 400 - bad request response - application/json
+ * 
+ * @example request - Credential request
+[
+  {
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://ref.gs1.org/gs1/vc/licence-context/",
+        "https://ssi.eecc.de/api/registry/context",
+        "https://w3id.org/vc/status-list/2021/v1",
+        "https://w3id.org/security/suites/ed25519-2020/v1"
+    ],
+    "id": "https://ssi.eecc.de/api/registry/vc/8ee256f6-9374-4dd4-afc3-8916f4a29573",
+    "type": [
+        "VerifiableCredential",
+        "GS1PrefixLicenceCredential"
+    ],
+    "issuer": {
+        "id": "did:web:ssi.eecc.de",
+        "image": "https://id.eecc.de/assets/img/logo_big.png",
+        "name": "EECC"
+    },
+    "issuanceDate": "2023-11-22T13:20:58Z",
+    "credentialStatus": [
+        {
+            "id": "https://ssi.eecc.de/api/registry/vc/revocation/did:web:ssi.eecc.de/1#12",
+            "type": "StatusList2021Entry",
+            "statusPurpose": "revocation",
+            "statusListIndex": "12",
+            "statusListCredential": "https://ssi.eecc.de/api/registry/vc/revocation/did:web:ssi.eecc.de/1"
+        },
+        {
+            "id": "https://ssi.eecc.de/api/registry/vc/suspension/did:web:ssi.eecc.de/1#5",
+            "type": "StatusList2021Entry",
+            "statusPurpose": "suspension",
+            "statusListIndex": "5",
+            "statusListCredential": "https://ssi.eecc.de/api/registry/vc/suspension/did:web:ssi.eecc.de/1"
+        }
+    ],
+    "credentialSubject": {
+        "id": "did:web:eecc.de",
+        "licenceValue": "040471110",
+        "alternativeLicenceValue": "040471110",
+        "organizationName": "European EPC Competence Center",
+        "partyGLN": "40471110"
+    },
+    "proof": {
+        "type": "Ed25519Signature2020",
+        "created": "2023-11-22T13:20:58Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+        "proofValue": "z3MmgAE6NWZMXdrk3ncbuBmxWNxNS3ZWF8samxd5mzAiqrR4Ru1TcxB92dQhC9GmgFd1d5Lz2dHM2WoVwoMBxehTF"
+    }
+}
+]
+ * @example request - Presentation request
+[
+  {
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://ssi.eecc.de/api/registry/context",
+        "https://w3id.org/security/suites/ed25519-2020/v1"
+    ],
+    "type": [
+        "VerifiablePresentation"
+    ],
+    "verifiableCredential": [
+        {
+            "@context": [
+                "https://www.w3.org/2018/credentials/v1",
+                "https://ssi.eecc.de/api/registry/context/productpassport",
+                "https://w3id.org/security/suites/ed25519-2020/v1"
+            ],
+            "id": "https://ssi.eecc.de/api/registry/vc/cf43356c-a9f3-418a-a3ff-baca5a14d668",
+            "type": [
+                "VerifiableCredential",
+                "ProductPassportCredential"
+            ],
+            "issuer": {
+                "id": "did:web:ssi.eecc.de",
+                "image": "https://id.eecc.de/assets/img/logo_big.png",
+                "name": "EECC"
+            },
+            "issuanceDate": "2023-01-25T16:01:26Z",
+            "credentialSubject": {
+                "id": "https://id.eecc.de/01/04012345999990/10/20210401-A/21/XYZ-1234",
+                "digital_link": "https://id.eecc.de/01/04012345999990/10/20210401-A/21/XYZ-1234"
+            },
+            "proof": {
+                "type": "Ed25519Signature2020",
+                "created": "2023-01-25T16:01:26Z",
+                "proofPurpose": "assertionMethod",
+                "verificationMethod": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+                "proofValue": "z5YUnCUVWgAwc1iTQ61jtUyjBNLZELGMxnbsekFDQLd4ZNbPo45we4xxZjV5pqb3jqPo7ryKMmMY9dySNERz1huLJ"
+            }
+        },
+        {
+            "@context": [
+                "https://www.w3.org/2018/credentials/v1",
+                "https://ssi.eecc.de/api/registry/context/productpassport",
+                "https://w3id.org/security/suites/ed25519-2020/v1"
+            ],
+            "id": "https://ssi.eecc.de/api/registry/vc/03bb6e67-ecf3-4b71-99bd-fc4c7c37b8ce",
+            "type": [
+                "VerifiableCredential",
+                "ProductPassportCredential"
+            ],
+            "issuer": {
+                "id": "did:web:ssi.eecc.de",
+                "image": "https://id.eecc.de/assets/img/logo_big.png",
+                "name": "EECC"
+            },
+            "issuanceDate": "2023-01-25T16:01:01Z",
+            "credentialSubject": {
+                "id": "https://id.eecc.de/01/04012345999990/10/20210401-A",
+                "country_of_origin": "Germany",
+                "digital_link": "https://id.eecc.de/01/04012345999990/10/20210401-A",
+                "production_date": "2021-04-01"
+            },
+            "proof": {
+                "type": "Ed25519Signature2020",
+                "created": "2023-01-25T16:01:01Z",
+                "proofPurpose": "assertionMethod",
+                "verificationMethod": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+                "proofValue": "z5AUbYQjMaK27aLWUibQWGLXUNeP1dgEHHdCFGm13GvEwa3sV2BxtDjwSyJdrgeJsqXTZG7fqwyRVMRrP6CmfLMhF"
+            }
+        }
+    ],
+    "holder": {
+        "id": "did:web:ssi.eecc.de",
+        "image": "https://id.eecc.de/assets/img/logo_big.png",
+        "name": "EECC"
+    },
+    "proof": {
+        "type": "Ed25519Signature2020",
+        "created": "2023-02-02T14:29:09Z",
+        "verificationMethod": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+        "proofPurpose": "authentication",
+        "challenge": "testchallenge",
+        "domain": "ssi.eecc.de",
+        "proofValue": "z4A8Xexpe2bjH5WefUKErHvvvaYRHWz4ogWHq9r31EHo44CJX7drJpyyPVwfN5ohxTMMsmrkaWwbWQkUWf1iq3CC8"
+    }
+  }
+]
+ * @example response - 200 - Credentials verified
+[
+  {
+    "verified": true,
+    "results": [
+      {
+        "proof": {
+          "@context": [
+            "https://www.w3.org/2018/credentials/v1",
+            "https://ssi.eecc.de/api/registry/context/productpassport/eeccproduct",
+            "https://w3id.org/security/suites/ed25519-2020/v1"
+          ],
+          "type": "Ed25519Signature2020",
+          "created": "2022-11-03T14:18:36Z",
+          "proofPurpose": "assertionMethod",
+          "verificationMethod": "did:web:ssi.eecc.de#products",
+          "proofValue": "z3uJvNNEkTKzPBHdRiCB8u4oa2hK7CLfbFWkdMdcMNxQfEnE2Jhmjd1evwCoWFv3kB1BL4peFYHqjwknzYozfLZVu"
+        },
+        "verified": true,
+        "verificationMethod": {
+          "id": "did:web:ssi.eecc.de#products",
+          "type": "Ed25519VerificationKey2020",
+          "controller": "did:web:ssi.eecc.de",
+          "publicKeyMultibase": "z6Mkiaw6Uva4gJnZizeFLyxhMfy6V6eWzCm6pwNCzvSQhHy6",
+          "@context": [
+            "https://www.w3.org/ns/did/v1",
+            "https://w3id.org/security/suites/ed25519-2020/v1",
+            "https://w3id.org/security/suites/x25519-2020/v1"
+          ]
+        },
+        "purposeResult": {
+          "valid": true
+        }
+      }
+    ]
+  }
+]
+ * @example response - 200 - Presentations verified
+[
+  {
+    "verified": true,
+    "presentationResult": {
+      "verified": true,
+      "results": [
+        {
+          "proof": {
+            "@context": [
+              "https://www.w3.org/2018/credentials/v1",
+              "https://ssi.eecc.de/api/registry/context",
+              "https://w3id.org/security/suites/ed25519-2020/v1"
+            ],
+            "type": "Ed25519Signature2020",
+            "created": "2023-02-02T14:29:09Z",
+            "verificationMethod": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+            "proofPurpose": "authentication",
+            "challenge": "testchallenge",
+            "domain": "ssi.eecc.de",
+            "proofValue": "z4A8Xexpe2bjH5WefUKErHvvvaYRHWz4ogWHq9r31EHo44CJX7drJpyyPVwfN5ohxTMMsmrkaWwbWQkUWf1iq3CC8"
+          },
+          "verified": true,
+          "verificationMethod": {
+            "id": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+            "type": "Ed25519VerificationKey2020",
+            "controller": "did:web:ssi.eecc.de",
+            "publicKeyMultibase": "z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/suites/ed25519-2020/v1",
+              "https://w3id.org/security/suites/x25519-2020/v1"
+            ]
+          },
+          "purposeResult": {
+            "valid": true,
+            "controller": {
+              "@context": [
+                "https://www.w3.org/ns/did/v1",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
+                "https://w3id.org/security/suites/x25519-2020/v1"
+              ],
+              "id": "did:web:ssi.eecc.de",
+              "verificationMethod": [
+                {
+                  "id": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+                  "type": "Ed25519VerificationKey2020",
+                  "controller": "did:web:ssi.eecc.de",
+                  "publicKeyMultibase": "z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd"
+                },
+                {
+                  "id": "did:web:ssi.eecc.de#products",
+                  "type": "Ed25519VerificationKey2020",
+                  "controller": "did:web:ssi.eecc.de",
+                  "publicKeyMultibase": "z6Mkiaw6Uva4gJnZizeFLyxhMfy6V6eWzCm6pwNCzvSQhHy6"
+                },
+                {
+                  "id": "did:web:ssi.eecc.de#z6MknBXhTcvvJRpNk8cdC9LgCccj8W4n26zXUawCAYV6DwPG",
+                  "type": "Ed25519VerificationKey2020",
+                  "controller": "did:web:ssi.eecc.de",
+                  "publicKeyMultibase": "z6MknBXhTcvvJRpNk8cdC9LgCccj8W4n26zXUawCAYV6DwPG"
+                }
+              ],
+              "assertionMethod": [
+                "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+                "did:web:ssi.eecc.de#products",
+                "did:web:ssi.eecc.de#z6MknBXhTcvvJRpNk8cdC9LgCccj8W4n26zXUawCAYV6DwPG"
+              ],
+              "authentication": [
+                "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd"
+              ],
+              "capabilityDelegation": [
+                "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd"
+              ],
+              "capabilityInvocation": [
+                "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd"
+              ],
+              "service": [
+                {
+                  "id": "did:web:ssi.eecc.de#website",
+                  "type": "LinkedDomains",
+                  "serviceEndpoint": "https://id.eecc.de"
+                },
+                {
+                  "id": "did:web:ssi.eecc.de#eecc-registry",
+                  "type": "CredentialRegistry",
+                  "serviceEndpoint": "https://ssi.eecc.de/api/registry/vcs/"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "credentialResults": [
+      {
+        "verified": true,
+        "results": [
+          {
+            "proof": {
+              "@context": [
+                "https://www.w3.org/2018/credentials/v1",
+                "https://ssi.eecc.de/api/registry/context/productpassport",
+                "https://w3id.org/security/suites/ed25519-2020/v1"
+              ],
+              "type": "Ed25519Signature2020",
+              "created": "2023-01-25T16:01:26Z",
+              "proofPurpose": "assertionMethod",
+              "verificationMethod": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+              "proofValue": "z5YUnCUVWgAwc1iTQ61jtUyjBNLZELGMxnbsekFDQLd4ZNbPo45we4xxZjV5pqb3jqPo7ryKMmMY9dySNERz1huLJ"
+            },
+            "verified": true,
+            "verificationMethod": {
+              "id": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+              "type": "Ed25519VerificationKey2020",
+              "controller": "did:web:ssi.eecc.de",
+              "publicKeyMultibase": "z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+              "@context": [
+                "https://www.w3.org/ns/did/v1",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
+                "https://w3id.org/security/suites/x25519-2020/v1"
+              ]
+            },
+            "purposeResult": {
+              "valid": true
+            }
+          }
+        ],
+        "credentialId": "https://ssi.eecc.de/api/registry/vc/cf43356c-a9f3-418a-a3ff-baca5a14d668"
+      },
+      {
+        "verified": true,
+        "results": [
+          {
+            "proof": {
+              "@context": [
+                "https://www.w3.org/2018/credentials/v1",
+                "https://ssi.eecc.de/api/registry/context/productpassport",
+                "https://w3id.org/security/suites/ed25519-2020/v1"
+              ],
+              "type": "Ed25519Signature2020",
+              "created": "2023-01-25T16:01:01Z",
+              "proofPurpose": "assertionMethod",
+              "verificationMethod": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+              "proofValue": "z5AUbYQjMaK27aLWUibQWGLXUNeP1dgEHHdCFGm13GvEwa3sV2BxtDjwSyJdrgeJsqXTZG7fqwyRVMRrP6CmfLMhF"
+            },
+            "verified": true,
+            "verificationMethod": {
+              "id": "did:web:ssi.eecc.de#z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+              "type": "Ed25519VerificationKey2020",
+              "controller": "did:web:ssi.eecc.de",
+              "publicKeyMultibase": "z6MkoHWsmSZnHisAxnVdokYHnXaVqWFZ4H33FnNg13zyymxd",
+              "@context": [
+                "https://www.w3.org/ns/did/v1",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
+                "https://w3id.org/security/suites/x25519-2020/v1"
+              ]
+            },
+            "purposeResult": {
+              "valid": true
+            }
+          }
+        ],
+        "credentialId": "https://ssi.eecc.de/api/registry/vc/03bb6e67-ecf3-4b71-99bd-fc4c7c37b8ce"
+      }
+    ]
+  }
+]
+ */
 verifyRouter.post("/gs1", verifyGS1);
