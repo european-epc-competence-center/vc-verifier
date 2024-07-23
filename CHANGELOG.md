@@ -4,6 +4,10 @@ VC Verifier Changelog
 WIP
 ---
 
+2.0.3 (2024-07-23)
+
+- fix container startup
+
 2.0.2 (2024-07-23)
 
 - fix api url
