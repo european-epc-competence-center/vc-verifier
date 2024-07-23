@@ -4,6 +4,11 @@ VC Verifier Changelog
 WIP
 ---
 
+2.0.0 (2024-07-23)
+
+- add gs1 verification endpoint
+- use gs1 endpoint on gs1 credential
+
 1.7.8 (2024-06-13)
 ---
 
