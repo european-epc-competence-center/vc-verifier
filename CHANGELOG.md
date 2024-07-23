@@ -4,6 +4,10 @@ VC Verifier Changelog
 WIP
 ---
 
+2.0.1 (2024-07-23)
+
+- fix show version
+
 2.0.0 (2024-07-23)
 
 - add gs1 verification endpoint
