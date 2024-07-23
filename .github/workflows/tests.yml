@@ -1,10 +1,9 @@
 name: Tests
 
-on: [ push ]
+on: [push]
 
 jobs:
   test:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -13,8 +12,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      
-      - run: npm ci
+
+      - run: npm i
         working-directory: ./api
       - run: npm test
         working-directory: ./api
