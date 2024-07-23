@@ -151,24 +151,12 @@ export class Verifier {
           }
         }
       } else {
-        if (isGs1Credential(credential)) {
-          result = await checkGS1Credential(
-            verifyCredential({
-              credential,
-              suite,
-              documentLoader,
-              checkStatus,
-            }),
-            credential
-          );
-        } else {
-          result = await verifyCredential({
-            credential,
-            suite,
-            documentLoader,
-            checkStatus,
-          });
-        }
+        result = await verifyCredential({
+          credential,
+          suite,
+          documentLoader,
+          checkStatus,
+        });
       }
     }
 
@@ -183,28 +171,14 @@ export class Verifier {
 
       const checkStatus = getCheckStatus(getPresentationStatus(presentation));
 
-      if (isGs1Credential(presentation)) {
-        result = await verifyGS1Credentials(
-          verify({
-            presentation,
-            suite,
-            documentLoader,
-            challenge,
-            domain,
-            checkStatus,
-          }),
-          presentation
-        );
-      } else {
-        result = await verify({
-          presentation,
-          suite,
-          documentLoader,
-          challenge,
-          domain,
-          checkStatus,
-        });
-      }
+      result = await verify({
+        presentation,
+        suite,
+        documentLoader,
+        challenge,
+        domain,
+        checkStatus,
+      });
     }
 
     if (!result) throw Error("Provided verifiable object is of unknown type!");

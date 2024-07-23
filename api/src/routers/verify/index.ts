@@ -1,12 +1,10 @@
-import { Router } from 'express';
-import { VerifyRoutes } from '../../routes/index.js';
-
+import { Router } from "express";
+import { VerifyRoutes } from "../../routes/index.js";
 
 const verifyRoutes = new VerifyRoutes();
-const { fetchAndVerify, verify, verifySubjectsVCs } = verifyRoutes
+const { fetchAndVerify, verify, verifySubjectsVCs, verifyGS1 } = verifyRoutes;
 
 export const verifyRouter = Router();
-
 
 /**
  * API model of a credentialSubject
@@ -14,7 +12,6 @@ export const verifyRouter = Router();
  * @typedef {object} CredentialSubject
  * @property {string} id.required - The identifier of the identity which the credential refers to
  */
-
 
 /**
  * API model of a signed credential
@@ -24,8 +21,8 @@ export const verifyRouter = Router();
  * @property {string} id - The id of the the credential as an IRI
  * @property {array<string>} type.required - The types of the credential
  * @property {string} issuer.required - The DID of the issuer of the credential
- * @property {string} issuanceDate.required - The issuance date of the credential in ISO format 2022-09-26T09:01:07.437Z 
- * @property {string} expirationDate - The expiration date of the credential in ISO format 2022-09-26T09:01:07.437Z 
+ * @property {string} issuanceDate.required - The issuance date of the credential in ISO format 2022-09-26T09:01:07.437Z
+ * @property {string} expirationDate - The expiration date of the credential in ISO format 2022-09-26T09:01:07.437Z
  * @property {CredentialSubject} credentialSubject.required - The actual claim of the credential
  * @property {object} proof.required - The cryptographic signature of the issuer over the credential
  */
@@ -104,7 +101,7 @@ export const verifyRouter = Router();
     ]
   }
  */
-verifyRouter.get('/vc/:vcid', fetchAndVerify);
+verifyRouter.get("/vc/:vcid", fetchAndVerify);
 
 /**
  * POST /api/verifier
@@ -464,7 +461,7 @@ verifyRouter.get('/vc/:vcid', fetchAndVerify);
   }
 ]
  */
-verifyRouter.post('/', verify);
+verifyRouter.post("/", verify);
 
 /**
  * GET /api/verifier/id/{subjectId}
@@ -512,5 +509,6 @@ verifyRouter.post('/', verify);
   }
 ]
  */
-verifyRouter.get('/id/:subjectId', verifySubjectsVCs);
+verifyRouter.get("/id/:subjectId", verifySubjectsVCs);
 
+verifyRouter.post("/gs1", verifyGS1);
