@@ -18,13 +18,27 @@
             </div>
             <div class="row mx-md-3">
                 <div class="col-md-4">
-                    <input v-if="enableCustomCredentialType" v-model="customCredentialType" id="credentialType" type="text"
+                    
+                    <input type="radio" class="btn-check" name="options-credentials" id="any-credential-outlined" autocomplete="off" checked 
+                        value="any" v-model="selectedCredential">
+                    <label class="btn btn-outline-primary" for="any-credential-outlined">Any Credential</label>
+
+                    <input type="radio" class="btn-check" name="options-credentials" id="custom-credential-outlined" autocomplete="off" 
+                        value="custom" v-model="selectedCredential">
+                    <label class="btn btn-outline-primary" for="custom-credential-outlined">Custom Credential</label>
+
+                    <input v-if="selectedCredential === 'custom'" v-model="customCredentialType" id="credentialType" type="text" class="form-control" 
+                        placeholder="CustomCredential" aria-label="credentialType">
+
+                    <!-- <input v-if="enableCustomCredentialType" v-model="custom-credential-outlined" id="credentialType" type="text"
+                        class="form-control" placeholder="CustomCredential" aria-label="credentialType"> -->
+                    <!-- <input v-if="enableCustomCredentialType" v-model="customCredentialType" id="credentialType" type="text"
                         class="form-control" placeholder="CustomCredential" aria-label="credentialType">
                     <select v-else v-model="credentialType" id="credentialType" class="form-select"
                         aria-label="Credential Type">
                         <option selected :value="undefined">All</option>
                         <option value="ProductPassportCredential">Product Passport Credential</option>
-                    </select>
+                    </select> -->
                     <label for="credentialType" class="form-label text-muted ms-1">
                         <div class="form-check form-switch">
                             <input v-model="enableCustomCredentialType" class="form-check-input" type="checkbox"
@@ -46,8 +60,9 @@ export default {
     name: 'PresentationRequestView',
     data() {
         return {
-            credentialType: undefined,
-            customCredentialType: undefined,
+            selectedCredential: 'any',
+            // credentialType: undefined,
+            customCredentialTypes: [""],
             enableCustomCredentialType: false,
             customChangeTimeout: undefined
         }
