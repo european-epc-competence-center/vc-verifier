@@ -10,7 +10,7 @@
                     aria-label="API Docs"></i></a>
             <a href="https://id.eecc.de"><img id="logo" src="@/assets/img/logo.png" /></a>
         </div>
-        <div class="card-body" >
+        <div class="card-body">
             <div class="row mx-md-3">
                 <div class="col-12">
                     <p>Define which credentials you want to have presented</p>
@@ -32,22 +32,22 @@
             <div v-if="selectedCredential === 'custom'">
                 <div class="row mx-md-3" v-for="(l, i) in customCredentialTypes" :key="i">
                     <div class="col-6">
-                        <input v-model="customCredentialTypes[i]" type="text" class="form-control"
-                            placeholder="CustomCredentialType" aria-label="credentialType">
+                        <input v-model="customCredentialTypes[i]" type="text" class="form-control ms-1 mt-1"
+                            placeholder="CustomCredentialType">
                     </div>
                     <div class="col-1" v-if="i === customCredentialTypes.length - 1">
-                        <button class="btn btn-outline-success" @click="customCredentialTypes.push('')">
+                        <button class="btn btn-outline-success ms-1 mt-1" @click="customCredentialTypes.push('')">
                             <i class="bi bi-plus-circle"></i>
                         </button>
                     </div>
                     <div class="col-1">
-                        <button class="btn btn-outline-danger" @click="customCredentialTypes.splice(i, 1)">
+                        <button class="btn btn-outline-danger ms-1 mt-1" @click="customCredentialTypes.splice(i, 1)">
                             <i class="bi bi-dash-circle"></i>
                         </button>
                     </div>
                 </div>
             </div>
-            <PresentationRequest :credentialType="credentialType" />
+            <PresentationRequest :credentialTypes="customCredentialTypes" />
         </div>
     </div>
 </template>
