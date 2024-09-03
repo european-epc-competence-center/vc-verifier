@@ -10,7 +10,7 @@
                     aria-label="API Docs"></i></a>
             <a href="https://id.eecc.de"><img id="logo" src="@/assets/img/logo.png" /></a>
         </div>
-        <div class="card-body" style="overflow-y: scroll;">
+        <div class="card-body" >
             <div class="row mx-md-3">
                 <div class="col-12">
                     <p>Define which credentials you want to have presented</p>
@@ -18,35 +18,33 @@
             </div>
             <div class="row mx-md-3">
                 <div class="col-md-4">
-                    
-                    <input type="radio" class="btn-check" name="options-credentials" id="any-credential-outlined" autocomplete="off" checked 
-                        value="any" v-model="selectedCredential">
+
+                    <input type="radio" class="btn-check" name="options-credentials" id="any-credential-outlined"
+                        autocomplete="off" checked value="any" v-model="selectedCredential">
                     <label class="btn btn-outline-primary" for="any-credential-outlined">Any Credential</label>
 
-                    <input type="radio" class="btn-check" name="options-credentials" id="custom-credential-outlined" autocomplete="off" 
-                        value="custom" v-model="selectedCredential">
+                    <input type="radio" class="btn-check" name="options-credentials" id="custom-credential-outlined"
+                        autocomplete="off" value="custom" v-model="selectedCredential">
                     <label class="btn btn-outline-primary" for="custom-credential-outlined">Custom Credential</label>
 
-                    <input v-if="selectedCredential === 'custom'" v-model="customCredentialType" id="credentialType" type="text" class="form-control" 
-                        placeholder="CustomCredential" aria-label="credentialType">
-
-                    <!-- <input v-if="enableCustomCredentialType" v-model="custom-credential-outlined" id="credentialType" type="text"
-                        class="form-control" placeholder="CustomCredential" aria-label="credentialType"> -->
-                    <!-- <input v-if="enableCustomCredentialType" v-model="customCredentialType" id="credentialType" type="text"
-                        class="form-control" placeholder="CustomCredential" aria-label="credentialType">
-                    <select v-else v-model="credentialType" id="credentialType" class="form-select"
-                        aria-label="Credential Type">
-                        <option selected :value="undefined">All</option>
-                        <option value="ProductPassportCredential">Product Passport Credential</option>
-                    </select> -->
-                    <label for="credentialType" class="form-label text-muted ms-1">
-                        <div class="form-check form-switch">
-                            <input v-model="enableCustomCredentialType" class="form-check-input" type="checkbox"
-                                id="customCredentialTypeSwitch">
-                            <label class="form-check-label" for="customCredentialTypeSwitch"><small>Custom credential
-                                    type</small></label>
-                        </div>
-                    </label>
+                </div>
+            </div>
+            <div v-if="selectedCredential === 'custom'">
+                <div class="row mx-md-3" v-for="(l, i) in customCredentialTypes" :key="i">
+                    <div class="col-6">
+                        <input v-model="customCredentialTypes[i]" type="text" class="form-control"
+                            placeholder="CustomCredentialType" aria-label="credentialType">
+                    </div>
+                    <div class="col-1" v-if="i === customCredentialTypes.length - 1">
+                        <button class="btn btn-outline-success" @click="customCredentialTypes.push('')">
+                            <i class="bi bi-plus-circle"></i>
+                        </button>
+                    </div>
+                    <div class="col-1">
+                        <button class="btn btn-outline-danger" @click="customCredentialTypes.splice(i, 1)">
+                            <i class="bi bi-dash-circle"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             <PresentationRequest :credentialType="credentialType" />
@@ -61,29 +59,12 @@ export default {
     data() {
         return {
             selectedCredential: 'any',
-            // credentialType: undefined,
             customCredentialTypes: [""],
-            enableCustomCredentialType: false,
             customChangeTimeout: undefined
         }
     },
     components: {
         PresentationRequest
-    },
-    watch: {
-        customCredentialType() {
-            this.setCustomCredentialType();
-        },
-        enableCustomCredentialType(newValue) {
-            if (newValue && this.customCredentialType) this.credentialType = this.customCredentialType;
-            else this.credentialType = undefined;
-        }
-    },
-    methods: {
-        setCustomCredentialType() {
-            if (this.customChangeTimeout) clearTimeout(this.customChangeTimeout);
-            this.customChangeTimeout = setTimeout(() => this.credentialType = this.customCredentialType, 500);
-        }
     }
 }
 </script>
