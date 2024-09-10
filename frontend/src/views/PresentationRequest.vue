@@ -46,16 +46,23 @@
                         </button>
                     </div>
                 </div>
-                <div v-if="customCredentialTypes.length >= 2" class="col-6">
-                    <div class="form-check form-switch">
-                        <input v-model="composeTypesWithOr" class="form-check-input" type="checkbox"
-                            id="composeTypesWithOrSwitch">
-                        <label class="form-check-label" for="composeTypesWithOrSwitch"><small>one credential is sufficient 
-                                </small></label>
+                <div class="row mx-md-3" v-if="customCredentialTypes.length >= 2">
+                    <div class="col-6 mt-2">
+                        <div class="form-check form-switch">
+                            <input v-model="composeTypesWithOr" class="form-check-input" type="checkbox" id="composeTypesWithOrSwitch">
+                            <label class="form-check-label" for="composeTypesWithOrSwitch">
+                                <small>any credential is sufficient</small>
+                            </label>
+                        </div>
                     </div>
-                </div>
+               </div>
             </div>
-            <PresentationRequest :credentialTypes="customCredentialTypes" :composeTypesWithOr="composeTypesWithOr"/>
+            <div v-if="selectedCredential === 'custom'">
+                <PresentationRequest :credentialTypes="customCredentialTypes" :composeTypesWithOr="composeTypesWithOr"/>
+            </div>
+            <div v-if="selectedCredential === 'any'">
+                <PresentationRequest :credentialTypes="['']" :composeTypesWithOr="false"/>
+            </div>
         </div>
     </div>
 </template>
@@ -75,27 +82,5 @@ export default {
     components: {
         PresentationRequest
     }, 
-    // watch: {
-    //     customCredentialTypes: {
-    //         handler() {
-    //             this.registerPresentationRequest();
-    //         },
-    //         deep: true
-    //     },
-    //     enableCustomCredentialType(newValue) {
-    //         if (newValue && this.customCredentialType) this.credentialType = this.customCredentialType;
-    //         else this.credentialType = undefined;
-    //     }
-    // },
-    // methods: {
-    //     setCustomCredentialType() {
-    //         if (this.customChangeTimeout) clearTimeout(this.customChangeTimeout);
-    //         this.customChangeTimeout = setTimeout(() => this.credentialType = this.customCredentialType, 500);
-    //     }
-    // },
-    mounted() {
-        console.log('composeTypesWithOr:', this.composeTypesWithOr);
-        console.log('customCredentialTypes', this.customCredentialTypes);
-    },
 }
 </script>
