@@ -40,7 +40,7 @@
                             <i class="bi bi-plus-circle"></i>
                         </button>
                     </div>
-                    <div class="col-1">
+                    <div v-if="customCredentialTypes.length > 1" class="col-1">
                         <button class="btn btn-outline-danger ms-1 mt-1" @click="customCredentialTypes.splice(i, 1)">
                             <i class="bi bi-dash-circle"></i>
                         </button>
