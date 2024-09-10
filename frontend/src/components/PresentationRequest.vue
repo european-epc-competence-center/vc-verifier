@@ -33,6 +33,10 @@ export default {
         mode: {
             type: String,
             default: 'verify'
+        },
+        composeTypesWithOr: {
+            type: Boolean, 
+            default: false
         }
     },
     data() {
@@ -52,6 +56,8 @@ export default {
         if (this.intervalId) clearInterval(this.intervalId);
         this.intervalId = setInterval(this.getPresentation, 3000);
         this.registerPresentationRequest();
+        console.log('composeTypesWithOr:', this.composeTypesWithOr);
+        console.log('CredentialTypes', this.CredentialTypes);
     },
     beforeUnmount() {
         if (this.intervalId) clearInterval(this.intervalId)
@@ -62,8 +68,15 @@ export default {
                 this.registerPresentationRequest();
             },
             deep: true
-        }
+        },
+        composeTypesWithOr: {
+            handler() {
+                this.registerPresentationRequest();
+            },
+        },
     },
+    // function getInputDescriptor(credentialType) {
+    //     return {
     computed: {
         authentication: {
             get() {
@@ -79,38 +92,73 @@ export default {
                 "input_descriptors": [
                 ]
             }
-            for (const credentialType of this.credentialTypes) {
+            if (this.composeTypesWithOr) {
+                console.log("composeTypesWithOr is true:",this.composeTypesWithOr)
                 definition.input_descriptors.push(
-                    {
-                        "id": "eecc_verifier_request_" + credentialType || "VerifiableCredential",
-                        "format": {
-                            "ldp_vc": {
-                                "proof_type": [
-                                    "Ed25519Signature2018",
-                                    "Ed25519Signature2020"
-                                ]
-                            }
-                        },
-                        "constraints": {
-                            "fields": [
-                                {
-                                    "path": [
-                                        "$.type"
-                                    ],
-                                    "filter": {
-                                        "type": "array",
-                                        "contains": {
-                                            "type": "string",
-                                            "pattern": credentialType || "VerifiableCredential"
+                        {
+                            "id": "eecc_verifier_request_" + this.credentialTypes.join("|") || "VerifiableCredential",
+                            "format": {
+                                "ldp_vc": {
+                                    "proof_type": [
+                                        "Ed25519Signature2018",
+                                        "Ed25519Signature2020"
+                                    ]
+                                }
+                            },
+                            "constraints": {
+                                "fields": [
+                                    {
+                                        "path": [
+                                            "$.type"
+                                        ],
+                                        "filter": {
+                                            "type": "array",
+                                            "contains": {
+                                                "type": "string",
+                                                "pattern": this.credentialTypes.join("|") || "VerifiableCredential"
+                                            }
                                         }
                                     }
-                                }
-                            ]
+                                ]
+                            }
                         }
-                    }
-                );
+                    );
+            } 
+            if (!this.composeTypesWithOr) {
+                console.log("composeTypesWithOr is false:",this.composeTypesWithOr)
+                for (const credentialType of this.credentialTypes) {
+                    definition.input_descriptors.push(
+                        {
+                            "id": "eecc_verifier_request_" + credentialType || "VerifiableCredential",
+                            "format": {
+                                "ldp_vc": {
+                                    "proof_type": [
+                                        "Ed25519Signature2018",
+                                        "Ed25519Signature2020"
+                                    ]
+                                }
+                            },
+                            "constraints": {
+                                "fields": [
+                                    {
+                                        "path": [
+                                            "$.type"
+                                        ],
+                                        "filter": {
+                                            "type": "array",
+                                            "contains": {
+                                                "type": "string",
+                                                "pattern": credentialType || "VerifiableCredential"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    );
 
-            }
+                }
+            } 
             return definition;
 
         },
@@ -133,6 +181,8 @@ export default {
     },
     methods: {
         getPresentation() {
+            console.log('Log composeTypesWithOr', this.composeTypesWithOr);
+            console.log('Log credentialTypes', this.credentialTypes);
             if (this.presentationRequestId) {
                 this.$api.get(this.$store.state.OPENID_ENDPOINT + 'presentation' + this.getRequestPath())
                     .then((res) => {
@@ -157,6 +207,8 @@ export default {
 
                     });
             }
+            console.log('Log after: composeTypesWithOr', this.composeTypesWithOr);
+            console.log('Log after: CredentialTypes', this.CredentialTypes);
         },
         getRequestPath() {
             return this.presentationRequestId ? '/' + this.presentationRequestId : '';
