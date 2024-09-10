@@ -60,7 +60,7 @@ export default {
             default: 'verify'
         },
         composeTypesWithOr: {
-            type: Boolean, 
+            type: Boolean,
             default: false
         }
     },
@@ -117,14 +117,13 @@ export default {
                 definition.input_descriptors.push(
                     getInputDescriptor(this.credentialTypes.join("|"))
                 );
-            } 
-            if (!this.composeTypesWithOr) {
+            } else {
                 for (const credentialType of this.credentialTypes) {
                     definition.input_descriptors.push(
                         getInputDescriptor(credentialType)
                     );
                 }
-            } 
+            }
             return definition;
 
         },

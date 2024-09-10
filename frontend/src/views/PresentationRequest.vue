@@ -49,20 +49,20 @@
                 <div class="row mx-md-3" v-if="customCredentialTypes.length >= 2">
                     <div class="col-6 mt-2">
                         <div class="form-check form-switch">
-                            <input v-model="composeTypesWithOr" class="form-check-input" type="checkbox" id="composeTypesWithOrSwitch">
+                            <input v-model="composeTypesWithOr" class="form-check-input" type="checkbox"
+                                id="composeTypesWithOrSwitch">
                             <label class="form-check-label" for="composeTypesWithOrSwitch">
                                 <small>any credential is sufficient</small>
                             </label>
                         </div>
                     </div>
-               </div>
+                </div>
             </div>
-            <div v-if="selectedCredential === 'custom'">
-                <PresentationRequest :credentialTypes="customCredentialTypes" :composeTypesWithOr="composeTypesWithOr"/>
-            </div>
-            <div v-if="selectedCredential === 'any'">
-                <PresentationRequest :credentialTypes="['']" :composeTypesWithOr="false"/>
-            </div>
+
+            <PresentationRequest :credentialTypes="selectedCredential === 'custom' ? customCredentialTypes : ['']"
+                :composeTypesWithOr="selectedCredential === 'custom' ? composeTypesWithOr : false" />
+
+
         </div>
     </div>
 </template>
@@ -81,6 +81,6 @@ export default {
     },
     components: {
         PresentationRequest
-    }, 
+    },
 }
 </script>
