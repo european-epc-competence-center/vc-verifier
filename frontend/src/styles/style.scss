@@ -19,6 +19,7 @@ body {
 #maincard {
     min-width: 80%;
     max-height: 90vh;
+    overflow-y: scroll;
 
     @media (max-width: 768px) {
         border-radius: 0;

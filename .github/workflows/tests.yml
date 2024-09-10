@@ -1,10 +1,9 @@
 name: Tests
 
-on: [ push ]
+on: [push]
 
 jobs:
   test:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -13,7 +12,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      
+
+      - run: npm i @gs1us/vc-verifier-rules
+        working-directory: ./api
       - run: npm ci
         working-directory: ./api
       - run: npm test

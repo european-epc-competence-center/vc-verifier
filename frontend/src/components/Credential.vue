@@ -6,7 +6,8 @@
         <div class="card-header p-3">
             <div class="row justify-content-between align-items-center">
                 <div class="col-8">
-                    <h5 class="mb-0 text-primary">{{ getCredentialType(credential) }}</h5>
+                    <h5 class="mb-0 text-primary"><img v-if="isGs1Credential(credential)" class="me-1" style="height: 1.5rem;"
+                        src="https://ref.gs1.org/logos/gs1logo.png" /> {{ getCredentialType(credential) }}</h5>
                     <div class="credentialid mt-1"><a :href="credential.id">{{ credential.id }}</a></div>
                 </div>
                 <div class="col-2 text-end">
@@ -184,7 +185,7 @@ import { Tooltip } from 'bootstrap';
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { credentialPDF } from '../pdf.js';
-import { getPlainCredential, getCredentialType } from '../utils.js';
+import { getPlainCredential, getCredentialType, isGs1Credential } from '../utils.js';
 import * as JsHashes from 'jshashes';
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
@@ -207,7 +208,8 @@ export default {
         return {
             toast: useToast(),
             getPlainCredential: getPlainCredential,
-            getCredentialType: getCredentialType
+            getCredentialType: getCredentialType,
+            isGs1Credential: isGs1Credential
         }
     },
     mounted() {

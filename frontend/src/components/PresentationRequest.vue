@@ -3,12 +3,13 @@
         <div class="col-12 px-0 my-3 text-center">
             <div v-if="generating" class="my-3" style="min-height: 300px;">
                 <p class="p-5 m-0 text-muted">Registering presentation request</p>
-                <div class="spinner-border text-primary m-5" role="status" style="width: 5rem; height: 5rem; top: 150px;">
+                <div class="spinner-border text-primary m-5" role="status"
+                    style="width: 5rem; height: 5rem; top: 150px;">
                     <span class="visually-hidden">Generating...</span>
                 </div>
             </div>
-            <qrcode-vue v-else-if="presentationRequestId" :value="presentationRequestURI" :margin="1" :size="300" level="M"
-                class="my-3" id="presentation-request-canvas" />
+            <qrcode-vue v-else-if="presentationRequestId" :value="presentationRequestURI" :margin="1" :size="300"
+                level="M" class="my-3" id="presentation-request-canvas" />
             <div v-else class="my-3" style="min-height: 300px;">
                 <p class="p-5 text-muted">Please configure your presentation request</p>
             </div>
@@ -25,13 +26,42 @@
 import { useToast } from 'vue-toastification';
 import QrcodeVue from 'qrcode.vue';
 
+function getInputDescriptor(ct) {
+    return {
+        id: "eecc_verifier_request_" + ct || "VerifiableCredential",
+        format: {
+            ldp_vc: {
+                proof_type: ["Ed25519Signature2018", "Ed25519Signature2020"],
+            },
+        },
+        constraints: {
+            fields: [
+                {
+                    path: ["$.type"],
+                    filter: {
+                        type: "array",
+                        contains: {
+                            type: "string",
+                            pattern: ct || "VerifiableCredential",
+                        },
+                    },
+                },
+            ],
+        },
+    };
+}
+
 export default {
     name: 'PresentationRequest',
     props: {
-        credentialType: String,
+        credentialTypes: Array,
         mode: {
             type: String,
             default: 'verify'
+        },
+        composeTypesWithOr: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -56,9 +86,17 @@ export default {
         if (this.intervalId) clearInterval(this.intervalId)
     },
     watch: {
-        credentialType() {
-            this.registerPresentationRequest();
-        }
+        credentialTypes: {
+            handler() {
+                this.registerPresentationRequest();
+            },
+            deep: true
+        },
+        composeTypesWithOr: {
+            handler() {
+                this.registerPresentationRequest();
+            },
+        },
     },
     computed: {
         authentication: {
@@ -70,38 +108,24 @@ export default {
             }
         },
         presentationDefinition() {
-            return {
+            const definition = {
                 "id": "eecc_verifier_request",
                 "input_descriptors": [
-                    {
-                        "id": "eecc_verifier_request_" + this.credentialType || "VerifiableCredential",
-                        "format": {
-                            "ldp_vc": {
-                                "proof_type": [
-                                    "Ed25519Signature2018",
-                                    "Ed25519Signature2020"
-                                ]
-                            }
-                        },
-                        "constraints": {
-                            "fields": [
-                                {
-                                    "path": [
-                                        "$.type"
-                                    ],
-                                    "filter": {
-                                        "type": "array",
-                                        "contains": {
-                                            "type": "string",
-                                            "const": this.credentialType || "VerifiableCredential"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
                 ]
             }
+            if (this.composeTypesWithOr) {
+                definition.input_descriptors.push(
+                    getInputDescriptor(this.credentialTypes.join("|"))
+                );
+            } else {
+                for (const credentialType of this.credentialTypes) {
+                    definition.input_descriptors.push(
+                        getInputDescriptor(credentialType)
+                    );
+                }
+            }
+            return definition;
+
         },
         presentationRequest() {
             return {

@@ -4,6 +4,28 @@ VC Verifier Changelog
 WIP
 ---
 
+2.0.3 (2024-07-23)
+
+- fix container startup
+
+2.0.2 (2024-07-23)
+
+- fix api url
+
+2.0.1 (2024-07-23)
+
+- fix show version
+
+2.0.0 (2024-07-23)
+
+- add gs1 verification endpoint
+- use gs1 endpoint on gs1 credential
+
+1.7.8 (2024-06-13)
+---
+
+- fix status verification for SD
+
 
 1.7.7 (2023-11-21)
 ---
