@@ -114,9 +114,10 @@ export default {
                 ]
             }
             if (this.credentialTypes === undefined) {
-                getInputDescriptor([])
-            }
-            else if (this.composeTypesWithOr) {
+                definition.input_descriptors.push(
+                    getInputDescriptor("")
+                ); 
+            } else if (this.composeTypesWithOr) {
                 definition.input_descriptors.push(
                     getInputDescriptor(this.credentialTypes.join("|"))
                 );
