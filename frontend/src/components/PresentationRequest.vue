@@ -113,7 +113,11 @@ export default {
                 "input_descriptors": [
                 ]
             }
-            if (this.composeTypesWithOr) {
+            if (this.credentialTypes === undefined) {
+                definition.input_descriptors.push(
+                    getInputDescriptor("")
+                ); 
+            } else if (this.composeTypesWithOr) {
                 definition.input_descriptors.push(
                     getInputDescriptor(this.credentialTypes.join("|"))
                 );
