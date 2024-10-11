@@ -4,6 +4,8 @@ VC Verifier Changelog
 WIP
 ---
 
+- allow gs1 chaining library to access verification erros
+
 2.0.3 (2024-07-23)
 
 - fix container startup

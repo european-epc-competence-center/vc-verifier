@@ -179,8 +179,14 @@ export class Verifier {
     if (!result) throw Error("Provided verifiable object is of unknown type!");
 
     // make non enumeratable errors enumeratable for the respsonse
-    if (result.error && !result.error.errors)
-      result.error.name = result.error.message;
+    if (result.error) {
+      if (!result.error.errors) {
+        result.error.name = result.error.message;
+      }
+      if (result.error.errors) {
+        result.errors = result.error.errors;
+      }
+    }
 
     return result;
   }
