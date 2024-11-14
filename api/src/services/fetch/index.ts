@@ -25,7 +25,7 @@ export async function fetch_jsonld(url: string): Promise<any> {
     // search for json-ld link if no json-ld is returned
     const link = parseLink(response.headers.get('Link'));
 
-    if (link && link.alternate && link.alternate.rel == 'alternate' && link.alternate.type == 'application/ld+json') {
+    if (link?.alternate?.rel == 'alternate' && link?.alternate?.type == 'application/ld+json') {
 
         const linkResponse = await fetch(url + link.alternate.url, { method: 'GET', headers: HEADERS });
 

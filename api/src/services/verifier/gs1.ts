@@ -58,14 +58,14 @@ export class GS1Verifier {
     domain?: string
   ): Promise<gs1RulesResult | gs1RulesResultContainer> {
     let result;
-    if (verifiable.type.includes("VerifiableCredential")) {
+    if (verifiable?.type.includes?.("VerifiableCredential")) {
       result = await checkGS1Credential(
         verifiable,
         getVerifierFunction(challenge, domain)
       );
     }
 
-    if (verifiable.type.includes("VerifiablePresentation")) {
+    if (verifiable?.type.includes?.("VerifiablePresentation")) {
       const presentation = verifiable as VerifiablePresentation;
 
       result = await verifyGS1Credentials(

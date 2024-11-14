@@ -63,7 +63,7 @@ const documentLoader: (url: string) => Promise<any> =
       }
 
       if (
-        !document.type ||
+        !document?.type ||
         !Array.isArray(document.type) ||
         !uncachedStatusListCredentialTypes.some((t: string) =>
           document.type.includes(t)

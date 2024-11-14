@@ -23,7 +23,7 @@ const {
 } = jsigs;
 
 function getSuite(proof: Proof): unknown[] {
-  switch (proof.type) {
+  switch (proof?.type) {
     case "Ed25519Signature2018":
       return new Ed25519Signature2018();
 
@@ -36,7 +36,7 @@ function getSuite(proof: Proof): unknown[] {
       });
 
     default:
-      throw new Error(`${proof.type} not implemented`);
+      throw new Error(`${proof?.type} not implemented`);
   }
 }
 
