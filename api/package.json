@@ -31,7 +31,7 @@
     "@digitalbazaar/ecdsa-sd-2023-cryptosuite": "^1.0.2",
     "@digitalbazaar/ed25519-signature-2018": "^4.0.0",
     "@digitalbazaar/ed25519-signature-2020": "^5.2.0",
-    "@digitalbazaar/vc": "^6.3.0",
+    "@digitalbazaar/vc": "^7.0.0",
     "@digitalbazaar/vc-revocation-list": "^5.0.1",
     "@digitalbazaar/vc-status-list": "^7.1.0",
     "@gs1us/vc-verifier-rules": "^1.0.2",
