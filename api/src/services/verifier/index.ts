@@ -16,6 +16,7 @@ import { DataIntegrityProof } from "@digitalbazaar/data-integrity";
 import jsigs from "jsonld-signatures";
 
 import { documentLoader } from "../documentLoader/index.js";
+import { JWTService } from "./jwt.js";
 
 const { createVerifyCryptosuite } = ecdsaSd2023Cryptosuite;
 const {
@@ -108,10 +109,26 @@ function getCheckStatus(
 
 export class Verifier {
   static async verify(
-    verifiable: Verifiable,
+    input: Verifiable | string,
     challenge?: string,
     domain?: string
   ): Promise<any> {
+    // Handle string inputs - could be JWT or invalid
+    if (typeof input === 'string') {
+      if (JWTService.isJWT(input)) {
+        return await JWTService.handleJWT(input);
+      } else {
+        throw new Error('String input provided but not in valid JWT format');
+      }
+    }
+
+    // Handle object inputs - should be W3C Verifiable Credentials/Presentations
+    const verifiable = input as Verifiable;
+    
+    // Validate that verifiable has required properties
+    if (!verifiable || !verifiable.type || !Array.isArray(verifiable.type)) {
+      throw new Error('Invalid verifiable object: missing or invalid type property');
+    }
     const suite = getSuites(verifiable.proof);
 
     let result;
