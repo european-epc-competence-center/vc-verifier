@@ -4,6 +4,10 @@ VC Verifier Changelog
 WIP
 ---
 
+
+2.2.0 (2025.09.04)
+
+- add VC data model 2.0 support
 - allow gs1 chaining library to access verification erros
 
 2.0.3 (2024-07-23)
