@@ -1,9 +1,13 @@
+import * as jose from 'jose';
+import { getResolver } from '../documentLoader/didresolver.js';
+
 export interface JWTDetectionResult {
   verified: boolean;
   format: 'JWT';
   message: string;
   jwt: string;
   decoded: JWTDecoded | { error: string };
+  didDocument?: any;
 }
 
 export interface JWTDecoded {
@@ -18,37 +22,67 @@ export class JWTService {
     return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(input.trim());
   }
 
-  // Decodes JWT without verification for inspection
+  // Decodes JWT without verification for inspection using jose
   static decodeJWT(jwt: string): JWTDecoded | { error: string } {
     try {
-      const [header, payload] = jwt.split('.');
+      const decoded = jose.decodeJwt(jwt);
+      const header = jose.decodeProtectedHeader(jwt);
+
       return {
-        header: JSON.parse(Buffer.from(header, 'base64url').toString()),
-        payload: JSON.parse(Buffer.from(payload, 'base64url').toString())
+        header,
+        payload: decoded
       };
     } catch (error) {
-      return { error: 'Invalid JWT format' };
+      return { error: `Invalid JWT format: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
   }
 
-  /**
-   * Handles JWT detection and returns appropriate response
-   * TODO: Implement actual JWT verification using did-jwt and did-jwt-vc
-   */
+  // Handles JWT detection, decodes it, and resolves the issuer DID
   static async handleJWT(jwt: string): Promise<JWTDetectionResult> {
+    const decoded = this.decodeJWT(jwt);
+
+    if ('error' in decoded) {
+      return {
+        verified: false,
+        format: 'JWT',
+        message: `JWT decoding failed: ${decoded.error}`,
+        jwt,
+        decoded
+      };
+    }
+
+    let didDocument = null;
+    let message = 'JWT decoded successfully';
+
+    // Try to resolve the issuer DID if present
+    try {
+      const issuer = decoded.payload.issuer || decoded.payload.iss;
+      if (issuer && issuer.startsWith('did:')) {
+        console.log(`Resolving DID: ${issuer}`);
+        
+        // Resolve the DID to get the DID document
+        const result = await getResolver().resolve(issuer);
+        didDocument = result.didDocument;
+        
+        if (didDocument) {
+          console.log(`DID resolved: ${issuer}`);
+          message += ` - DID resolved: ${issuer}`;
+        } else {
+          message += ` - Failed to resolve DID: ${issuer}`;
+        }
+      }
+    } catch (error) {
+      console.error(`DID resolution error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message += ` - DID resolution error`;
+    }
+
     return {
       verified: false,
       format: 'JWT',
-      message: 'JWT format detected - verification not yet implemented',
+      message,
       jwt,
-      decoded: this.decodeJWT(jwt)
+      decoded,
+      didDocument
     };
   }
-
-  /**
-   * Future: Add JWT verification methods here
-   * - verifyJWTCredential(jwt: string): Promise<VerificationResult>
-   * - verifyJWTPresentation(jwt: string): Promise<VerificationResult>
-   * - resolveIssuerDID(did: string): Promise<DIDDocument>
-   */
 }
