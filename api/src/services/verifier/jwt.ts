@@ -7,7 +7,6 @@ export interface JWTDetectionResult {
   message: string;
   jwt: string;
   decoded: JWTDecoded | { error: string };
-  didDocument?: any;
 }
 
 export interface JWTDecoded {
@@ -94,8 +93,7 @@ export class JWTService {
       format: 'JWT',
       message,
       jwt,
-      decoded,
-      didDocument
+      decoded
     };
   }
 }
