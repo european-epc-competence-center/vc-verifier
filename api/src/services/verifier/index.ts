@@ -116,7 +116,7 @@ export class Verifier {
     // Handle string inputs - could be JWT or invalid
     if (typeof input === 'string') {
       if (JWTService.isJWT(input)) {
-        return await JWTService.handleJWT(input);
+        return await JWTService.verifyJWT(input);
       } else {
         throw new Error('String input provided but not in valid JWT format');
       }
