@@ -3,8 +3,10 @@ import { documentLoader } from '../documentLoader/index.js';
 
 export interface JWTDetectionResult {
   verified: boolean;
-  format: 'JWT';
-  message: string;
+  results: JWTResult[];
+}
+
+export interface JWTResult {
   jwt: string;
   decoded: JWTDecoded | { error: string };
 }
@@ -34,38 +36,60 @@ export class JWTService {
     }
   }
 
-  // Handles JWT detection, decodes it, and resolves the issuer DID
   static async verifyJWT(jwt: string): Promise<JWTDetectionResult> {
     const decoded = this.decodeJWT(jwt);
 
     if ('error' in decoded) {
       return {
         verified: false,
-        format: 'JWT',
-        message: `JWT decoding failed: ${decoded.error}`,
-        jwt,
-        decoded
+        results: [{
+          jwt,
+          decoded
+        }]
       };
     }
 
-    let didDocument = null;
-    let message = 'JWT decoded successfully';
     let verified = false;
 
-    const issuer = decoded.payload.issuer;
+    const issuer = decoded.payload.issuer?.id || decoded.payload.issuer;
     const kid = decoded.header.kid;
     
+    if (!issuer || !kid) {
+      return {
+        verified: false,
+        results: [{
+          jwt,
+          decoded
+        }]
+      };
+    }
+    
     const verificationMethodUrl = `${issuer}#${kid}`;
-    console.log('verificationMethodUrl: ', verificationMethodUrl);
 
     let verificationMethod = null;
 
     try {
       const res = await documentLoader(verificationMethodUrl);
       verificationMethod = res.document;
-      console.log('verificationMethod: ', verificationMethod);
     } catch (error) {
-    console.error('Error resolving verification method: ', error);
+      console.error('Error resolving verification method: ', error);
+      return {
+        verified: false,
+        results: [{
+          jwt,
+          decoded
+        }]
+      };
+    }
+
+    if (!verificationMethod) {
+      return {
+        verified: false,
+        results: [{
+          jwt,
+          decoded
+        }]
+      };
     }
 
     if (verificationMethod.type === 'JsonWebKey' && verificationMethod.publicKeyJwk) {
@@ -81,19 +105,36 @@ export class JWTService {
         const verificationResult = await jose.jwtVerify(jwt, publicKey, {
           algorithms: [decoded.header.alg]
         });
-
+        
+        // If we reach this point, verification was successful
         verified = true;
+
       } catch (error) {
         console.error('JWT verification failed: ', error);
+        return {
+          verified: false,
+          results: [{
+            jwt,
+            decoded
+          }]
+        };
       }
+    } else {
+      return {
+        verified: false,
+        results: [{
+          jwt,
+          decoded
+        }]
+      };
     }
 
     return {
       verified,
-      format: 'JWT',
-      message,
-      jwt,
-      decoded
+      results: [{
+        jwt,
+        decoded
+      }]
     };
   }
 }
