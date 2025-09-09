@@ -8,6 +8,39 @@ export const VerifiableType = {
 
 const IPFS_GATEWAYS = ['ipfs.io', 'ipfs.ssi.eecc.de']
 
+export function isJWT(input) {
+  if (typeof input !== 'string') return false;
+  return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(input.trim());
+}
+
+export function decodeJWT(jwt) {
+  if (!isJWT(jwt)) {
+    throw new Error('Invalid JWT format');
+  }
+  
+  try {
+    const parts = jwt.split('.');
+    if (parts.length !== 3) {
+      throw new Error('Invalid JWT format');
+    }
+    
+    const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    
+    return {
+      header,
+      payload
+    };
+  } catch (error) {
+    throw new Error(`Failed to decode JWT: ${error.message}`);
+  }
+}
+
+export function getCredentialFromJWT(jwt) {
+  const decoded = decodeJWT(jwt);
+  return decoded.payload.vc || decoded.payload;
+}
+
 export function isURL(url) {
   if (typeof url != 'string') return false
   return url.startsWith('https://')
@@ -31,7 +64,19 @@ export function getPlainCredential(credential) {
 }
 
 export function getVerifiableType(verifiable) {
-  if (verifiable.type.includes(VerifiableType.PRESENTATION))
+  if (typeof verifiable === 'string' && isJWT(verifiable)) {
+    try {
+      const credential = getCredentialFromJWT(verifiable);
+      if (credential.type && credential.type.includes(VerifiableType.PRESENTATION))
+        return VerifiableType.PRESENTATION
+      return VerifiableType.CREDENTIAL
+    } catch (error) {
+      console.error('Error processing JWT:', error);
+      return VerifiableType.CREDENTIAL;
+    }
+  }
+  
+  if (verifiable.type && verifiable.type.includes(VerifiableType.PRESENTATION))
     return VerifiableType.PRESENTATION
   return VerifiableType.CREDENTIAL
 }
@@ -112,6 +157,19 @@ const gs1CredentialTypes = [
 const gs1CredentialContext = 'https://ref.gs1.org/gs1/vc/license-context'
 
 export function isGs1Credential(credential) {
+  if (typeof credential === 'string' && isJWT(credential)) {
+    try {
+      credential = getCredentialFromJWT(credential);
+    } catch (error) {
+      console.error('Error processing JWT in isGs1Credential:', error);
+      return false;
+    }
+  }
+  
+  if (!credential || !credential['@context'] || !credential.type) {
+    return false;
+  }
+  
   return (
     credential['@context'].includes(gs1CredentialContext) &&
     credential.type.some((type) => gs1CredentialTypes.includes(type))
