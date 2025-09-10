@@ -4,7 +4,6 @@ import { demoAuthPresentation } from './store/demoAuth'
 export const VerifiableType = {
   CREDENTIAL: 'VerifiableCredential',
   PRESENTATION: 'VerifiablePresentation',
-  JWT: 'JWT',
 }
 
 const IPFS_GATEWAYS = ['ipfs.io', 'ipfs.ssi.eecc.de']
