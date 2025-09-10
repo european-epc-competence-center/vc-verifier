@@ -275,7 +275,7 @@ export default {
 
 
 
-            const res = await this.$api.post(isGs1 ? '/gs1' : '/', isGs1 ? verifiable : [verifiable], { params: { challenge: this.$route.query.challenge } });
+            const res = await this.$api.post(isGs1 ? '/gs1' : '/', [verifiable], { params: { challenge: this.$route.query.challenge } });
 
             const result = isGs1 ? res.data : res.data[0];
 

@@ -123,7 +123,7 @@ export class VerifyRoutes {
 
       return res
         .status(StatusCodes.OK)
-        .json(await GS1Verifier.verify(req?.body, challenge, domain));
+        .json(await GS1Verifier.verify(req?.body[0], challenge, domain));
     } catch (error) {
       console.error(error);
       return res
