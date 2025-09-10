@@ -13,6 +13,7 @@ import {
 
 import { documentLoader } from "../documentLoader/index.js";
 import { Verifier } from "./index.js";
+import { JWTService } from "./jwt.js";
 
 
 export function getVerifierFunction(challenge?: string, domain?: string) {
@@ -53,29 +54,39 @@ export async function verifyGS1Credentials(
 
 export class GS1Verifier {
   static async verify(
-    verifiable: Verifiable,
+    verifiable: Verifiable | string,
     challenge?: string,
     domain?: string
   ): Promise<gs1RulesResult | gs1RulesResultContainer> {
     let result;
-    if (verifiable?.type.includes?.("VerifiableCredential")) {
+    let actualVerifiable: Verifiable;
+    
+    if (typeof verifiable === "string" && JWTService.isJWT(verifiable)) {
+      const decoded = JWTService.decodeJWT(verifiable);
+      if ('error' in decoded) {
+        throw new Error(`Failed to decode JWT: ${decoded.error}`);
+      }
+      actualVerifiable = decoded.payload;
+    } else {
+      actualVerifiable = verifiable as Verifiable;
+    } 
+    
+    if (actualVerifiable?.type?.includes?.("VerifiableCredential")) {
       result = await checkGS1Credential(
-        verifiable,
+        actualVerifiable,
         getVerifierFunction(challenge, domain)
       );
     }
-
-    if (verifiable?.type.includes?.("VerifiablePresentation")) {
-      const presentation = verifiable as VerifiablePresentation;
-
+    
+    if (actualVerifiable?.type?.includes?.("VerifiablePresentation")) {
+      const presentation = actualVerifiable as VerifiablePresentation;
       result = await verifyGS1Credentials(
         presentation,
         getVerifierFunction(challenge, domain)
       );
     }
-
-    if (!result) throw Error("Provided verifiable object is of unknown type!");
-
+    
+    if (!result) throw new Error("Provided verifiable object is of unknown type!");
     return result;
   }
 }
