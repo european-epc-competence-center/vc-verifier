@@ -4,6 +4,7 @@ import { demoAuthPresentation } from './store/demoAuth'
 export const VerifiableType = {
   CREDENTIAL: 'VerifiableCredential',
   PRESENTATION: 'VerifiablePresentation',
+  JWT: 'JWT',
 }
 
 const IPFS_GATEWAYS = ['ipfs.io', 'ipfs.ssi.eecc.de']
@@ -64,18 +65,12 @@ export function getPlainCredential(credential) {
 }
 
 export function getVerifiableType(verifiable) {
+  // If it's a JWT format, return JWT type
   if (typeof verifiable === 'string' && isJWT(verifiable)) {
-    try {
-      const credential = getCredentialFromJWT(verifiable);
-      if (credential.type && credential.type.includes(VerifiableType.PRESENTATION))
-        return VerifiableType.PRESENTATION
-      return VerifiableType.CREDENTIAL
-    } catch (error) {
-      console.error('Error processing JWT:', error);
-      return VerifiableType.CREDENTIAL;
-    }
+    return VerifiableType.JWT
   }
   
+  // For regular JSON objects, check the type
   if (verifiable.type && verifiable.type.includes(VerifiableType.PRESENTATION))
     return VerifiableType.PRESENTATION
   return VerifiableType.CREDENTIAL
