@@ -54,6 +54,7 @@ export class JWTService {
     const issuer = decoded.payload.issuer?.id || decoded.payload.issuer;
     const kid = decoded.header.kid;
     
+
     if (!issuer || !kid) {
       return {
         verified: false,
@@ -64,12 +65,12 @@ export class JWTService {
       };
     }
     
-    const verificationMethodUrl = `${issuer}#${kid}`;
+    const verificationMethodUrl = kid.split('#').length > 1 ? kid : `${issuer}#${kid}`;
 
     let verificationMethod = null;
 
     try {
-      const res = await documentLoader(verificationMethodUrl);
+      const res = await documentLoader(kid);
       verificationMethod = res.document;
     } catch (error) {
       console.error('Error resolving verification method: ', error);
