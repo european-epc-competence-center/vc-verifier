@@ -53,7 +53,6 @@ export class JWTService {
 
     const issuer = decoded.payload.issuer?.id || decoded.payload.issuer;
     const kid = decoded.header.kid;
-    
 
     if (!issuer || !kid) {
       return {
@@ -70,7 +69,7 @@ export class JWTService {
     let verificationMethod = null;
 
     try {
-      const res = await documentLoader(kid);
+      const res = await documentLoader(verificationMethodUrl);
       verificationMethod = res.document;
     } catch (error) {
       console.error('Error resolving verification method: ', error);
