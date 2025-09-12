@@ -1,5 +1,5 @@
 // According to https://pdfmake.github.io/docs/0.1/document-definition-object/columns/
-import { isURL, getPlainCredential, getCredentialValue } from './utils';
+import { isURL, getPlainCredential, getCredentialValue, getJWTMetadata } from './utils';
 
 function getBase64ImageFromURL(url) {
     return new Promise((resolve, reject) => {
@@ -38,6 +38,17 @@ async function getIssuer(issuer) {
 
     return issuer;
 
+}
+
+function getCredentialForQR(credential) {
+    // Check if this is a JWT credential using our metadata system
+    const jwtMetadata = getJWTMetadata(credential.id);
+    if (jwtMetadata && jwtMetadata.isJWTCredential) {
+        // Use the original JWT for QR code
+        return jwtMetadata.originalJWT;
+    }
+    // Use JSON stringified credential for regular credentials
+    return JSON.stringify(getPlainCredential(credential));
 }
 
 
@@ -257,8 +268,8 @@ async function getCredentialContent(credential, append = false) {
         // Table of properties
         getPropertyTable(credential.credentialSubject),
 
-        // Large QR code containing entire credential
-        { qr: JSON.stringify(getPlainCredential(credential)), fit: '350', alignment: 'center', margin: [0, 5] },
+        // Large QR code containing entire credential (JWT if available, otherwise JSON)
+        { qr: getCredentialForQR(credential), fit: '350', alignment: 'center', margin: [0, 5] },
         { text: 'Full Credential', fontSize: 16, alignment: 'center' },
     ];
 }
