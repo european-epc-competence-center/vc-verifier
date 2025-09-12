@@ -57,7 +57,8 @@
                                 aria-label="QR-Code"></i></button>
                         <textarea v-model="textInput" id="credentialText" class="form-control" rows="4"
                             placeholder="Paste JWT token or JSON-LD credential/presentation here..." 
-                            aria-label="Credential Text" aria-describedby="credentialTextHelp"></textarea>
+                            aria-label="Credential Text" aria-describedby="credentialTextHelp"
+                            @keydown.enter.prevent="submitText"></textarea>
                         <button class="btn btn-outline-primary" type="submit">Verify</button>
                     </div>
                     <div class="form-text">Paste JWT tokens or JSON-LD credentials/presentations as plain text</div>
