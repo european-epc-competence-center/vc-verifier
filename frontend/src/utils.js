@@ -41,6 +41,45 @@ export function getCredentialFromJWT(jwt) {
   return decoded.payload.vc || decoded.payload;
 }
 
+// JWT metadata storage - maps credential ID to JWT metadata
+const jwtMetadataStore = new Map();
+
+export function wrapJWTCredential(jwt) {
+  if (!isJWT(jwt)) {
+    return jwt; // Return as-is if not a JWT
+  }
+  
+  try {
+    const credential = getCredentialFromJWT(jwt);
+    
+    // Valid credentials should always have an id field
+    if (!credential.id) {
+      throw new Error('JWT credential missing required id field');
+    }
+    
+    // Store JWT metadata separately using credential ID as key
+    jwtMetadataStore.set(credential.id, {
+      originalJWT: jwt,
+      isJWTCredential: true
+    });
+    
+    // Return clean credential without metadata pollution
+    return credential;
+  } catch (error) {
+    console.error('Error converting JWT to verifiable:', error);
+    // Re-throw the error - invalid JWTs should not be processed
+    throw error;
+  }
+}
+
+export function getJWTMetadata(credentialId) {
+  return jwtMetadataStore.get(credentialId);
+}
+
+export function clearAllJWTMetadata() {
+  jwtMetadataStore.clear();
+}
+
 export function isURL(url) {
   if (typeof url != 'string') return false
   return url.startsWith('https://')
@@ -64,13 +103,7 @@ export function getPlainCredential(credential) {
 }
 
 export function getVerifiableType(verifiable) {
-  // If it's a JWT format, return JWT type
-  if (typeof verifiable === 'string' && isJWT(verifiable)) {
-    return VerifiableType.JWT
-  }
-  
-  // For regular JSON objects, check the type
-  if (verifiable.type && verifiable.type.includes(VerifiableType.PRESENTATION))
+  if (verifiable.type.includes(VerifiableType.PRESENTATION))
     return VerifiableType.PRESENTATION
   return VerifiableType.CREDENTIAL
 }
@@ -151,6 +184,7 @@ const gs1CredentialTypes = [
 const gs1CredentialContext = 'https://ref.gs1.org/gs1/vc/license-context'
 
 export function isGs1Credential(credential) {
+  // Handle JWT strings by decoding them first
   if (typeof credential === 'string' && isJWT(credential)) {
     try {
       credential = getCredentialFromJWT(credential);
