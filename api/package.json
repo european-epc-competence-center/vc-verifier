@@ -34,7 +34,7 @@
     "@digitalbazaar/vc": "^7.0.0",
     "@digitalbazaar/vc-revocation-list": "^5.0.1",
     "@digitalbazaar/vc-status-list": "^7.1.0",
-    "@gs1us/vc-verifier-rules": "^1.0.2",
+    "@gs1us/vc-verifier-rules": "^2.0.0",
     "cors": "^2.8.5",
     "did-resolver": "^4.1.0",
     "dotenv": "^16.3.1",
