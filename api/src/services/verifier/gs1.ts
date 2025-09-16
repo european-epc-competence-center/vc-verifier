@@ -14,23 +14,51 @@ import { checkGS1CredentialPresentationValidation,
 import { documentLoader } from "../documentLoader/index.js";
 import { Verifier } from "./index.js";
 import { JWTService } from "./jwt.js";
-import { fetch_json } from "../fetch/index.js";
-
-// not using this in the gs1verifier flow, verifying afterwards ourselves
-export function getVerifierFunction(challenge?: string, domain?: string) {
-  return async function (verifiable: any) {
-    return await Verifier.verify(verifiable, challenge, domain);
-  };
-}
 
 export async function checkGS1Credential(
-  verifiableCredential: VerifiableCredential
+  verifiableCredential: VerifiableCredential,
+  originalJWT?: string,
+  challenge?: string,
+  domain?: string
 ): Promise<gs1RulesResult> {
   try {
-    return await checkGS1CredentialWithoutPresentation(
+    const gs1Result = await checkGS1CredentialWithoutPresentation(
       gs1ValidatorRequest,
       verifiableCredential
     );
+
+    // TODO: DO OUR VERIFICATION HERE
+    console.log(gs1Result);
+
+    // If the credential is not verified at this point, no need to check further
+    if (!gs1Result.verified) {
+      return gs1Result;
+    }
+
+    // GS1 validation passed, now verify the signature if we have the original JWT
+    try {
+        const verifierInput = originalJWT || verifiableCredential;
+        const verifierResult = await Verifier.verify(verifierInput, challenge, domain);
+        console.log(verifierResult);
+
+        if (!verifierResult) {
+          return {
+            ...gs1Result,
+            verified: false,
+            errors: [...(gs1Result.errors || []), ...(verifierResult.errors || [])]
+          };
+        }
+
+        // Both validations passed
+      return gs1Result;
+    } catch (verifierError) {
+      return {
+        ...gs1Result,
+        verified: false,
+        errors: [...(gs1Result.errors || []), verifierError instanceof Error ? verifierError.message : String(verifierError)]
+      };
+    }
+
   } catch (error) {
     console.error('GS1 credential validation error:', error);
     return {
@@ -49,6 +77,8 @@ export async function verifyGS1Credentials(
       gs1ValidatorRequest,
       verifiablePresentation
     );
+    // TODO: actual verification using our verifier for presentations
+
   } catch (error) {
     console.error('GS1 presentation validation error:', error);
     return {
@@ -107,11 +137,8 @@ const loadExternalCredential: externalCredential = async (
   }
 };
 
-/**
- * Placeholder function for external credential validation
- * Currently returns true to allow GS1 chain checks to proceed
- * TODO: Implement proper external credential verification logic
- */
+// Placeholder function for external credential validation, currently returns true to allow GS1 chain checks to proceed 
+// TODO: Implement proper external credential verification logic
 export async function validateExternalCredential(credential: VerifiableCredential): Promise<gs1RulesResult> {
   // Allow GS1 chain checks to proceed even if upstream signature cannot be verified here
   const credentialId = credential.id || "unknown";
@@ -126,9 +153,7 @@ export async function validateExternalCredential(credential: VerifiableCredentia
   };
 }
 
-/**
- * Fetches and returns a JSON schema from the provided URL
- */
+// Fetches and returns a JSON schema from the provided URL
 export async function getJsonSchema(schemaUrl: string): Promise<any> {
   try {
     const response = await fetch(schemaUrl);
@@ -159,9 +184,12 @@ export class GS1Verifier {
   ): Promise<gs1RulesResult | gs1RulesResultContainer> {
     let result;
     let actualVerifiable: Verifiable;
+    let originalJWT: string | undefined;
     
     try {
+      // If input is a JWT, decode it first
       if (typeof verifiable === "string" && JWTService.isJWT(verifiable)) {
+        originalJWT = verifiable; // store original JWT as its needed later for signature verification
         const decoded = JWTService.decodeJWT(verifiable);
         if ('error' in decoded) {
           throw new Error(`Failed to decode JWT: ${decoded.error}`);
@@ -173,7 +201,10 @@ export class GS1Verifier {
       
       if (actualVerifiable?.type?.includes?.("VerifiableCredential")) {
         result = await checkGS1Credential(
-          actualVerifiable
+          actualVerifiable,
+          originalJWT,
+          challenge,
+          domain
         );
       }
       
