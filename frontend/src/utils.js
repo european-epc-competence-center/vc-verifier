@@ -181,7 +181,10 @@ const gs1CredentialTypes = [
   'ProductDataCredential',
 ]
 
-const gs1CredentialContext = 'https://ref.gs1.org/gs1/vc/license-context'
+const gs1CredentialContext = [
+  'https://ref.gs1.org/gs1/vc/license-context',
+  'https://ref.gs1.org/gs1/vc/declaration-context'
+]
 
 export function isGs1Credential(credential) {
   // Handle JWT strings by decoding them first
@@ -197,9 +200,13 @@ export function isGs1Credential(credential) {
   if (!credential || !credential['@context'] || !credential.type) {
     return false;
   }
+
+  const hasGS1Context = gs1CredentialContext.some(context => 
+    credential['@context'].includes(context)
+  );
   
   return (
-    credential['@context'].includes(gs1CredentialContext) &&
+    hasGS1Context &&
     credential.type.some((type) => gs1CredentialTypes.includes(type))
   )
 }
