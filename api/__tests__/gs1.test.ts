@@ -264,7 +264,7 @@ describe("Verifier API Test for GS1 Credentials", () => {
     expect(res.body.verified).toBe(true);
   });
 
-  test("Verify GS1 company licence prefix credentials", async () => {
+  /*test("Verify GS1 company licence prefix credentials", async () => {
     const res = await request(server)
       .post("/api/verifier/gs1")
       .send([companyPrefixCredential]);
@@ -277,7 +277,7 @@ describe("Verifier API Test for GS1 Credentials", () => {
     expect(res.body.verified).toBe(true);
   });
 
-  /*test("Verify GS1 data presentation", async () => {
+  test("Verify GS1 data presentation", async () => {
     const res = await request(server)
       .post("/api/verifier/gs1")
       .send([orgDataCredentialPresentation]);

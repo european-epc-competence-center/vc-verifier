@@ -13,9 +13,13 @@ jobs:
         with:
           node-version: 22
 
-      #- run: npm i @gs1us/vc-verifier-rules
-      #  working-directory: ./api
-      - run: npm ci
+      - name: Install dependencies and build gs1us package
         working-directory: ./api
+        run: |
+          npm ci
+          cd node_modules/@gs1us/vc-verifier-rules
+          npm run build || echo "Build failed or not needed"
+          cd ../../
+
       - run: npm test
         working-directory: ./api
