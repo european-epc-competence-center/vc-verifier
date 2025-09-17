@@ -13,8 +13,8 @@ jobs:
         with:
           node-version: 22
 
-      - run: npm i @gs1us/vc-verifier-rules
-        working-directory: ./api
+      #- run: npm i @gs1us/vc-verifier-rules
+      #  working-directory: ./api
       - run: npm ci
         working-directory: ./api
       - run: npm test

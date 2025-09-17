@@ -3,13 +3,11 @@ const schemaCache = new Map<string, any>();
 
 // Synchronous schema loader for GS1 library
 export function getJsonSchema(schemaId: string): Buffer {
-  console.log(`GS1 requesting schema: ${schemaId}`);
   
   // Check cache first
   if (schemaCache.has(schemaId)) {
     const schema = schemaCache.get(schemaId);
     const jsonString = JSON.stringify(schema);
-    console.log(`Returning cached schema for: ${schemaId}`);
     return Buffer.from(jsonString);
   }
   
@@ -30,7 +28,6 @@ export async function downloadAndCacheSchemas(): Promise<void> {
   for (const schemaUrl of schemas) {
     try {
       if (!schemaCache.has(schemaUrl)) {
-        console.log(`Downloading schema: ${schemaUrl}`);
         const response = await fetch(schemaUrl);
         if (response.ok) {
           const schema = await response.json();
@@ -38,7 +35,6 @@ export async function downloadAndCacheSchemas(): Promise<void> {
           // Also cache without .json extension
           const urlWithoutExtension = schemaUrl.replace('.json', '');
           schemaCache.set(urlWithoutExtension, schema);
-          console.log(`Cached schema: ${schemaUrl}`);
         }
       }
     } catch (error) {
