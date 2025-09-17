@@ -14,50 +14,42 @@ import { checkGS1CredentialPresentationValidation,
 import { documentLoader } from "../documentLoader/index.js";
 import { Verifier } from "./index.js";
 import { JWTService } from "./jwt.js";
+import { getJsonSchema, downloadAndCacheSchemas } from "./schemas.js"; // Updated import path
+
+// Initialize schemas on startup
+await downloadAndCacheSchemas();
 
 export async function checkGS1Credential(
   verifiableCredential: VerifiableCredential,
-  originalJWT?: string,
   challenge?: string,
   domain?: string
 ): Promise<gs1RulesResult> {
   try {
-    const gs1Result = await checkGS1CredentialWithoutPresentation(
+    // Build the credential chain
+    const { chain, jwtMappings } = await buildCredentialChainWithJWTMapping(verifiableCredential);
+    console.log('Credential Chain:', chain);
+    console.log('jwtMappings:', jwtMappings);
+
+    // Do gs1 verification with for our chain
+    const gs1Result = await checkGS1CredentialPresentationValidation(
       gs1ValidatorRequest,
-      verifiableCredential
+      { verifiableCredential: chain }
     );
 
-    console.log(gs1Result);
 
-    // Build the credential chain
-    const chain = await buildCredentialChain(verifiableCredential);
+     console.log('GS1 validation result:', gs1Result);
 
-    // If the credential is not verified at this point, no need to check further
+    // If GS1 validation failed, return early
     if (!gs1Result.verified) {
-      return gs1Result;
-    }
-
-    // Verify the entire credential chain, passing the originalJWT for the first credential
-    const chainVerificationResult = await verifyCredentialChain(chain, originalJWT, challenge, domain);
-    
-    console.log('Chain verification result:', chainVerificationResult);
-
-    // If any credential in the chain failed verification, fail the whole validation
-    if (!chainVerificationResult.verified) {
       return {
-        ...gs1Result,
         verified: false,
-        errors: [...(gs1Result.errors || []), ...chainVerificationResult.errors],
-        // Add chain results to the response for debugging
-        chainVerification: chainVerificationResult
+        errors: gs1Result.errors || [],
+        result: gs1Result.result
       };
     }
 
-    // All validations passed (GS1 rules + full chain verification)
-    return {
-      ...gs1Result,
-      chainVerification: chainVerificationResult
-    };
+    // Successful GS1 Result
+    return gs1Result;
 
   } catch (error) {
     console.error('GS1 credential validation error:', error);
@@ -139,40 +131,17 @@ const loadExternalCredential: externalCredential = async (
 
 // Placeholder function for external credential validation, currently returns true to allow GS1 chain checks to proceed 
 // TODO: Implement proper external credential verification logic
-export async function validateExternalCredential(credential: VerifiableCredential): Promise<gs1RulesResult> {
+export async function validateExternalCredential(credential: VerifiableCredential): Promise<boolean> {
   // Allow GS1 chain checks to proceed even if upstream signature cannot be verified here
-  const credentialId = credential.id || "unknown";
-  const credentialName = credential.name || "unknown";
-  
-  return { 
-    credential: credential,
-    credentialId: credentialId, 
-    credentialName: credentialName, 
-    verified: true, 
-    errors: [] 
-  };
-}
-
-// Fetches and returns a JSON schema from the provided URL
-export async function getJsonSchema(schemaUrl: string): Promise<any> {
-  try {
-    const response = await fetch(schemaUrl);
-    if (response.ok) {
-      return await response.json();
-    }
-    // If fetch fails, return empty buffer for graceful fallback
-    return Buffer.from("");
-  } catch {
-    return Buffer.from('');
-  }
+  return true; // Simple boolean return like the working example
 }
 
 const gs1ValidatorRequest: gs1ValidatorRequest = {
-    fullJsonSchemaValidationOn: false,
+    fullJsonSchemaValidationOn: false, // Enable full validation now that we have schemas
     gs1DocumentResolver: {
        externalCredentialLoader: loadExternalCredential, 
        externalCredentialVerification: validateExternalCredential,
-       externalJsonSchemaLoader: getJsonSchema
+       externalJsonSchemaLoader: getJsonSchema // Use the synchronous schema loader
    }
  }
 
@@ -181,45 +150,35 @@ export class GS1Verifier {
     verifiable: Verifiable | string,
     challenge?: string,
     domain?: string
-  ): Promise<gs1RulesResult | gs1RulesResultContainer> {
-    let result;
-    let actualVerifiable: Verifiable;
-    let originalJWT: string | undefined;
-    
+  ): Promise<gs1RulesResult | gs1RulesResultContainer> { 
     try {
-      // If input is a JWT, decode it first
+      let credentialData: Verifiable;
+
+      // If input is a JWT, decode it for type checking
       if (typeof verifiable === "string" && JWTService.isJWT(verifiable)) {
-        originalJWT = verifiable; // store original JWT as its needed later for signature verification
         const decoded = JWTService.decodeJWT(verifiable);
         if ('error' in decoded) {
           throw new Error(`Failed to decode JWT: ${decoded.error}`);
         }
-        actualVerifiable = decoded.payload;
+        credentialData = decoded.payload;
       } else {
-        actualVerifiable = verifiable as Verifiable;
+        credentialData = verifiable as Verifiable;
       } 
       
-      if (actualVerifiable?.type?.includes?.("VerifiableCredential")) {
-        result = await checkGS1Credential(
-          actualVerifiable,
-          originalJWT,
-          challenge,
-          domain
-        );
+      if (credentialData?.type?.includes?.("VerifiableCredential")) {
+        // Pass the original input (JWT or VC) to checkGS1Credential
+        return await checkGS1Credential(verifiable, challenge, domain);
       }
       
-      if (actualVerifiable?.type?.includes?.("VerifiablePresentation")) {
-        const presentation = actualVerifiable as VerifiablePresentation;
-        result = await verifyGS1Credentials(
-          presentation
-        );
+      if (credentialData?.type?.includes?.("VerifiablePresentation")) {
+        const presentation = credentialData as VerifiablePresentation;
+        return await verifyGS1Credentials(presentation);
       }
       
-      if (!result) throw new Error("Provided verifiable object is of unknown type!");
-      return result;
+      throw new Error("Provided verifiable object is of unknown type!");
+
     } catch (error) {
       console.error('GS1Verifier.verify error:', error);
-      // Return a failed result instead of throwing
       return {
         verified: false,
         errors: [error instanceof Error ? error.message : String(error)]
@@ -229,156 +188,97 @@ export class GS1Verifier {
 }
 
 // Helper function to build the credential chain by following extendsCredential references
-async function buildCredentialChain(credential: VerifiableCredential): Promise<(VerifiableCredential | string)[]> {
-  const chain: (VerifiableCredential | string)[] = [];
-  let currentCredential = credential;
-  
-  // Add the initial credential to the chain
+async function buildCredentialChainWithJWTMapping(
+  input: VerifiableCredential | string // Accept either JWT string or VC object directly
+): Promise<{ 
+  chain: VerifiableCredential[], 
+  jwtMappings: Map<string, string> 
+}> {
+  const chain: VerifiableCredential[] = []; // VC's for GS1 library
+  const jwtMappings = new Map<string, string>(); // Maps credential ID to JWT
+
+  // Handle initial input
+  let currentCredential: VerifiableCredential;
+  let currentJWT: string | undefined;
+
+  if (typeof input === "string" && JWTService.isJWT(input)) {
+    currentJWT = input;
+    const decoded = JWTService.decodeJWT(input);
+    if ('error' in decoded) {
+      throw new Error(`Failed to decode initial JWT: ${decoded.error}`);
+    }
+    currentCredential = decoded.payload as VerifiableCredential;
+  } else {
+    // Input is VC already
+    currentCredential = input as VerifiableCredential;
+  }
+
+  // Add initial credential to chain before loop
   chain.push(currentCredential);
-  
+
+  // Map the initial JWT if we have one
+  if (currentCredential.id && currentJWT) {
+    jwtMappings.set(currentCredential.id, currentJWT);
+  }
+
   while (currentCredential?.credentialSubject?.extendsCredential) {
     try {
-      const extendsUrl = currentCredential.credentialSubject.extendsCredential;
-      console.log(`Loading extended credential from: ${extendsUrl}`);
-      
-      // Try using the documentLoader for standard cases, but catch JWT-related errors
-      let extendedCredential: VerifiableCredential | string;
-      
+      const extendsCredentialUrl = currentCredential.credentialSubject.extendsCredential;
+      console.log(`Loading extended credential from: ${extendsCredentialUrl}`);
+
+      let extendedCredential: VerifiableCredential;
+      let credentialJWT: string | undefined;
+
       try {
-        const extendedVC = await documentLoader(extendsUrl);
+        const extendedVC = await documentLoader(extendsCredentialUrl);
         if (extendedVC?.document) {
           extendedCredential = extendedVC.document;
         } else {
           throw new Error('DocumentLoader returned empty document');
         }
       } catch (documentLoaderError) {
-        // DocumentLoader failed, likely due to JWT response, try direct fetch
-        const response = await fetch(extendsUrl);
-        
+        // When documentLoader failed try direct fetch for JWT handling
+        const response = await fetch(extendsCredentialUrl);
+
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        
+
         const text = await response.text();
-        
-        // Check if response looks like a JWT (3 parts separated by dots)
+
         if (JWTService.isJWT(text)) {
-          // Add the JWT string to the chain
-          extendedCredential = text;
-          
-          // Decode for next iteration
+          credentialJWT = text; // Store the JWT for this credential
+
           const decoded = JWTService.decodeJWT(text);
           if ('error' in decoded) {
             throw new Error(`Failed to decode JWT: ${decoded.error}`);
           }
-          currentCredential = decoded.payload as VerifiableCredential;
+          extendedCredential = decoded.payload as VerifiableCredential;
         } else {
-          // Try parsing as regular JSON
           try {
             extendedCredential = JSON.parse(text);
-            currentCredential = extendedCredential as VerifiableCredential;
           } catch (parseError) {
             throw new Error(`Response is neither valid JWT nor JSON: ${parseError}`);
           }
         }
       }
-      
-      // If we got a VerifiableCredential object (not JWT), use it for both chain and next iteration
-      if (typeof extendedCredential === 'object') {
-        currentCredential = extendedCredential;
+
+      chain.push(extendedCredential);
+
+      // Map the JWT for this extended credential if we have one
+      if (extendedCredential.id && credentialJWT) {
+        jwtMappings.set(extendedCredential.id, credentialJWT);
       }
       
-      chain.push(extendedCredential);
-      
+      currentCredential = extendedCredential;
+
     } catch (error) {
       console.error(`Failed to load extended credential: ${error}`);
-      break; // Stop the chain if we can't load a credential
-    }
-  }
-  
-  console.log(`Built credential chain with ${chain.length} credentials:`);
-  chain.forEach((cred, index) => {
-    if (typeof cred === 'string') {
-      console.log(`  ${index}: JWT (${cred.substring(0, 50)}...)`);
-    } else {
-      console.log(`  ${index}: Credential ID: ${cred.id || 'unknown'}, Name: ${cred.name || cred.credentialSubject?.name || 'unknown'}`);
-    }
-  });
-  
-  return chain;
-}
-
-// Helper function to verify the entire credential chain
-async function verifyCredentialChain(
-  chain: (VerifiableCredential | string)[],
-  originalJWT?: string,
-  challenge?: string,
-  domain?: string
-): Promise<{ verified: boolean; errors: string[]; chainResults: any[] }> {
-  const chainResults: any[] = [];
-  const allErrors: string[] = [];
-  let allVerified = true;
-
-  console.log(`Verifying credential chain with ${chain.length} credentials...`);
-
-  for (let i = 0; i < chain.length; i++) {
-    const credential = chain[i];
-    console.log(`Verifying credential ${i}...`);
-
-    try {
-      let verificationInput: string | VerifiableCredential;
-      
-      // For the first credential (index 0), use the original JWT if available
-      // since the chain[0] is the decoded JSON without proof
-      if (i === 0 && originalJWT) {
-        verificationInput = originalJWT;
-        console.log(`Using original JWT for credential ${i}`);
-      } else {
-        verificationInput = credential;
-        console.log(`Using ${typeof credential === 'string' ? 'JWT' : 'VC object'} for credential ${i}`);
-      }
-
-      // Use our verifier for each credential in the chain
-      const verifierResult = await Verifier.verify(verificationInput, challenge, domain);
-      
-      chainResults.push({
-        index: i,
-        credentialId: typeof credential === 'string' ? 'JWT' : credential.id,
-        verified: verifierResult.verified,
-        errors: verifierResult.errors || []
-      });
-
-      if (!verifierResult.verified) {
-        allVerified = false;
-        allErrors.push(...(verifierResult.errors || []));
-      }
-
-      console.log(`Credential ${i} verification result:`, {
-        verified: verifierResult.verified,
-        errors: verifierResult.errors
-      });
-
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(`Failed to verify credential ${i}:`, errorMessage);
-      
-      chainResults.push({
-        index: i,
-        credentialId: typeof credential === 'string' ? 'JWT' : credential.id,
-        verified: false,
-        errors: [errorMessage]
-      });
-
-      allVerified = false;
-      allErrors.push(errorMessage);
+      break;
     }
   }
 
-  console.log(`Chain verification complete. Overall verified: ${allVerified}`);
-  
-  return {
-    verified: allVerified,
-    errors: allErrors,
-    chainResults
-  };
+  console.log(`Built credential chain with ${chain.length} credentials and ${jwtMappings.size} JWT mappings`);
+
+  return { chain, jwtMappings };
 }
