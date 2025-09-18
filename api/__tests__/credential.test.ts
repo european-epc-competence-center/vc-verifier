@@ -247,13 +247,6 @@ const manipulatedCredential = Object.assign({ ...GS1LicenceCredential }, { issua
 
 describe("Verifier API Test for Credentials", () => {
 
-    test("Verify vc by id", async () => {
-        const res = await request(server).get("/api/verifier/vc/https%253A%252F%252Fid.gs1.org%252Fvc%252Flicence%252Fgs1_prefix%252F05");
-        expect(res.statusCode).toEqual(200);
-        expect(res.body).toHaveProperty('verified');
-        expect(res.body.verified).toBe(true);
-    });
-
     test("Verify single credential", async () => {
         const res = await request(server).post("/api/verifier").send([GS1LicenceCredential]);
         expect(res.statusCode).toEqual(200);

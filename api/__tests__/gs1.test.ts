@@ -256,9 +256,6 @@ describe("Verifier API Test for GS1 Credentials", () => {
       .post("/api/verifier/gs1")
       .send([licenceKeyCredential]);
     
-    console.log('GS1 licence prefix response status:', res.statusCode);
-    console.log('GS1 licence prefix response body:', JSON.stringify(res.body, null, 2));
-    
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty("verified");
     expect(res.body.verified).toBe(true);

@@ -3,10 +3,6 @@ import parseLink from 'parse-link-header';
 import fetch from 'node-fetch';
 
 const HEADERS = {
-    'Accept': 'application/ld+json, application/json'
-}
-
-const HEADERS_WITH_JWT = {
     'Accept': 'application/ld+json, application/json, application/vc+jwt'
 }
 
@@ -15,7 +11,7 @@ const IPFS_GATEWAYS = ['ipfs.io', 'ipfs.ssi.eecc.de'].concat(process.env.IPFS_GA
 
 export async function fetch_jsonld_or_jwt(url: string): Promise<any> {
 
-    const response = await fetch(url, { method: 'GET', headers: HEADERS_WITH_JWT });
+    const response = await fetch(url, { method: 'GET', headers: HEADERS });
 
     const contentType = response.headers.get("content-type");
 
@@ -37,7 +33,7 @@ export async function fetch_jsonld_or_jwt(url: string): Promise<any> {
 
     if (link?.alternate?.rel == 'alternate' && link?.alternate?.type == 'application/ld+json') {
 
-        const linkResponse = await fetch(url + link.alternate.url, { method: 'GET', headers: HEADERS_WITH_JWT });
+        const linkResponse = await fetch(url + link.alternate.url, { method: 'GET', headers: HEADERS });
 
         return await linkResponse.json();
 
