@@ -14,7 +14,7 @@ import { checkGS1CredentialPresentationValidation,
 import { documentLoader } from "../documentLoader/index.js";
 import { Verifier } from "./index.js";
 import { JWTService } from "./jwt.js";
-import { getJsonSchema, downloadAndCacheSchemas } from "./schemas.js"; // Updated import path
+import { getJsonSchema, downloadAndCacheSchemas } from "./schemas.js";
 
 // Initialize schemas on startup
 await downloadAndCacheSchemas();
@@ -48,7 +48,6 @@ export async function checkGS1Credential(
 
     const bothVerified = gs1Result.verified && chainVerificationResult.verified;
 
-    // Successful GS1 Result
     return {
       verified: bothVerified,
       gs1Result: gs1Result,
@@ -85,34 +84,17 @@ export async function verifyGS1Credentials(
   }
 }
 
-
-// loadExternalCredential
+// Simplified loadExternalCredential using document loader
 const loadExternalCredential: externalCredential = async (
   url: string
 ): Promise<VerifiableCredential> => {
   try {
-    // Try using the documentLoader for standard cases, but catch JWT-related errors
-    try {
-      const extendedVC = await documentLoader(url);
-      if (extendedVC?.document) {
-        return extendedVC.document;
-      }
-    } catch (documentLoaderError) {
-      // DocumentLoader failed, likely due to JWT response, try direct fetch
-    }
+    const result = await documentLoader(url);
+    const document = result.document;
     
-    // DocumentLoader failed or returned empty, try direct fetch for JWT handling
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    
-    const text = await response.text();
-    
-    // Check if response looks like a JWT (3 parts separated by dots)
-    if (JWTService.isJWT(text)) {
-      const decoded = JWTService.decodeJWT(text);
+    // If document is a JWT string, decode it
+    if (typeof document === 'string' && JWTService.isJWT(document)) {
+      const decoded = JWTService.decodeJWT(document);
       
       if ('error' in decoded) {
         throw new Error(`Failed to decode JWT: ${decoded.error}`);
@@ -121,15 +103,11 @@ const loadExternalCredential: externalCredential = async (
       return decoded.payload as VerifiableCredential;
     }
     
-    // Try parsing as regular JSON
-    try {
-      return JSON.parse(text);
-    } catch (parseError) {
-      throw new Error(`Response is neither valid JWT nor JSON: ${parseError}`);
-    }
+    // Return as-is if it's already a parsed credential
+    return document as VerifiableCredential;
     
   } catch (error) {
-    throw error;
+    throw new Error(`Failed to load external credential from ${url}: ${error instanceof Error ? error.message : String(error)}`);
   }
 };
 
@@ -141,13 +119,13 @@ export async function validateExternalCredential(credential: VerifiableCredentia
 }
 
 const gs1ValidatorRequest: gs1ValidatorRequest = {
-    fullJsonSchemaValidationOn: false, // Enable full validation now that we have schemas
+    fullJsonSchemaValidationOn: false,
     gs1DocumentResolver: {
        externalCredentialLoader: loadExternalCredential, 
        externalCredentialVerification: validateExternalCredential,
        externalJsonSchemaLoader: getJsonSchema // Use the synchronous schema loader
    }
- }
+}
 
 export class GS1Verifier {
   static async verify(
@@ -191,15 +169,15 @@ export class GS1Verifier {
   }
 }
 
-// Helper function to build the credential chain by following extendsCredential references
+// Simplified credential chain building using document loader
 async function buildCredentialChainWithJWTMapping(
-  input: VerifiableCredential | string // Accept either JWT string or VC object directly
+  input: VerifiableCredential | string
 ): Promise<{ 
   chain: VerifiableCredential[], 
   jwtMappings: Map<string, string> 
 }> {
-  const chain: VerifiableCredential[] = []; // VC's for GS1 library
-  const jwtMappings = new Map<string, string>(); // Maps credential ID to JWT
+  const chain: VerifiableCredential[] = [];
+  const jwtMappings = new Map<string, string>();
 
   // Handle initial input
   let currentCredential: VerifiableCredential;
@@ -213,11 +191,10 @@ async function buildCredentialChainWithJWTMapping(
     }
     currentCredential = decoded.payload as VerifiableCredential;
   } else {
-    // Input is VC already
     currentCredential = input as VerifiableCredential;
   }
 
-  // Add initial credential to chain before loop
+  // Add initial credential to chain
   chain.push(currentCredential);
 
   // Map the initial JWT if we have one
@@ -225,45 +202,28 @@ async function buildCredentialChainWithJWTMapping(
     jwtMappings.set(currentCredential.id, currentJWT);
   }
 
+  // Follow the chain
   while (currentCredential?.credentialSubject?.extendsCredential) {
     try {
       const extendsCredentialUrl = currentCredential.credentialSubject.extendsCredential;
-
+      
+      // Use document loader to fetch the extended credential
+      const result = await documentLoader(extendsCredentialUrl);
+      const document = result.document;
+      
       let extendedCredential: VerifiableCredential;
       let credentialJWT: string | undefined;
-
-      try {
-        const extendedVC = await documentLoader(extendsCredentialUrl);
-        if (extendedVC?.document) {
-          extendedCredential = extendedVC.document;
-        } else {
-          throw new Error('DocumentLoader returned empty document');
+      
+      // Handle JWT response
+      if (typeof document === 'string' && JWTService.isJWT(document)) {
+        credentialJWT = document;
+        const decoded = JWTService.decodeJWT(document);
+        if ('error' in decoded) {
+          throw new Error(`Failed to decode JWT: ${decoded.error}`);
         }
-      } catch (documentLoaderError) {
-        // When documentLoader failed try direct fetch for JWT handling
-        const response = await fetch(extendsCredentialUrl);
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const text = await response.text();
-
-        if (JWTService.isJWT(text)) {
-          credentialJWT = text; // Store the JWT for this credential
-
-          const decoded = JWTService.decodeJWT(text);
-          if ('error' in decoded) {
-            throw new Error(`Failed to decode JWT: ${decoded.error}`);
-          }
-          extendedCredential = decoded.payload as VerifiableCredential;
-        } else {
-          try {
-            extendedCredential = JSON.parse(text);
-          } catch (parseError) {
-            throw new Error(`Response is neither valid JWT nor JSON: ${parseError}`);
-          }
-        }
+        extendedCredential = decoded.payload as VerifiableCredential;
+      } else {
+        extendedCredential = document as VerifiableCredential;
       }
 
       chain.push(extendedCredential);

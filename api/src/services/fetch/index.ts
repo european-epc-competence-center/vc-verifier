@@ -6,12 +6,16 @@ const HEADERS = {
     'Accept': 'application/ld+json, application/json'
 }
 
+const HEADERS_WITH_JWT = {
+    'Accept': 'application/ld+json, application/json, application/vc+jwt'
+}
+
 const IPFS_GATEWAYS = ['ipfs.io', 'ipfs.ssi.eecc.de'].concat(process.env.IPFS_GATEWAYS ? process.env.IPFS_GATEWAYS.split(',') : []);
 
 
-export async function fetch_jsonld(url: string): Promise<any> {
+export async function fetch_jsonld_or_jwt(url: string): Promise<any> {
 
-    const response = await fetch(url, { method: 'GET', headers: HEADERS });
+    const response = await fetch(url, { method: 'GET', headers: HEADERS_WITH_JWT });
 
     const contentType = response.headers.get("content-type");
 
@@ -22,12 +26,18 @@ export async function fetch_jsonld(url: string): Promise<any> {
 
     }
 
+     if (contentType && contentType.indexOf('application/vc+jwt') != -1) {
+        
+        return await response.text();
+    
+    }
+
     // search for json-ld link if no json-ld is returned
     const link = parseLink(response.headers.get('Link'));
 
     if (link?.alternate?.rel == 'alternate' && link?.alternate?.type == 'application/ld+json') {
 
-        const linkResponse = await fetch(url + link.alternate.url, { method: 'GET', headers: HEADERS });
+        const linkResponse = await fetch(url + link.alternate.url, { method: 'GET', headers: HEADERS_WITH_JWT });
 
         return await linkResponse.json();
 
@@ -52,7 +62,7 @@ export async function fetchIPFS(IPFSUrl: string): Promise<any> {
 
     await Promise.any(IPFS_GATEWAYS.map(async (gateway) => {
 
-        return await fetch_jsonld(`https://${gateway}/ipfs/${IPFSUrl.split('ipfs://')[1]}`);
+        return await fetch_jsonld_or_jwt(`https://${gateway}/ipfs/${IPFSUrl.split('ipfs://')[1]}`);
 
     }))
         .then((result) => {
