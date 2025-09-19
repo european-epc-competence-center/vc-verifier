@@ -16,7 +16,10 @@ import { DataIntegrityProof } from "@digitalbazaar/data-integrity";
 import jsigs from "jsonld-signatures";
 
 import { documentLoader } from "../documentLoader/index.js";
+
 import { JWTService } from "./jwt.js";
+
+import { checkBitstringStatus } from "./status.js";
 
 const { createVerifyCryptosuite } = ecdsaSd2023Cryptosuite;
 const {
@@ -103,6 +106,9 @@ function getCheckStatus(
   if (statusTypes.includes("StatusList2021Entry")) return checkStatus2021;
 
   if (statusTypes.includes("RevocationList2020Status")) return checkStatus2020;
+  
+  // Add support for the new BitstringStatusListEntry
+  if (statusTypes.includes("BitstringStatusListEntry")) return checkBitstringStatus;
 
   throw new Error(`${statusTypes} not implemented`);
 }
@@ -116,7 +122,58 @@ export class Verifier {
     // Handle string inputs - could be JWT or invalid
     if (typeof input === 'string') {
       if (JWTService.isJWT(input)) {
-        return await JWTService.verifyJWT(input);
+        const jwtResult = await JWTService.verifyJWT(input);
+        
+        // If JWT verification successful and it's a VC, check status
+        if (jwtResult.verified && jwtResult.results.length > 0) {
+          const firstResult = jwtResult.results[0];
+          if (!('error' in firstResult.decoded)) {
+            const payload = firstResult.decoded.payload;
+            
+            // Check if it's a VerifiableCredential with status
+            if (payload.type?.includes('VerifiableCredential') && payload.credentialStatus) {
+              const checkStatus = getCheckStatus(payload.credentialStatus);
+              
+              if (checkStatus) {
+                try {
+                  console.log('Doing checkStatus check now...')
+                  const statusResult = await checkStatus({
+                    credential: payload, // Pass the VC payload, not the JWT
+                    documentLoader,
+                    suite: null, // No suite needed for JWT status checking
+                    verifyStatusListCredential: true,
+                    verifyMatchingIssuers: false,
+                  });
+                  
+                  // Update the result based on status check
+                  if (!statusResult.verified) {
+                    return {
+                      verified: false,
+                      results: jwtResult.results,
+                      statusResult,
+                      error: new Error('Status check failed')
+                    };
+                  }
+                  
+                  // Add status result to successful verification
+                  return {
+                    ...jwtResult,
+                    statusResult
+                  };
+                } catch (statusError) {
+                  return {
+                    verified: false,
+                    results: jwtResult.results,
+                    statusResult: { verified: false, error: statusError },
+                    error: statusError
+                  };
+                }
+              }
+            }
+          }
+        }
+        
+        return jwtResult;
       } else {
         throw new Error('String input provided but not in valid JWT format');
       }
