@@ -36,6 +36,7 @@
     "@digitalbazaar/vc-revocation-list": "^5.0.1",
     "@digitalbazaar/vc-status-list": "^7.1.0",
     "@gs1us/vc-verifier-rules": "^2.0.0",
+    "@noble/curves": "^2.0.0",
     "cors": "^2.8.5",
     "did-resolver": "^4.1.0",
     "dotenv": "^16.3.1",
@@ -45,6 +46,8 @@
     "jose": "^6.1.0",
     "jsonld": "github:european-epc-competence-center/jsonld.js#cachefix",
     "jsonld-signatures": "^11.2.1",
+    "multibase": "^4.0.6",
+    "multiformats": "^13.4.1",
     "node-fetch": "^3.3.2",
     "parse-link-header": "^2.0.0",
     "web-did-resolver": "^2.0.27"
