@@ -1,7 +1,8 @@
 // @ts-ignore
 import { Bitstring } from "@digitalbazaar/bitstring";
+// @ts-ignore
+import { verifyCredential as vcVerifyCredential } from "@digitalbazaar/vc";
 import { JWTService } from './jwt.js';
-import { Verifier } from "./index.js";
 
 export class BitstringStatusList {
     private bitstring: any;
@@ -50,7 +51,6 @@ export async function checkBitstringStatus({
     verifyStatusListCredential?: boolean;
     verifyMatchingIssuers?: boolean;
 }) {
-    console.log(' Starting bitstring status check...');
     let result;
     try {
         result = await _checkBitstringStatuses({
@@ -60,9 +60,7 @@ export async function checkBitstringStatus({
             verifyStatusListCredential,
             verifyMatchingIssuers,
         });
-        console.log(` Bitstring status check result: ${result.verified ? 'NOT REVOKED' : 'REVOKED'}`);
     } catch (error) {
-        console.log(` Bitstring status check failed: ${error}`);
         result = {
             verified: false,
             error
@@ -181,8 +179,6 @@ async function _checkSingleBitstringStatus({
   suite?: any;
   documentLoader: Function;
 }) {
-  console.log(`    Checking status at index ${credentialStatus.statusListIndex}...`);
-  
   const { statusListIndex } = credentialStatus;
   const index = parseInt(statusListIndex, 10);
 
@@ -191,7 +187,6 @@ async function _checkSingleBitstringStatus({
     ({ document: slCredential } = await documentLoader(
       credentialStatus.statusListCredential
     ));
-    console.log(`    Status list credential loaded: ${typeof slCredential === 'string' ? 'JWT' : 'JSON-LD'}`);
   } catch (e: any) {
     const err = new Error(
       'Could not load "BitstringStatusListCredential"; ' +
@@ -224,9 +219,9 @@ async function _checkSingleBitstringStatus({
 
   if (verifyStatusListCredential) {
     if (typeof slCredential === 'string') {
-      const jwtVerifyResult = await Verifier.verify(slCredential);
+      // JWT verification using JWTService directly
+      const jwtVerifyResult = await JWTService.verifyJWT(slCredential);
       if (!jwtVerifyResult.verified) {
-        console.log(`    Status list credential JWT verification failed`);
         const firstResult = jwtVerifyResult.results[0];
         const errorMessage = firstResult && 'error' in firstResult.decoded 
           ? firstResult.decoded.error 
@@ -238,10 +233,27 @@ async function _checkSingleBitstringStatus({
         );
         throw err;
       }
-      console.log(`    Status list credential JWT verified`);
     } else {
-      // TO-DO: JSON-LD verification using suite
-      throw new Error('JSON-LD BitstringStatusListCredential verification not yet implemented');
+      // JSON-LD verification using the original library
+      const verifyResult = await vcVerifyCredential({
+        credential: slCredential,
+        suite,
+        documentLoader
+      });
+      if (!verifyResult.verified) {
+        const {error: e} = verifyResult;
+        let msg = '"BitstringStatusListCredential" not verified';
+        if (e) {
+          msg += `; reason: ${e.message}`;
+        } else {
+          msg += '.';
+        }
+        const err = new Error(msg);
+        if (e) {
+          err.cause = verifyResult.error;
+        }
+        throw err;
+      }
     }
   }
 
@@ -323,8 +335,6 @@ async function _checkSingleBitstringStatus({
   const list = await BitstringStatusList.decode({ encodedList });
 
   const verified = !list.getStatus(index);
-  
-  console.log(`   ${verified ? ' Credential NOT REVOKED' : ' Credential REVOKED'} (index ${index})`);
   
   return { verified, credentialStatus };
 }

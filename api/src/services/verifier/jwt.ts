@@ -99,7 +99,6 @@ export class JWTService {
       const publicKey = await jose.importJWK(jwk);
       await jose.jwtVerify(jwt, publicKey, { algorithms: [alg] });
       
-      console.log(`      JWT verified: ${alg} signature`);
       return true;
     } catch (error) {
       return false;
@@ -119,9 +118,6 @@ export class JWTService {
       }
 
       const isValid = ed25519.verify(signatureBytes, signingInputBytes, keyBytes);
-      if (isValid) {
-        console.log(`      JWT verified: Ed25519/EdDSA signature`);
-      }
       
       return isValid;
     } catch (error) {

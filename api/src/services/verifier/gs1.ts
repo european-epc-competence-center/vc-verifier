@@ -31,16 +31,12 @@ export async function checkGS1Credential(
       { verifiableCredential: chain }
     );
 
-     console.log('GS1 validation result:', gs1Result);
-
     const chainVerificationResult = await verifyCredentialChain(
       chain,
       jwtMappings,
       challenge,
       domain
     );
-
-    console.log('Chain verification result:', chainVerificationResult);
 
     const bothVerified = gs1Result.verified && chainVerificationResult.verified;
 
@@ -248,8 +244,6 @@ async function verifyCredentialChain(
       const credentialToVerify = credential.id && jwtMappings.has(credential.id) 
         ? jwtMappings.get(credential.id)! 
         : credential;
-      
-      console.log(`Verifying credential ${i + 1}/${chain.length}: ${credential.id || 'unknown'}`);
       
       const verificationResult = await Verifier.verify(
         credentialToVerify,
