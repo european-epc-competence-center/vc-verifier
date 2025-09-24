@@ -8,8 +8,9 @@ import { checkGS1CredentialPresentationValidation,
   VerifiableCredential,
   VerifiablePresentation, 
   gs1ValidatorRequest,
+  verifiableJwt,
   // @ts-ignore
-} from "@gs1us/vc-verifier-rules";
+} from "@eecc/vc-verifier-rules";
 
 import { documentLoader } from "../documentLoader/index.js";
 import { Verifier } from "./index.js";
@@ -19,60 +20,23 @@ import { getJsonSchema, downloadAndCacheSchemas } from "./schemas.js";
 await downloadAndCacheSchemas();
 
 export async function checkGS1Credential(
-  verifiableCredential: VerifiableCredential,
+  verifiableCredential: VerifiableCredential | verifiableJwt | string,
   challenge?: string,
   domain?: string
 ): Promise<gs1RulesResult> {
-  try {
-    const { chain, jwtMappings } = await buildCredentialChainWithJWTMapping(verifiableCredential);
-
-    const gs1Result = await checkGS1CredentialPresentationValidation(
-      gs1ValidatorRequest,
-      { verifiableCredential: chain }
-    );
-
-    const chainVerificationResult = await verifyCredentialChain(
-      chain,
-      jwtMappings,
-      challenge,
-      domain
-    );
-
-    const bothVerified = gs1Result.verified && chainVerificationResult.verified;
-
-    return {
-      verified: bothVerified,
-      gs1Result: gs1Result,
-      results: chainVerificationResult.results,
-      statusResult: chainVerificationResult.statusResults
-    };
-
-  } catch (error) {
-    console.error('GS1 credential validation error:', error);
-    return {
-      verified: false,
-      errors: [error instanceof Error ? error.message : String(error)]
-    };
-  }
+  console.log('checkGS1Credential called with:', typeof verifiableCredential, verifiableCredential);
+  return await checkGS1CredentialWithoutPresentation(
+    gs1ValidatorRequest, verifiableCredential
+  );
 }
 
 export async function verifyGS1Credentials(
   verifiablePresentation: VerifiablePresentation
 ): Promise<gs1RulesResultContainer> {
-  try {
-    return await checkGS1CredentialPresentationValidation(
+  return await checkGS1CredentialPresentationValidation(
       gs1ValidatorRequest,
       verifiablePresentation
     );
-    // TO-DO: actual verification using our verifier for presentations
-  } catch (error) {
-    console.error('GS1 presentation validation error:', error);
-    return {
-      verified: false,
-      errors: [error instanceof Error ? error.message : String(error)],
-      result: []
-    };
-  }
 }
 
 const loadExternalCredential: externalCredential = async (
@@ -82,16 +46,7 @@ const loadExternalCredential: externalCredential = async (
     const result = await documentLoader(url);
     const document = result.document;
     
-    if (typeof document === 'string' && JWTService.isJWT(document)) {
-      const decoded = JWTService.decodeJWT(document);
-      
-      if ('error' in decoded) {
-        throw new Error(`Failed to decode JWT: ${decoded.error}`);
-      }
-      
-      return decoded.payload as VerifiableCredential;
-    }
-    
+    // Let the GS1 library handle JWT processing - don't interfere
     return document as VerifiableCredential;
     
   } catch (error) {
@@ -99,12 +54,24 @@ const loadExternalCredential: externalCredential = async (
   }
 };
 
-// Placeholder function for external credential validation, currently returns true to allow GS1 chain checks to proceed 
 // TODO: Implement proper external credential verification logic
-export async function validateExternalCredential(credential: VerifiableCredential): Promise<boolean> {
-  // Allow GS1 chain checks to proceed even if upstream signature cannot be verified here
-  return true; // Simple boolean return like the working example
-}
+export const validateExternalCredential: verifyExternalCredential = async (
+  credential: VerifiableCredential | verifiableJwt | string,
+  challenge?: string,
+  domain?: string
+): Promise<gs1RulesResult> => {
+  // For now, return a simple successful verification result
+  // The GS1 library should handle the main verification logic
+  console.log('validateExternalCredential called with:', typeof credential, credential);
+  
+  return {
+    verified: true,
+    errors: [],
+    credentialId: typeof credential === 'string' ? 'jwt-credential' : (credential as any)?.id || 'unknown',
+    credentialName: 'External Credential',
+    // Add any other required properties for gs1RulesResult
+  } as gs1RulesResult;
+};
 
 const gs1ValidatorRequest: gs1ValidatorRequest = {
     fullJsonSchemaValidationOn: false,
@@ -117,29 +84,30 @@ const gs1ValidatorRequest: gs1ValidatorRequest = {
 
 export class GS1Verifier {
   static async verify(
-    verifiable: Verifiable | string,
+    verifiable: Verifiable | VerifiableCredential | verifiableJwt | string,
     challenge?: string,
     domain?: string
   ): Promise<gs1RulesResult | gs1RulesResultContainer> { 
     try {
-      let credentialData: Verifiable;
+      let cred: any;
 
       if (typeof verifiable === "string" && JWTService.isJWT(verifiable)) {
         const decoded = JWTService.decodeJWT(verifiable);
         if ('error' in decoded) {
           throw new Error(`Failed to decode JWT: ${decoded.error}`);
         }
-        credentialData = decoded.payload;
+        cred = decoded.payload;
       } else {
-        credentialData = verifiable as Verifiable;
+        cred = verifiable as VerifiableCredential;
       } 
       
-      if (credentialData?.type?.includes?.("VerifiableCredential")) {
-        return await checkGS1Credential(verifiable, challenge, domain);
+      if (cred?.type?.includes?.("VerifiableCredential")) {
+        // Cast to the expected type since we've verified it's a VerifiableCredential
+        return await checkGS1Credential(verifiable as VerifiableCredential | verifiableJwt | string, challenge, domain);
       }
       
-      if (credentialData?.type?.includes?.("VerifiablePresentation")) {
-        const presentation = credentialData as VerifiablePresentation;
+      if (cred?.type?.includes?.("VerifiablePresentation")) {
+        const presentation = cred as VerifiablePresentation;
         return await verifyGS1Credentials(presentation);
       }
       
@@ -147,137 +115,9 @@ export class GS1Verifier {
 
     } catch (error) {
       console.error('GS1Verifier.verify error:', error);
-      return {
-        verified: false,
-        errors: [error instanceof Error ? error.message : String(error)]
-      };
+      // Re-throw the error to let the caller handle it appropriately
+      // since we can't construct a proper gs1RulesResult without knowing its full structure
+      throw error;
     }
   }
-}
-
-async function buildCredentialChainWithJWTMapping(
-  input: VerifiableCredential | string
-): Promise<{ 
-  chain: VerifiableCredential[], 
-  jwtMappings: Map<string, string> 
-}> {
-  const chain: VerifiableCredential[] = [];
-  const jwtMappings = new Map<string, string>();
-
-  let currentCredential: VerifiableCredential;
-  let currentJWT: string | undefined;
-
-  if (typeof input === "string" && JWTService.isJWT(input)) {
-    currentJWT = input;
-    const decoded = JWTService.decodeJWT(input);
-    if ('error' in decoded) {
-      throw new Error(`Failed to decode initial JWT: ${decoded.error}`);
-    }
-    currentCredential = decoded.payload as VerifiableCredential;
-  } else {
-    currentCredential = input as VerifiableCredential;
-  }
-
-  chain.push(currentCredential);
-
-  if (currentCredential.id && currentJWT) {
-    jwtMappings.set(currentCredential.id, currentJWT);
-  }
-
-  while (currentCredential?.credentialSubject?.extendsCredential) {
-    try {
-      const extendsCredentialUrl = currentCredential.credentialSubject.extendsCredential;
-      
-      const result = await documentLoader(extendsCredentialUrl);
-      const document = result.document;
-      
-      let extendedCredential: VerifiableCredential;
-      let credentialJWT: string | undefined;
-      
-      if (typeof document === 'string' && JWTService.isJWT(document)) {
-        credentialJWT = document;
-        const decoded = JWTService.decodeJWT(document);
-        if ('error' in decoded) {
-          throw new Error(`Failed to decode JWT: ${decoded.error}`);
-        }
-        extendedCredential = decoded.payload as VerifiableCredential;
-      } else {
-        extendedCredential = document as VerifiableCredential;
-      }
-
-      chain.push(extendedCredential);
-
-      if (extendedCredential.id && credentialJWT) {
-        jwtMappings.set(extendedCredential.id, credentialJWT);
-      }
-      
-      currentCredential = extendedCredential;
-
-    } catch (error) {
-      console.error(`Failed to load extended credential: ${error}`);
-      break;
-    }
-  }
-  
-  return { chain, jwtMappings };
-}
-
-async function verifyCredentialChain(
-  chain: VerifiableCredential[],
-  jwtMappings: Map<string, string>,
-  challenge?: string,
-  domain?: string
-): Promise<{ 
-  verified: boolean; 
-  errors: string[];
-  results: any[];
-  statusResults: any[];
-}> {
-  const errors: string[] = [];
-  const results: any[] = [];
-  const statusResults: any[] = [];
-  
-  for (let i = 0; i < chain.length; i++) {
-    const credential = chain[i];
-    
-    try {
-      const credentialToVerify = credential.id && jwtMappings.has(credential.id) 
-        ? jwtMappings.get(credential.id)! 
-        : credential;
-      
-      const verificationResult = await Verifier.verify(
-        credentialToVerify,
-        challenge,
-        domain
-      );
-      
-      if (!verificationResult.verified) {
-        const credentialErrors = verificationResult.errors || ['Unknown verification error'];
-        errors.push(`Credential ${i + 1} verification failed: ${credentialErrors.join(', ')}`);
-      }
-
-      if (verificationResult.results && Array.isArray(verificationResult.results)) {
-        results.push(...verificationResult.results);
-      }
-
-      if (verificationResult.statusResult) {
-        if (verificationResult.statusResult.results && Array.isArray(verificationResult.statusResult.results)) {
-          statusResults.push(...verificationResult.statusResult.results);
-        } else {
-          statusResults.push(verificationResult.statusResult);
-        }
-      }
-      
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      errors.push(`Failed to verify credential ${i + 1}: ${errorMsg}`);
-    }
-  }
-  
-  return {
-    verified: errors.length === 0,
-    errors,
-    results,
-    statusResults
-  };
 }

@@ -2,17 +2,17 @@
 const schemaCache = new Map<string, any>();
 
 // Synchronous schema loader for GS1 library
-export function getJsonSchema(schemaId: string): Buffer {
+export function getJsonSchema(schemaId: string): Uint8Array {
   
   // Check cache first
   if (schemaCache.has(schemaId)) {
     const schema = schemaCache.get(schemaId);
     const jsonString = JSON.stringify(schema);
-    return Buffer.from(jsonString);
+    return new Uint8Array(Buffer.from(jsonString));
   }
   
   console.warn(`Schema not found in cache: ${schemaId}`);
-  return Buffer.from(''); // Return empty buffer for unknown schemas
+  return new Uint8Array(0); // Return empty Uint8Array for unknown schemas
 }
 
 // Async function to download and cache schemas (for initial setup)

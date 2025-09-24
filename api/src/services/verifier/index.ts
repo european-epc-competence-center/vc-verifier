@@ -114,7 +114,7 @@ function getCheckStatus(
 
 export class Verifier {
   static async verify(
-    input: Verifiable | string,
+    input: Verifiable | verifiableJwt | string,
     challenge?: string,
     domain?: string
   ): Promise<any> {
