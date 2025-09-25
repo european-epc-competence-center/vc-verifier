@@ -4,7 +4,6 @@ import { checkGS1CredentialPresentationValidation,
   verifyExternalCredential, 
   gs1RulesResult, 
   gs1RulesResultContainer, 
-  verificationErrorCode, 
   VerifiableCredential,
   VerifiablePresentation, 
   gs1ValidatorRequest,
@@ -24,7 +23,6 @@ export async function checkGS1Credential(
   challenge?: string,
   domain?: string
 ): Promise<gs1RulesResult> {
-  console.log('checkGS1Credential called with:', typeof verifiableCredential, verifiableCredential);
   return await checkGS1CredentialWithoutPresentation(
     gs1ValidatorRequest, verifiableCredential
   );
@@ -44,10 +42,7 @@ const loadExternalCredential: externalCredential = async (
 ): Promise<VerifiableCredential> => {
   try {
     const result = await documentLoader(url);
-    const document = result.document;
-    
-    // Let the GS1 library handle JWT processing - don't interfere
-    return document as VerifiableCredential;
+    return result.document;
     
   } catch (error) {
     throw new Error(`Failed to load external credential from ${url}: ${error instanceof Error ? error.message : String(error)}`);
@@ -60,12 +55,10 @@ export const validateExternalCredential: verifyExternalCredential = async (
   challenge?: string,
   domain?: string
 ): Promise<gs1RulesResult> => {
-  // For now, return a simple successful verification result
-  // The GS1 library should handle the main verification logic
-  console.log('validateExternalCredential called with:', typeof credential, credential);
-  
+  const credVerificationResult = await Verifier.verify(credential, challenge, domain);
+
   return {
-    verified: true,
+    verified: credVerificationResult.verified,
     errors: [],
     credentialId: typeof credential === 'string' ? 'jwt-credential' : (credential as any)?.id || 'unknown',
     credentialName: 'External Credential',
@@ -87,10 +80,12 @@ export class GS1Verifier {
     verifiable: Verifiable | VerifiableCredential | verifiableJwt | string,
     challenge?: string,
     domain?: string
-  ): Promise<gs1RulesResult | gs1RulesResultContainer> { 
+  ): Promise<any> { 
     try {
+      // First, verify the actual credential/presentation using standard verifier
+      const credVerificationResult = await Verifier.verify(verifiable, challenge, domain);
+      
       let cred: any;
-
       if (typeof verifiable === "string" && JWTService.isJWT(verifiable)) {
         const decoded = JWTService.decodeJWT(verifiable);
         if ('error' in decoded) {
@@ -101,23 +96,51 @@ export class GS1Verifier {
         cred = verifiable as VerifiableCredential;
       } 
       
+      let gs1Result: gs1RulesResult | gs1RulesResultContainer;
+      
       if (cred?.type?.includes?.("VerifiableCredential")) {
-        // Cast to the expected type since we've verified it's a VerifiableCredential
-        return await checkGS1Credential(verifiable as VerifiableCredential | verifiableJwt | string, challenge, domain);
+        // Get GS1 validation result for credential
+        gs1Result = await checkGS1Credential(verifiable as VerifiableCredential | verifiableJwt | string, challenge, domain);
+        
+        // Build unified response for credential
+        return {
+          verified: credVerificationResult.verified && gs1Result.verified,
+          gs1Result,
+          statusResult: credVerificationResult.statusResult,
+          results: credVerificationResult.results, // For JWT credentials
+          error: !credVerificationResult.verified ? credVerificationResult.error : 
+                 !gs1Result.verified ? { name: 'GS1 Validation Failed', errors: gs1Result.errors } : undefined
+        };
       }
       
       if (cred?.type?.includes?.("VerifiablePresentation")) {
         const presentation = cred as VerifiablePresentation;
-        return await verifyGS1Credentials(presentation);
+        // Get GS1 validation result for presentation
+        gs1Result = await verifyGS1Credentials(presentation);
+        
+        // Build unified response for presentation
+        return {
+          verified: credVerificationResult.verified && gs1Result.verified,
+          gs1Result,
+          presentationResult: { verified: credVerificationResult.verified },
+          statusResult: credVerificationResult.statusResult,
+          error: !credVerificationResult.verified ? credVerificationResult.error : 
+                 !gs1Result.verified ? { name: 'GS1 Validation Failed', errors: gs1Result.result?.map(r => r.errors).flat() || [] } : undefined
+        };
       }
       
       throw new Error("Provided verifiable object is of unknown type!");
 
     } catch (error) {
       console.error('GS1Verifier.verify error:', error);
-      // Re-throw the error to let the caller handle it appropriately
-      // since we can't construct a proper gs1RulesResult without knowing its full structure
-      throw error;
+      // Return error in expected format
+      return {
+        verified: false,
+        error: {
+          name: error instanceof Error ? error.message : 'Unknown error',
+          errors: [error instanceof Error ? error.message : String(error)]
+        }
+      };
     }
   }
 }
