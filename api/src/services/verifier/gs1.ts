@@ -49,7 +49,6 @@ const loadExternalCredential: externalCredential = async (
   }
 };
 
-// TODO: Implement proper external credential verification logic
 export const validateExternalCredential: verifyExternalCredential = async (
   credential: VerifiableCredential | verifiableJwt | string,
   challenge?: string,
@@ -57,17 +56,17 @@ export const validateExternalCredential: verifyExternalCredential = async (
 ): Promise<gs1RulesResult> => {
   const credVerificationResult = await Verifier.verify(credential, challenge, domain);
 
+  // Currently just mocking the correct return type, but using actual verification result
   return {
     verified: credVerificationResult.verified,
     errors: [],
     credentialId: typeof credential === 'string' ? 'jwt-credential' : (credential as any)?.id || 'unknown',
     credentialName: 'External Credential',
-    // Add any other required properties for gs1RulesResult
   } as gs1RulesResult;
 };
 
 const gs1ValidatorRequest: gs1ValidatorRequest = {
-    fullJsonSchemaValidationOn: false,
+    fullJsonSchemaValidationOn: true,
     gs1DocumentResolver: {
        externalCredentialLoader: loadExternalCredential, 
        externalCredentialVerification: validateExternalCredential,
@@ -75,72 +74,88 @@ const gs1ValidatorRequest: gs1ValidatorRequest = {
    }
 }
 
+interface GS1VerificationResponse {
+  verified: boolean;
+  gs1Result: gs1RulesResult | gs1RulesResultContainer;
+  statusResult?: any;
+  results?: any[];
+  errorMessage?: string;
+}
+
 export class GS1Verifier {
   static async verify(
     verifiable: Verifiable | VerifiableCredential | verifiableJwt | string,
     challenge?: string,
     domain?: string
-  ): Promise<any> { 
+  ): Promise<GS1VerificationResponse> { 
     try {
-      // First, verify the actual credential/presentation using standard verifier
-      const credVerificationResult = await Verifier.verify(verifiable, challenge, domain);
+      // Perform standard credential/presentation verification
+      const credentialVerificationResult = await Verifier.verify(verifiable, challenge, domain);
       
-      let cred: any;
-      if (typeof verifiable === "string" && JWTService.isJWT(verifiable)) {
-        const decoded = JWTService.decodeJWT(verifiable);
-        if ('error' in decoded) {
-          throw new Error(`Failed to decode JWT: ${decoded.error}`);
-        }
-        cred = decoded.payload;
-      } else {
-        cred = verifiable as VerifiableCredential;
-      } 
+      // Extract credential payload for type checking
+      const credentialPayload = this.extractCredentialPayload(verifiable);
       
-      let gs1Result: gs1RulesResult | gs1RulesResultContainer;
+      // Perform GS1 validation based on type
+      const gs1Result = await this.performGS1Validation(credentialPayload, verifiable, challenge, domain);
       
-      if (cred?.type?.includes?.("VerifiableCredential")) {
-        // Get GS1 validation result for credential
-        gs1Result = await checkGS1Credential(verifiable as VerifiableCredential | verifiableJwt | string, challenge, domain);
-        
-        // Build unified response for credential
-        return {
-          verified: credVerificationResult.verified && gs1Result.verified,
-          gs1Result,
-          statusResult: credVerificationResult.statusResult,
-          results: credVerificationResult.results, // For JWT credentials
-          error: !credVerificationResult.verified ? credVerificationResult.error : 
-                 !gs1Result.verified ? { name: 'GS1 Validation Failed', errors: gs1Result.errors } : undefined
-        };
-      }
-      
-      if (cred?.type?.includes?.("VerifiablePresentation")) {
-        const presentation = cred as VerifiablePresentation;
-        // Get GS1 validation result for presentation
-        gs1Result = await verifyGS1Credentials(presentation);
-        
-        // Build unified response for presentation
-        return {
-          verified: credVerificationResult.verified && gs1Result.verified,
-          gs1Result,
-          presentationResult: { verified: credVerificationResult.verified },
-          statusResult: credVerificationResult.statusResult,
-          error: !credVerificationResult.verified ? credVerificationResult.error : 
-                 !gs1Result.verified ? { name: 'GS1 Validation Failed', errors: gs1Result.result?.map(r => r.errors).flat() || [] } : undefined
-        };
-      }
-      
-      throw new Error("Provided verifiable object is of unknown type!");
+      // Build unified response
+      return this.buildUnifiedResponse(credentialVerificationResult, gs1Result);
 
     } catch (error) {
-      console.error('GS1Verifier.verify error:', error);
-      // Return error in expected format
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       return {
         verified: false,
-        error: {
-          name: error instanceof Error ? error.message : 'Unknown error',
-          errors: [error instanceof Error ? error.message : String(error)]
-        }
+        gs1Result: {
+          verified: false,
+          credentialId: 'unknown',
+          credentialName: 'unknown',
+          errors: []
+        } as gs1RulesResult,
+        errorMessage
       };
     }
+  }
+
+  private static async performGS1Validation(
+    credentialPayload: any,
+    originalVerifiable: any,
+    challenge?: string,
+    domain?: string
+  ): Promise<gs1RulesResult | gs1RulesResultContainer> {
+    if (credentialPayload?.type?.includes?.("VerifiableCredential")) {
+      return await checkGS1Credential(originalVerifiable, challenge, domain);
+    }
+    
+    if (credentialPayload?.type?.includes?.("VerifiablePresentation")) {
+      return await verifyGS1Credentials(credentialPayload);
+    }
+    
+    throw new Error("Provided verifiable object is of unknown type!");
+  }
+
+  private static extractCredentialPayload(verifiable: any): any {
+    if (typeof verifiable === "string" && JWTService.isJWT(verifiable)) {
+      const decoded = JWTService.decodeJWT(verifiable);
+      if ('error' in decoded) {
+        throw new Error(`Failed to decode JWT: ${decoded.error}`);
+      }
+      return decoded.payload;
+    }
+    return verifiable;
+  }
+
+  private static buildUnifiedResponse(
+    credentialVerificationResult: any,
+    gs1Result: gs1RulesResult | gs1RulesResultContainer
+  ): GS1VerificationResponse {
+    
+    const response: GS1VerificationResponse = {
+      verified: credentialVerificationResult.verified && gs1Result.verified,
+      gs1Result,
+      statusResult: credentialVerificationResult.statusResult,
+      results: credentialVerificationResult.results
+    };
+
+    return response;
   }
 }
