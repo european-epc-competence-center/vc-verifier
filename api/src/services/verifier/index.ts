@@ -15,6 +15,43 @@ import { DataIntegrityProof } from "@digitalbazaar/data-integrity";
 // @ts-ignore
 import jsigs from "jsonld-signatures";
 
+// Types for better type safety
+interface VerificationResult {
+  verified: boolean;
+  results?: any[];
+  statusResult?: StatusResult;
+  error?: Error;
+  errors?: any[];
+}
+
+interface StatusResult {
+  verified: boolean;
+  error?: any;
+}
+
+interface VerificationOptions {
+  challenge?: string;
+  domain?: string;
+}
+
+// Constants for better maintainability
+const CREDENTIAL_TYPES = {
+  VERIFIABLE_CREDENTIAL: 'VerifiableCredential',
+  VERIFIABLE_PRESENTATION: 'VerifiablePresentation'
+} as const;
+
+const PROOF_TYPES = {
+  ED25519_2018: 'Ed25519Signature2018',
+  ED25519_2020: 'Ed25519Signature2020',
+  DATA_INTEGRITY: 'DataIntegrityProof'
+} as const;
+
+const STATUS_TYPES = {
+  STATUS_LIST_2021: 'StatusList2021Entry',
+  REVOCATION_LIST_2020: 'RevocationList2020Status',
+  BITSTRING_STATUS_LIST: 'BitstringStatusListEntry'
+} as const;
+
 import { documentLoader } from "../documentLoader/index.js";
 
 import { JWTService } from "./jwt.js";
@@ -26,34 +63,34 @@ const {
   purposes: { AssertionProofPurpose },
 } = jsigs;
 
-function getSuite(proof: Proof): unknown[] {
+function getSuite(proof: Proof): unknown {
   switch (proof?.type) {
-    case "Ed25519Signature2018":
+    case PROOF_TYPES.ED25519_2018:
       return new Ed25519Signature2018();
 
-    case "Ed25519Signature2020":
+    case PROOF_TYPES.ED25519_2020:
       return new Ed25519Signature2020();
 
-    case "DataIntegrityProof":
+    case PROOF_TYPES.DATA_INTEGRITY:
       return new DataIntegrityProof({
         cryptosuite: createVerifyCryptosuite(),
       });
 
     default:
-      throw new Error(`${proof?.type} not implemented`);
+      throw new Error(`Proof type ${proof?.type} not implemented`);
   }
 }
 
 function getSuites(proof: Proof | Proof[]): unknown[] {
-  var suites: unknown[] = [];
+  const suites: unknown[] = [];
 
   if (Array.isArray(proof)) {
-    proof.forEach((proof: Proof) => suites.push(getSuite(proof)));
+    proof.forEach((singleProof: Proof) => suites.push(getSuite(singleProof)));
   } else {
-    suites = [getSuite(proof)];
+    suites.push(getSuite(proof));
   }
 
-  // always for status verification
+  // Always add Ed25519Signature2020 for status verification
   suites.push(new Ed25519Signature2020());
 
   return suites;
@@ -94,22 +131,25 @@ function getPresentationStatus(
 function getCheckStatus(
   credentialStatus?: CredentialStatus[] | CredentialStatus
 ): any | undefined {
-  // no status provided
   if (!credentialStatus) return undefined;
 
-  let statusTypes = [];
+  const statusTypes = Array.isArray(credentialStatus)
+    ? credentialStatus.map((cs) => cs.type)
+    : [credentialStatus.type];
 
-  if (Array.isArray(credentialStatus)) {
-    statusTypes = credentialStatus.map((cs) => cs.type);
-  } else statusTypes = [credentialStatus.type];
+  if (statusTypes.includes(STATUS_TYPES.STATUS_LIST_2021)) {
+    return checkStatus2021;
+  }
 
-  if (statusTypes.includes("StatusList2021Entry")) return checkStatus2021;
-
-  if (statusTypes.includes("RevocationList2020Status")) return checkStatus2020;
+  if (statusTypes.includes(STATUS_TYPES.REVOCATION_LIST_2020)) {
+    return checkStatus2020;
+  }
   
-  if (statusTypes.includes("BitstringStatusListEntry")) return checkBitstringStatus;
+  if (statusTypes.includes(STATUS_TYPES.BITSTRING_STATUS_LIST)) {
+    return checkBitstringStatus;
+  }
 
-  throw new Error(`${statusTypes} not implemented`);
+  throw new Error(`Status types [${statusTypes.join(', ')}] not implemented`);
 }
 
 export class Verifier {
@@ -117,135 +157,185 @@ export class Verifier {
     input: Verifiable | verifiableJwt | string,
     challenge?: string,
     domain?: string
-  ): Promise<any> {
+  ): Promise<VerificationResult> {
+    const options: VerificationOptions = { challenge, domain };
+
     if (typeof input === 'string') {
-      if (JWTService.isJWT(input)) {
-        const jwtResult = await JWTService.verifyJWT(input);
-        
-        if (jwtResult.verified && jwtResult.results.length > 0) {
-          const firstResult = jwtResult.results[0];
-          if (!('error' in firstResult.decoded)) {
-            const payload = firstResult.decoded.payload;
-            
-            if (payload.type?.includes('VerifiableCredential') && payload.credentialStatus) {
-              const checkStatus = getCheckStatus(payload.credentialStatus);
-              
-              if (checkStatus) {
-                try {
-                  const statusResult = await checkStatus({
-                    credential: payload,
-                    documentLoader,
-                    suite: null, // No suite needed for JWT status checking
-                    verifyStatusListCredential: true,
-                    verifyMatchingIssuers: false,
-                  });
-                  
-                  if (!statusResult.verified) {
-                    return {
-                      verified: false,
-                      results: jwtResult.results,
-                      statusResult,
-                      error: new Error('Status check failed')
-                    };
-                  }
-                  
-                  return {
-                    ...jwtResult,
-                    statusResult
-                  };
-                } catch (statusError) {
-                  return {
-                    verified: false,
-                    results: jwtResult.results,
-                    statusResult: { verified: false, error: statusError },
-                    error: statusError
-                  };
-                }
-              }
-            }
-          }
-        }
-        
-        return jwtResult;
-      } else {
-        throw new Error('String input provided but not in valid JWT format');
-      }
+      return this.verifyJWTInput(input, options);
     }
 
-    // Handle object inputs - should be W3C Verifiable Credentials/Presentations
-    const verifiable = input as Verifiable;
+    return this.verifyObjectInput(input as Verifiable, options);
+  }
+
+  private static async verifyJWTInput(
+    input: string,
+    options: VerificationOptions
+  ): Promise<VerificationResult> {
+    if (!JWTService.isJWT(input)) {
+      throw new Error('String input provided but not in valid JWT format');
+    }
+
+    const jwtResult = await JWTService.verifyJWT(input);
     
+    if (!jwtResult.verified || jwtResult.results.length === 0) {
+      return jwtResult;
+    }
+
+    const firstResult = jwtResult.results[0];
+    if ('error' in firstResult.decoded) {
+      return jwtResult;
+    }
+
+    const payload = firstResult.decoded.payload;
+    
+    // Check status for JWT credentials if they have credentialStatus
+    if (payload.type?.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL) && payload.credentialStatus) {
+      return this.verifyJWTCredentialStatus(payload, jwtResult);
+    }
+
+    return jwtResult;
+  }
+
+  private static async verifyJWTCredentialStatus(
+    payload: any,
+    jwtResult: any
+  ): Promise<VerificationResult> {
+    const checkStatus = getCheckStatus(payload.credentialStatus);
+    
+    if (!checkStatus) {
+      return jwtResult;
+    }
+
+    try {
+      const statusResult = await checkStatus({
+        credential: payload,
+        documentLoader,
+        suite: null, // No suite needed for JWT status checking
+        verifyStatusListCredential: true,
+        verifyMatchingIssuers: false,
+      });
+      
+      if (!statusResult.verified) {
+        return {
+          verified: false,
+          results: jwtResult.results,
+          statusResult,
+          error: new Error('Status check failed')
+        };
+      }
+      
+      return {
+        ...jwtResult,
+        statusResult
+      };
+    } catch (statusError) {
+      return {
+        verified: false,
+        results: jwtResult.results,
+        statusResult: { verified: false, error: statusError },
+        error: statusError as Error
+      };
+    }
+  }
+
+  private static async verifyObjectInput(
+    verifiable: Verifiable,
+    options: VerificationOptions
+  ): Promise<VerificationResult> {
     // Validate that verifiable has required properties
     if (!verifiable || !verifiable.type || !Array.isArray(verifiable.type)) {
       throw new Error('Invalid verifiable object: missing or invalid type property');
     }
+
     const suite = getSuites(verifiable.proof);
+
+    if (verifiable.type.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL)) {
+      return this.verifyCredential(verifiable as VerifiableCredential, suite);
+    }
+
+    if (verifiable.type.includes(CREDENTIAL_TYPES.VERIFIABLE_PRESENTATION)) {
+      return this.verifyPresentation(verifiable as VerifiablePresentation, suite, options);
+    }
+
+    throw new Error("Provided verifiable object is of unknown type!");
+  }
+
+  private static async verifyCredential(
+    credential: VerifiableCredential,
+    suite: unknown[]
+  ): Promise<VerificationResult> {
+    const checkStatus = getCheckStatus(credential.credentialStatus);
+    const isDataIntegrityProof = this.isDataIntegrityProof(credential.proof);
 
     let result;
 
-    if (verifiable.type.includes("VerifiableCredential")) {
-      const credential = verifiable as VerifiableCredential;
+    if (isDataIntegrityProof) {
+      result = await jsigs.verify(credential, {
+        suite,
+        purpose: new AssertionProofPurpose(),
+        documentLoader,
+      });
 
-      const checkStatus = getCheckStatus(credential.credentialStatus);
-
-      if (
-        (Array.isArray(credential.proof)
-          ? credential.proof[0].type
-          : credential.proof.type) == "DataIntegrityProof"
-      ) {
-        result = await jsigs.verify(credential, {
-          suite,
-          purpose: new AssertionProofPurpose(),
-          documentLoader,
-        });
-
-        // make manual status as long as not implemented in jsigs
-        if (checkStatus) {
-          result.statusResult = await checkStatus({
-            credential,
-            documentLoader,
-            suite,
-            verifyStatusListCredential: true,
-            verifyMatchingIssuers: false,
-          });
-          if (!result.statusResult.verified) {
-            result.verified = false;
-          }
-        }
-      } else {
-        result = await verifyCredential({
+      // Manual status check as long as not implemented in jsigs
+      if (checkStatus) {
+        result.statusResult = await checkStatus({
           credential,
-          suite,
           documentLoader,
-          checkStatus,
+          suite,
+          verifyStatusListCredential: true,
+          verifyMatchingIssuers: false,
         });
+        if (!result.statusResult.verified) {
+          result.verified = false;
+        }
       }
-    }
-
-    if (verifiable.type.includes("VerifiablePresentation")) {
-      const presentation = verifiable as VerifiablePresentation;
-
-      // try to use challenge in proof if not provided in case no exchange protocol is used
-      if (!challenge)
-        challenge = Array.isArray(presentation.proof)
-          ? presentation.proof[0].challenge
-          : presentation.proof.challenge;
-
-      const checkStatus = getCheckStatus(getPresentationStatus(presentation));
-
-      result = await verify({
-        presentation,
+    } else {
+      result = await verifyCredential({
+        credential,
         suite,
         documentLoader,
-        challenge,
-        domain,
         checkStatus,
       });
     }
 
-    if (!result) throw Error("Provided verifiable object is of unknown type!");
+    return this.normalizeResult(result);
+  }
 
-    // make non enumeratable errors enumeratable for the respsonse
+  private static async verifyPresentation(
+    presentation: VerifiablePresentation,
+    suite: unknown[],
+    options: VerificationOptions
+  ): Promise<VerificationResult> {
+    let { challenge, domain } = options;
+
+    // Try to use challenge in proof if not provided (for cases where no exchange protocol is used)
+    if (!challenge) {
+      challenge = Array.isArray(presentation.proof)
+        ? presentation.proof[0].challenge
+        : presentation.proof.challenge;
+    }
+
+    const checkStatus = getCheckStatus(getPresentationStatus(presentation));
+
+    const result = await verify({
+      presentation,
+      suite,
+      documentLoader,
+      challenge,
+      domain,
+      checkStatus,
+    });
+
+    return this.normalizeResult(result);
+  }
+
+  private static isDataIntegrityProof(proof: Proof | Proof[]): boolean {
+    const proofType = Array.isArray(proof) ? proof[0].type : proof.type;
+    return proofType === PROOF_TYPES.DATA_INTEGRITY;
+  }
+
+  private static normalizeResult(result: any): VerificationResult {
+    // Make non-enumerable errors enumerable for the response
     if (result.error) {
       if (!result.error.errors) {
         result.error.name = result.error.message;
