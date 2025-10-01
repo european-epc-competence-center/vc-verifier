@@ -35,7 +35,7 @@
     "@digitalbazaar/vc": "^7.2.0",
     "@digitalbazaar/vc-revocation-list": "^5.0.1",
     "@digitalbazaar/vc-status-list": "^7.1.0",
-    "@eecc/vc-verifier-rules": "^2.1.7",
+    "@eecc/vc-verifier-rules": "^2.2.0",
     "@noble/curves": "^2.0.0",
     "cors": "^2.8.5",
     "did-resolver": "^4.1.0",
