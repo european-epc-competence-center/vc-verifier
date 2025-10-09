@@ -78,7 +78,7 @@ Each credential can be obtained in various ways using the buttons at the bottom 
 
 ## License
 
-Copyright 2022 European EPC Competence Center GmbH (EECC). Corresponding Author: Christian Fries <christian.fries@eecc.de>
+Copyright 2022-2025 European EPC Competence Center GmbH (EECC). Corresponding Author: Christian Fries <christian.fries@eecc.de>
 
 <a href="https://www.gnu.org/licenses/agpl-3.0.html">
 <img alt="AGPLV3" style="border-width:0" src="https://www.gnu.org/graphics/agplv3-with-text-162x68.png" /><br />
