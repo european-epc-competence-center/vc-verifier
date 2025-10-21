@@ -267,7 +267,8 @@ describe("Verifier API Test for JWT Credentials", () => {
             .send([validKeyCredentialJWT]);
         
         expect(res.statusCode).toEqual(200);
-        expect(res.body.verified).toBe(true);
+        expect(res.body).toBeInstanceOf(Array);
+        expect(res.body[0].verified).toBe(true);
     });
 
     // Revoked GS1 Credential as JWT
@@ -277,8 +278,9 @@ describe("Verifier API Test for JWT Credentials", () => {
             .send([revokedKeyCredentialJWT]);
 
         expect(res.statusCode).toEqual(200);
-        expect(res.body.verified).toBe(false);
-        expect(res.body.statusResult.verified).toBe(false);
+        expect(res.body).toBeInstanceOf(Array);
+        expect(res.body[0].verified).toBe(false);
+        expect(res.body[0].statusResult.verified).toBe(false);
     });
 
     // Valid BitStringStatusListCredential (NON-GS1)

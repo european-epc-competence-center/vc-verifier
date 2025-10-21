@@ -332,7 +332,7 @@ export default {
 
             const res = await this.$api.post(isGs1 ? '/gs1' : '/', [apiPayload], { params: { challenge: this.$route.query.challenge } });
 
-            const result = isGs1 ? res.data : res.data[0];
+            const result = res.data[0];
 
             console.log(result)
 

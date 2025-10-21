@@ -257,8 +257,9 @@ describe("Verifier API Test for GS1 Credentials", () => {
       .send([licenceKeyCredential]);
     
     expect(res.statusCode).toEqual(200);
-    expect(res.body).toHaveProperty("verified");
-    expect(res.body.verified).toBe(true);
+    expect(res.body).toBeInstanceOf(Array);
+    expect(res.body[0]).toHaveProperty("verified");
+    expect(res.body[0].verified).toBe(true);
   });
 
   /*test("Verify GS1 company licence prefix credentials", async () => {
