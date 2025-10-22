@@ -9,8 +9,15 @@ export interface JWTDetectionResult {
 }
 
 export interface JWTResult {
-  jwt: string;
-  decoded: JWTDecoded | { error: string };
+  proof: {
+    jwt: string;
+  };
+  verified: boolean;
+  verificationMethod?: any;
+  purposeResult?: {
+    valid: boolean;
+  };
+  decoded?: JWTDecoded | { error: string };
 }
 
 export interface JWTDecoded {
@@ -56,7 +63,13 @@ export class JWTService {
     
     return {
       verified,
-      results: [{ jwt, decoded }]
+      results: [{
+        proof: { jwt },
+        verified,
+        verificationMethod,
+        purposeResult: { valid: verified },
+        decoded
+      }]
     };
   }
 
@@ -133,10 +146,16 @@ export class JWTService {
     return alg === 'Ed25519' || alg === 'EdDSA';
   }
 
-  private static createFailureResult(jwt: string, decoded: JWTDecoded | { error: string }): JWTDetectionResult {
+  private static createFailureResult(jwt: string, decoded: JWTDecoded | { error: string }, verificationMethod?: any): JWTDetectionResult {
     return {
       verified: false,
-      results: [{ jwt, decoded }]
+      results: [{
+        proof: { jwt },
+        verified: false,
+        verificationMethod,
+        purposeResult: { valid: false },
+        decoded
+      }]
     };
   }
 }

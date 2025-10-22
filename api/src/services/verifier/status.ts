@@ -223,7 +223,7 @@ async function _checkSingleBitstringStatus({
       const jwtVerifyResult = await JWTService.verifyJWT(slCredential);
       if (!jwtVerifyResult.verified) {
         const firstResult = jwtVerifyResult.results[0];
-        const errorMessage = firstResult && 'error' in firstResult.decoded 
+        const errorMessage = firstResult && firstResult.decoded && 'error' in firstResult.decoded 
           ? firstResult.decoded.error 
           : 'JWT verification failed';
         

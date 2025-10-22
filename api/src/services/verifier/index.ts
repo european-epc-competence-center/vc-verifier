@@ -182,7 +182,7 @@ export class Verifier {
     }
 
     const firstResult = jwtResult.results[0];
-    if ('error' in firstResult.decoded) {
+    if (!firstResult.decoded || 'error' in firstResult.decoded) {
       return jwtResult;
     }
 
