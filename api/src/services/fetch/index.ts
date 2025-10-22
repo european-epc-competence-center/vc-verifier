@@ -3,13 +3,13 @@ import parseLink from 'parse-link-header';
 import fetch from 'node-fetch';
 
 const HEADERS = {
-    'Accept': 'application/ld+json, application/json'
+    'Accept': 'application/ld+json, application/json, application/vc+jwt'
 }
 
 const IPFS_GATEWAYS = ['ipfs.io', 'ipfs.ssi.eecc.de'].concat(process.env.IPFS_GATEWAYS ? process.env.IPFS_GATEWAYS.split(',') : []);
 
 
-export async function fetch_jsonld(url: string): Promise<any> {
+export async function fetch_jsonld_or_jwt(url: string): Promise<any> {
 
     const response = await fetch(url, { method: 'GET', headers: HEADERS });
 
@@ -20,6 +20,12 @@ export async function fetch_jsonld(url: string): Promise<any> {
 
         return await response.json();
 
+    }
+
+     if (contentType && contentType.indexOf('application/vc+jwt') != -1) {
+        
+        return await response.text();
+    
     }
 
     // search for json-ld link if no json-ld is returned
@@ -52,7 +58,7 @@ export async function fetchIPFS(IPFSUrl: string): Promise<any> {
 
     await Promise.any(IPFS_GATEWAYS.map(async (gateway) => {
 
-        return await fetch_jsonld(`https://${gateway}/ipfs/${IPFSUrl.split('ipfs://')[1]}`);
+        return await fetch_jsonld_or_jwt(`https://${gateway}/ipfs/${IPFSUrl.split('ipfs://')[1]}`);
 
     }))
         .then((result) => {

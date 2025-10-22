@@ -1,7 +1,7 @@
 // @ts-ignore
 import jsonldSignatures from "jsonld-signatures";
 import { getResolver } from "./didresolver.js";
-import { fetch_jsonld, fetchIPFS } from "../fetch/index.js";
+import { fetch_jsonld_or_jwt, fetchIPFS } from "../fetch/index.js";
 import { contexts } from "./context/index.js";
 
 const cache = contexts;
@@ -59,17 +59,22 @@ const documentLoader: (url: string) => Promise<any> =
       if (url.startsWith("ipfs://")) {
         document = await fetchIPFS(url);
       } else {
-        document = await fetch_jsonld(url);
+        document = await fetch_jsonld_or_jwt(url);
       }
 
+      // Don't cache strings (JWTs) or status list credentials
       if (
-        !document?.type ||
-        !Array.isArray(document.type) ||
-        !uncachedStatusListCredentialTypes.some((t: string) =>
-          document.type.includes(t)
+        typeof document !== 'string' &&
+        (
+          !document?.type ||
+          !Array.isArray(document.type) ||
+          !uncachedStatusListCredentialTypes.some((t: string) =>
+            document.type.includes(t)
+          )
         )
-      )
+      ) {
         cache.set(url, document);
+      }
     }
 
     return {

@@ -25,17 +25,43 @@
             </div>
             <!--By json file-->
             <div class="card m-3 p-3 shadow">
-                <h5>Credential/Presentation Files</h5>
-                <form v-on:submit.prevent="submitFile">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Credential/Presentation Upload</h5>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="inputModeSwitch" v-model="useTextInput">
+                        <label class="form-check-label" for="inputModeSwitch">
+                            {{ useTextInput ? 'Text Input' : 'File Upload' }}
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- File Upload Mode -->
+                <form v-if="!useTextInput" v-on:submit.prevent="submitFile">
                     <div class="input-group">
                         <button @click="scan = 'file'" data-bs-toggle="modal" type="button" data-bs-target="#scan-modal"
                             class="btn btn-outline-light scanqr"><i class="bi-qr-code" role="img"
                                 aria-label="QR-Code"></i></button>
-                        <input multiple v-on:change="onFileChange" id="credentialId" type="file" class="form-control"
-                            placeholder="credential.json" aria-label="Credential" aria-describedby="credentialHelp">
+                        <input multiple v-on:change="onFileChange" id="credentialFiles" type="file" class="form-control"
+                            placeholder="credential.json" aria-label="Credential" aria-describedby="credentialHelp"
+                            accept=".json,.txt">
                         <button class="btn btn-outline-primary" type="submit">Verify</button>
                     </div>
-                    <div class="form-text">Upload credentials or presentations in json format</div>
+                    <div class="form-text">Upload credentials or presentations in JSON format, or JWT tokens in TXT files</div>
+                </form>
+                
+                <!-- Text Input Mode -->
+                <form v-if="useTextInput" v-on:submit.prevent="submitText">
+                    <div class="input-group">
+                        <button @click="scan = 'file'" data-bs-toggle="modal" type="button" data-bs-target="#scan-modal"
+                            class="btn btn-outline-light scanqr"><i class="bi-qr-code" role="img"
+                                aria-label="QR-Code"></i></button>
+                        <textarea v-model="textInput" id="credentialText" class="form-control" rows="4"
+                            placeholder="Paste JWT token or JSON-LD credential/presentation here..." 
+                            aria-label="Credential Text" aria-describedby="credentialTextHelp"
+                            @keydown.enter.prevent="submitText"></textarea>
+                        <button class="btn btn-outline-primary" type="submit">Verify</button>
+                    </div>
+                    <div class="form-text">Paste JWT tokens or JSON-LD credentials/presentations as plain text</div>
                 </form>
             </div>
             <!--By credential id-->
@@ -77,6 +103,7 @@
 <script>
 import { Tooltip } from "bootstrap";
 import { useToast } from "vue-toastification";
+import { isJWT } from "@/utils.js";
 
 import AuthModal from "@/components/AuthModal.vue";
 import ScanModal from "@/components/ScanModal.vue"
@@ -93,7 +120,9 @@ export default {
             toast: useToast(),
             credentialId: '',
             subjectId: '',
-            scan: ''
+            scan: '',
+            useTextInput: false,
+            textInput: ''
         }
     },
     mounted() {
@@ -107,15 +136,34 @@ export default {
         onFileChange(e) {
             var files = Array.from(e.target.files || e.dataTransfer.files);
             files.forEach(file => {
-                if (file.type != 'application/json') this.toast.warning(`Credential '${file.name}'' must be provided as a json file!`);
+                const isJsonFile = file.type === 'application/json' || file.name.endsWith('.json');
+                const isTxtFile = file.type === 'text/plain' || file.name.endsWith('.txt');
+                
+                if (!isJsonFile && !isTxtFile) {
+                    this.toast.warning(`Credential '${file.name}' must be provided as a JSON or TXT file!`);
+                    return;
+                }
 
-                new Response(file).json().then(json => {
-
-                    this.$store.dispatch("addVerifiables", Array.isArray(json) ? json : [json]);
-
-                }, () => {
-                    this.toast.warning(`'${file.name}' is not a json file!`);
-                })
+                // Handle TXT files (potentially containing JWTs)
+                if (isTxtFile) {
+                    new Response(file).text().then(jwtText => {
+                        const trimmedJwt = jwtText.trim();
+                        if (isJWT(trimmedJwt)) {
+                            this.$store.dispatch("addVerifiables", [trimmedJwt]);
+                        } else {
+                            this.toast.warning(`'${file.name}' does not contain a valid JWT token!`);
+                        }
+                    }, () => {
+                        this.toast.warning(`Could not read '${file.name}' as text!`);
+                    });
+                } else {
+                    // Handle JSON files
+                    new Response(file).json().then(json => {
+                        this.$store.dispatch("addVerifiables", Array.isArray(json) ? json : [json]);
+                    }, () => {
+                        this.toast.warning(`'${file.name}' is not a valid JSON file!`);
+                    });
+                }
             })
         },
         submitFile() {
@@ -126,6 +174,30 @@ export default {
         },
         submitSubject() {
             this.$router.push({ path: '/verify', query: { subjectId: encodeURIComponent(this.subjectId) } })
+        },
+        submitText() {
+            if (!this.textInput.trim()) {
+                this.toast.warning('Please enter some text to verify!');
+                return;
+            }
+
+            const trimmedInput = this.textInput.trim();
+            
+            // Check if it's a JWT
+            if (isJWT(trimmedInput)) {
+                this.$store.dispatch("addVerifiables", [trimmedInput]);
+                this.$router.push({ path: '/verify' });
+                return;
+            }
+
+            // Try to parse as JSON
+            try {
+                const json = JSON.parse(trimmedInput);
+                this.$store.dispatch("addVerifiables", Array.isArray(json) ? json : [json]);
+                this.$router.push({ path: '/verify' });
+            } catch (error) {
+                this.toast.warning('Input is neither a valid JWT nor valid JSON!');
+            }
         }
     }
 }

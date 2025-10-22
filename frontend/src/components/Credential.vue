@@ -170,8 +170,8 @@
                     class="btn btn-outline-primary"><i class="bi-filetype-pdf" role="img"
                         aria-label="PDF Download"></i></button>
                 <button @click="downloadCredential(credential)" type="button" style="border-right: none;"
-                    class="btn btn-outline-primary"><i class="bi-filetype-json" role="img"
-                        aria-label="JSON Download"></i></button>
+                    class="btn btn-outline-primary"><i :class="isJWTCredential ? 'bi-filetype-txt' : 'bi-filetype-json'" role="img"
+                        :aria-label="isJWTCredential ? 'JWT Download' : 'JSON Download'"></i></button>
                 <button data-bs-toggle="modal" :data-bs-target="getCredCompId('#qr-modal')" role="button" type="button"
                     class="btn btn-outline-primary"><i class="bi-qr-code" role="img" aria-label="QR-Code"></i></button>
             </div>
@@ -193,6 +193,7 @@ import { useToast } from "vue-toastification";
 import TrimmedBatch from "@/components/TrimmedBatch.vue";
 import QRModal from "@/components/QRModal.vue";
 import DiscloseModal from "./DiscloseModal.vue";
+import { getJWTMetadata } from "../utils.js";
 
 export default {
     name: 'Credential',
@@ -224,6 +225,10 @@ export default {
         },
         disclosed() {
             return this.$store.state.disclosedCredentials.includes(this.credential.id);
+        },
+        isJWTCredential() {
+            const jwtMetadata = getJWTMetadata(this.credential.id);
+            return jwtMetadata && jwtMetadata.isJWTCredential;
         }
     },
     methods: {
@@ -247,11 +252,27 @@ export default {
             return 'success';
         },
         downloadCredential(credential) {
-
             const fileName = this.getCredCompId('credential');
-            const exportType = 'json';
-            exportFromJSON({ data: getPlainCredential(credential), fileName, exportType });
-
+            
+            // Check if this is a JWT credential using our metadata system
+            const jwtMetadata = getJWTMetadata(credential.id);
+            if (jwtMetadata && jwtMetadata.isJWTCredential) {
+                // Download the original JWT as a text file
+                const blob = new Blob([jwtMetadata.originalJWT], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName + '.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+            } else {
+                // Download as JSON
+                exportFromJSON({ 
+                    data: getPlainCredential(credential), 
+                    fileName, 
+                    exportType: 'json' 
+                });
+            }
         },
         getCredCompId(prefix) {
             const idHash = new JsHashes.SHA256().hex(this.credential.id || JSON.stringify(this.credential.proof));

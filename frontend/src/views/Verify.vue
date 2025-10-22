@@ -35,7 +35,7 @@
 <script>
 import { useToast } from "vue-toastification";
 import { Tooltip } from "bootstrap";
-import { getVerifiableType, VerifiableType, getContext, getHolder, isGs1Credential } from "../utils.js";
+import { getVerifiableType, VerifiableType, getContext, getHolder, isGs1Credential, isJWT, wrapJWTCredential, getJWTMetadata, clearAllJWTMetadata } from "../utils.js";
 
 
 import Passport from "@/components/Passport.vue";
@@ -136,7 +136,24 @@ export default {
         async addVerifiables(verifiables) {
             // this.verifiables = this.verifiables.concat(verifiables);
             this.$store.dispatch("resetVerifiables");
-            verifiables.map(async v => await this.verify(v));
+            
+            // Clear any previous JWT metadata when starting new verification
+            clearAllJWTMetadata();
+            
+            // Convert JWT strings to verifiable objects before processing
+            const processedVerifiables = verifiables.map(v => {
+                if (typeof v === 'string' && isJWT(v)) {
+                    try {
+                        return wrapJWTCredential(v);
+                    } catch (error) {
+                        this.toast.error(`Invalid JWT credential: ${error.message}`);
+                        return null; // Filter out invalid JWTs
+                    }
+                }
+                return v;
+            }).filter(v => v !== null);
+            
+            processedVerifiables.map(async v => await this.verify(v));
         },
         async fetchAuth(url) {
             return this.authenctication ? await this.$api.post(url, { vp: this.authenctication }) : await this.$api.get(url);
@@ -144,18 +161,51 @@ export default {
         async fetchData() {
             if (this.credentialId) {
                 const res = await this.fetchAuth(this.credentialId);
-                this.verifiables.push(res.data);
+                const data = res.data;
+                // Convert JWT to verifiable object if needed
+                let verifiable = data;
+                if (typeof data === 'string' && isJWT(data)) {
+                    try {
+                        verifiable = wrapJWTCredential(data);
+                    } catch (error) {
+                        this.toast.error(`Invalid JWT credential: ${error.message}`);
+                        return;
+                    }
+                }
+                this.verifiables.push(verifiable);
                 return
             }
 
             if (this.subjectId) {
                 const res = await this.fetchAuth(this.$store.state.VC_REGISTRY + encodeURIComponent(this.subjectId));
-                this.verifiables = res.data
+                // Convert any JWT strings in the array to verifiable objects
+                this.verifiables = res.data.map(item => {
+                    if (typeof item === 'string' && isJWT(item)) {
+                        try {
+                            return wrapJWTCredential(item);
+                        } catch (error) {
+                            this.toast.error(`Invalid JWT credential: ${error.message}`);
+                            return null;
+                        }
+                    }
+                    return item;
+                }).filter(item => item !== null);
                 return
             }
 
             if (this.storeVerifiables.length > 0) {
-                this.verifiables = this.storeVerifiables;
+                // Convert JWT strings from store to verifiable objects
+                this.verifiables = this.storeVerifiables.map(item => {
+                    if (typeof item === 'string' && isJWT(item)) {
+                        try {
+                            return wrapJWTCredential(item);
+                        } catch (error) {
+                            this.toast.error(`Invalid JWT credential: ${error.message}`);
+                            return null;
+                        }
+                    }
+                    return item;
+                }).filter(item => item !== null);
                 this.$store.dispatch("resetVerifiables");
                 return
             }
@@ -243,11 +293,18 @@ export default {
         async verify(verifiable) {
 
             let isGs1 = false;
+            let apiPayload = verifiable;
 
-            if (getVerifiableType(verifiable) == VerifiableType.PRESENTATION) {
-
-
-
+            // Check if this is a JWT credential using our metadata system
+            const jwtMetadata = getJWTMetadata(verifiable.id);
+            if (jwtMetadata && jwtMetadata.isJWTCredential) {
+                // Send the original JWT to the API for verification
+                apiPayload = jwtMetadata.originalJWT;
+                
+                // For JWT credentials extract the actual credential for display
+                isGs1 = isGs1Credential(verifiable);
+                this.addCredential({ ...verifiable });
+            } else if (getVerifiableType(verifiable) == VerifiableType.PRESENTATION) {
                 const presentation = {
                     presentation:
                     {
@@ -273,15 +330,23 @@ export default {
                 this.addCredential({ ...verifiable });
             }
 
+            const res = await this.$api.post(isGs1 ? '/gs1' : '/', [apiPayload], { params: { challenge: this.$route.query.challenge } });
 
-
-            const res = await this.$api.post(isGs1 ? '/gs1' : '/', isGs1 ? verifiable : [verifiable], { params: { challenge: this.$route.query.challenge } });
-
-            const result = isGs1 ? res.data : res.data[0];
+            const result = res.data[0];
 
             console.log(result)
 
-            // verifiable is a presentations
+            // Handle JWT credentials using metadata system
+            if (jwtMetadata && jwtMetadata.isJWTCredential) {
+                // JWT verification - assign result to the credential
+                this.assignResult(verifiable.id, result);
+                
+                // Assign verified status to the verifiable object
+                verifiable.verified = result.verified;
+                return;
+            }
+
+            // Handle presentations
             if (getVerifiableType(verifiable) == VerifiableType.PRESENTATION) {
 
                 // build presentation object with important properties for attaching to the credential
@@ -327,9 +392,12 @@ export default {
                 else this.assignResult(verifiable.verifiableCredential.id, result[0], presentation);
 
             }
+            // Handle regular credentials  
+            else {
+                this.assignResult(verifiable.id, result);
+            }
 
-            else this.assignResult(verifiable.id, result)
-
+            // Safe assignment of verified property
             verifiable.verified = result.verified;
         },
         async verifyAll() {

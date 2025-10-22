@@ -56,8 +56,8 @@ export class VerifyRoutes {
         throw new Error("The domain/audience must be provided as a string!");
 
       let tasks = Promise.all(
-        req.body.map(function (verifialbe: Verifiable) {
-          return Verifier.verify(verifialbe, challenge, domain);
+        req.body.map(function (verifiable: Verifiable | verifiableJwt | string) {
+          return Verifier.verify(verifiable, challenge, domain);
         })
       );
 
@@ -121,9 +121,16 @@ export class VerifyRoutes {
       if (domain && typeof domain != "string")
         throw new Error("The domain/audience must be provided as a string!");
 
-      return res
-        .status(StatusCodes.OK)
-        .json(await GS1Verifier.verify(req?.body, challenge, domain));
+      let tasks = Promise.all(
+        req.body.map(function (verifiable: Verifiable | verifiableJwt | string) {
+          return GS1Verifier.verify(verifiable, challenge, domain);
+        })
+      );
+
+      // wait for all verifiables to be verified
+      const results = await tasks;
+
+      return res.status(StatusCodes.OK).json(results);
     } catch (error) {
       console.error(error);
       return res

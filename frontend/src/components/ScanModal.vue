@@ -35,6 +35,7 @@
 import { QrcodeStream, QrcodeDropZone } from "vue3-qrcode-reader";
 import { useToast } from "vue-toastification";
 import { Modal } from "bootstrap";
+import { isJWT } from "@/utils.js";
 
 export default {
     name: 'ScanModal',
@@ -115,14 +116,20 @@ export default {
                 if (decodedString.length > 0) {
 
                     if (this.scan == 'file') {
-                        const credential = JSON.parse(decodedString);
-                        if (Array.isArray(credential)) {
-                            this.$store.dispatch("addCredentials", credential);
+                        // Check if it's a JWT first
+                        if (isJWT(decodedString)) {
+                            this.$store.dispatch("addVerifiables", [decodedString]);
+                            this.$router.push({ path: '/verify' });
                         } else {
-                            this.$store.dispatch("addCredential", credential);
+                            // Try to parse as JSON
+                            const credential = JSON.parse(decodedString);
+                            if (Array.isArray(credential)) {
+                                this.$store.dispatch("addVerifiables", credential);
+                            } else {
+                                this.$store.dispatch("addVerifiables", [credential]);
+                            }
+                            this.$router.push({ path: '/verify' });
                         }
-
-                        this.$router.push({ path: '/verify' })
 
                     } else if (this.scan == 'credid') {
 

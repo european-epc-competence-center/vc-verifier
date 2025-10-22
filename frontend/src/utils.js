@@ -8,6 +8,78 @@ export const VerifiableType = {
 
 const IPFS_GATEWAYS = ['ipfs.io', 'ipfs.ssi.eecc.de']
 
+export function isJWT(input) {
+  if (typeof input !== 'string') return false;
+  return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(input.trim());
+}
+
+export function decodeJWT(jwt) {
+  if (!isJWT(jwt)) {
+    throw new Error('Invalid JWT format');
+  }
+  
+  try {
+    const parts = jwt.split('.');
+    if (parts.length !== 3) {
+      throw new Error('Invalid JWT format');
+    }
+    
+    const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    
+    return {
+      header,
+      payload
+    };
+  } catch (error) {
+    throw new Error(`Failed to decode JWT: ${error.message}`);
+  }
+}
+
+export function getCredentialFromJWT(jwt) {
+  const decoded = decodeJWT(jwt);
+  return decoded.payload.vc || decoded.payload;
+}
+
+// JWT metadata storage - maps credential ID to JWT metadata
+const jwtMetadataStore = new Map();
+
+export function wrapJWTCredential(jwt) {
+  if (!isJWT(jwt)) {
+    return jwt; // Return as-is if not a JWT
+  }
+  
+  try {
+    const credential = getCredentialFromJWT(jwt);
+    
+    // Valid credentials should always have an id field
+    if (!credential.id) {
+      throw new Error('JWT credential missing required id field');
+    }
+    
+    // Store JWT metadata separately using credential ID as key
+    jwtMetadataStore.set(credential.id, {
+      originalJWT: jwt,
+      isJWTCredential: true
+    });
+    
+    // Return clean credential without metadata pollution
+    return credential;
+  } catch (error) {
+    console.error('Error converting JWT to verifiable:', error);
+    // Re-throw the error - invalid JWTs should not be processed
+    throw error;
+  }
+}
+
+export function getJWTMetadata(credentialId) {
+  return jwtMetadataStore.get(credentialId);
+}
+
+export function clearAllJWTMetadata() {
+  jwtMetadataStore.clear();
+}
+
 export function isURL(url) {
   if (typeof url != 'string') return false
   return url.startsWith('https://')
@@ -109,11 +181,32 @@ const gs1CredentialTypes = [
   'ProductDataCredential',
 ]
 
-const gs1CredentialContext = 'https://ref.gs1.org/gs1/vc/license-context'
+const gs1CredentialContext = [
+  'https://ref.gs1.org/gs1/vc/license-context',
+  'https://ref.gs1.org/gs1/vc/declaration-context'
+]
 
 export function isGs1Credential(credential) {
+  // Handle JWT strings by decoding them first
+  if (typeof credential === 'string' && isJWT(credential)) {
+    try {
+      credential = getCredentialFromJWT(credential);
+    } catch (error) {
+      console.error('Error processing JWT in isGs1Credential:', error);
+      return false;
+    }
+  }
+  
+  if (!credential || !credential['@context'] || !credential.type) {
+    return false;
+  }
+
+  const hasGS1Context = gs1CredentialContext.some(context => 
+    credential['@context'].includes(context)
+  );
+  
   return (
-    credential['@context'].includes(gs1CredentialContext) &&
+    hasGS1Context &&
     credential.type.some((type) => gs1CredentialTypes.includes(type))
   )
 }

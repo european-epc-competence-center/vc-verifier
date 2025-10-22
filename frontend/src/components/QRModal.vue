@@ -7,8 +7,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <qrcode-vue v-if="JSON.stringify(value).length < 2334" :value="JSON.stringify(value)" :margin="1"
-                        :size="300" level="M" class="m-3" :id="'canvas-' + id" />
+                    <qrcode-vue v-if="qrSize > 0" :value="qrValue" :margin="1"
+                        :size="qrSize" level="M" class="m-3" :id="'canvas-' + id" />
                     <h5 v-else class="text-danger">Credential too large for display!</h5>
                 </div>
                 <div class="modal-footer justify-content-center">
@@ -22,6 +22,7 @@
 
 <script>
 import QrcodeVue from 'qrcode.vue'
+import { getJWTMetadata } from '../utils.js'
 
 export default {
     name: 'QRModal',
@@ -31,6 +32,22 @@ export default {
     },
     components: {
         QrcodeVue
+    },
+    computed: {
+        qrValue() {
+            // Check if this is a JWT credential using our metadata system
+            const jwtMetadata = getJWTMetadata(this.value.id);
+            if (jwtMetadata && jwtMetadata.isJWTCredential) {
+                // Use the original JWT for QR code
+                return jwtMetadata.originalJWT;
+            }
+            // Use JSON stringified credential for regular credentials
+            return JSON.stringify(this.value);
+        },
+        qrSize() {
+            // Check size limit for display - JWT tokens are typically longer than JSON
+            return this.qrValue.length < 2334 ? 300 : 0;
+        }
     },
     data() {
         return {

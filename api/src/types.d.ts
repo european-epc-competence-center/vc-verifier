@@ -20,6 +20,12 @@ type Verifiable = {
     proof: Proof | Proof[];
 }
 
+interface verifiableJwt {
+    '@context'?: object | string[];
+    id: string;
+    type?: string[];
+}
+
 type CredentialSubject = {
     id: string | URL;
 }
