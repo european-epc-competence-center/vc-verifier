@@ -4,8 +4,13 @@ VC Verifier Changelog
 WIP
 ---
 
+3.0.0 (2025-10-22)
 
-2.2.0 (2025.09.04)
+- vc-jwt support
+- full integration of gs1 rules library
+
+
+2.2.0 (2025-09-04)
 
 - add VC data model 2.0 support
 - allow gs1 chaining library to access verification erros
