@@ -56,10 +56,34 @@ export const validateExternalCredential: verifyExternalCredential = async (
 ): Promise<gs1RulesResult> => {
   const credVerificationResult = await Verifier.verify(credential, challenge, domain);
 
-  // Currently just mocking the correct return type, but using actual verification result
+  const errors: any[] = [];
+  
+  // Check if JWT signature verification failed
+  const hasSignatureFailure = credVerificationResult.results && 
+    credVerificationResult.results.some(result => !result.verified);
+  
+  if (hasSignatureFailure) {
+    errors.push({
+      code: "VC-100", // Official verification error code
+      rule: "Credential signature verification failed."
+    });
+  }
+  
+  // Add status verification error if status check failed
+  if (credVerificationResult.statusResult && !credVerificationResult.statusResult.verified) {
+    errors.push({
+      code: "VC-110", // Custom code for status verification failures (revocation).
+      rule: "Credential status verification failed (credential may be revoked)."
+    });
+  }
+  
+  // The credential is verified only if both signature and status are valid
+  const isVerified = !hasSignatureFailure && 
+    (!credVerificationResult.statusResult || credVerificationResult.statusResult.verified);
+  
   return {
-    verified: credVerificationResult.verified,
-    errors: [],
+    verified: isVerified,
+    errors,
     credentialId: typeof credential === 'string' ? 'jwt-credential' : (credential as any)?.id || 'unknown',
     credentialName: 'External Credential',
   } as gs1RulesResult;
@@ -109,7 +133,10 @@ export class GS1Verifier {
           verified: false,
           credentialId: 'unknown',
           credentialName: 'unknown',
-          errors: []
+          errors: [{
+            code: "GS1-010", // Official error code for credential resolution errors
+            rule: `Error resolving or processing credential: ${errorMessage}`
+          }]
         } as gs1RulesResult,
         errorMessage
       };
