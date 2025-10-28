@@ -4,6 +4,13 @@ VC Verifier Changelog
 WIP
 ---
 
+3.0.1 (2025-10-28)
+
+- add error codes for failed signature validation and revocation
+- improve gs1RulesResult response we return to the gs1 package -> actual credentialId and type
+- update to latest @eecc/vc-verifier-rules version 2.4.0
+
+
 3.0.0 (2025-10-22)
 
 - vc-jwt support
