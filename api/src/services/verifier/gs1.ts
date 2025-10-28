@@ -18,6 +18,41 @@ import { getJsonSchema, downloadAndCacheSchemas } from "./schemas.js";
 
 await downloadAndCacheSchemas();
 
+// Helper function to extract credential information
+function extractCredentialInfo(credential: VerifiableCredential | verifiableJwt | string) {
+  let credentialPayload: any;
+  
+  // Handle JWT credentials
+  if (typeof credential === 'string' && JWTService.isJWT(credential)) {
+    const decoded = JWTService.decodeJWT(credential);
+    if ('error' in decoded) {
+      return {
+        credentialId: 'jwt-credential-decode-error',
+        credentialName: 'jwt-credential-decode-error'
+      };
+    }
+    credentialPayload = decoded.payload;
+  } else {
+    // Handle JSON-LD credentials
+    credentialPayload = credential as VerifiableCredential;
+  }
+  
+  // Extract ID (use the credentials id field)
+  const credentialId = credentialPayload?.id || 'unknown';
+  
+  // Extract Name (use the most specific type, excluding "VerifiableCredential")
+  let credentialName = 'unknown';
+  if (credentialPayload?.type && Array.isArray(credentialPayload.type)) {
+    // Find the most specific type (not "VerifiableCredential")
+    const specificType = credentialPayload.type.find((t: string) => t !== 'VerifiableCredential');
+    if (specificType) {
+      credentialName = specificType;
+    }
+  }
+  
+  return { credentialId, credentialName };
+}
+
 export async function checkGS1Credential(
   verifiableCredential: VerifiableCredential | verifiableJwt | string,
   challenge?: string,
@@ -86,14 +121,16 @@ export const validateExternalCredential: verifyExternalCredential = async (
     });
   }
   
+  const { credentialId, credentialName } = extractCredentialInfo(credential);
+  
   // Credential is verified only if both signature and status are valid
   const isVerified = isSignatureValid() && isStatusValid();
   
   return {
     verified: isVerified,
     errors,
-    credentialId: typeof credential === 'string' ? 'jwt-credential' : (credential as any)?.id || 'unknown',
-    credentialName: 'External Credential',
+    credentialId,
+    credentialName,
   } as gs1RulesResult;
 };
 
