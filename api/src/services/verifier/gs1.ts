@@ -57,29 +57,37 @@ export const validateExternalCredential: verifyExternalCredential = async (
   const credVerificationResult = await Verifier.verify(credential, challenge, domain);
 
   const errors: any[] = [];
+
+  const isSignatureValid = () => {
+    return !credVerificationResult.results || 
+           credVerificationResult.results.every(result => result.verified);
+  };
   
-  // Check if JWT signature verification failed
-  const hasSignatureFailure = credVerificationResult.results && 
-    credVerificationResult.results.some(result => !result.verified);
+  const isStatusValid = () => {
+    // If no status check is required, consider it valid
+    // If status check exists, it must pass verification
+    return !credVerificationResult.statusResult || 
+           credVerificationResult.statusResult.verified;
+  };
   
-  if (hasSignatureFailure) {
+  // Check signature verification: Add error
+  if (!isSignatureValid()) {
     errors.push({
-      code: "VC-100", // Official verification error code
+      code: "VC-100", // Official verification error code from GS1 package
       rule: "Credential signature verification failed."
     });
   }
   
-  // Add status verification error if status check failed
-  if (credVerificationResult.statusResult && !credVerificationResult.statusResult.verified) {
+  // Check status verification: Add error
+  if (!isStatusValid()) {
     errors.push({
       code: "VC-110", // Custom code for status verification failures (revocation).
-      rule: "Credential status verification failed (credential may be revoked)."
+      rule: "Credential status verification failed (credential is revoked)."
     });
   }
   
-  // The credential is verified only if both signature and status are valid
-  const isVerified = !hasSignatureFailure && 
-    (!credVerificationResult.statusResult || credVerificationResult.statusResult.verified);
+  // Credential is verified only if both signature and status are valid
+  const isVerified = isSignatureValid() && isStatusValid();
   
   return {
     verified: isVerified,
