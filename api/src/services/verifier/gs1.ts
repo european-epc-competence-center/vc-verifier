@@ -18,6 +18,41 @@ import { getJsonSchema, downloadAndCacheSchemas } from "./schemas.js";
 
 await downloadAndCacheSchemas();
 
+// Helper function to extract credential information
+function extractCredentialInfo(credential: VerifiableCredential | verifiableJwt | string) {
+  let credentialPayload: any;
+  
+  // Handle JWT credentials
+  if (typeof credential === 'string' && JWTService.isJWT(credential)) {
+    const decoded = JWTService.decodeJWT(credential);
+    if ('error' in decoded) {
+      return {
+        credentialId: 'jwt-credential-decode-error',
+        credentialName: 'jwt-credential-decode-error'
+      };
+    }
+    credentialPayload = decoded.payload;
+  } else {
+    // Handle JSON-LD credentials
+    credentialPayload = credential as VerifiableCredential;
+  }
+  
+  // Extract ID (use the credentials id field)
+  const credentialId = credentialPayload?.id || 'unknown';
+  
+  // Extract Name (use the most specific type, excluding "VerifiableCredential")
+  let credentialName = 'unknown';
+  if (credentialPayload?.type && Array.isArray(credentialPayload.type)) {
+    // Find the most specific type (not "VerifiableCredential")
+    const specificType = credentialPayload.type.find((t: string) => t !== 'VerifiableCredential');
+    if (specificType) {
+      credentialName = specificType;
+    }
+  }
+  
+  return { credentialId, credentialName };
+}
+
 export async function checkGS1Credential(
   verifiableCredential: VerifiableCredential | verifiableJwt | string,
   challenge?: string,
@@ -56,12 +91,46 @@ export const validateExternalCredential: verifyExternalCredential = async (
 ): Promise<gs1RulesResult> => {
   const credVerificationResult = await Verifier.verify(credential, challenge, domain);
 
-  // Currently just mocking the correct return type, but using actual verification result
+  const errors: any[] = [];
+
+  const isSignatureValid = () => {
+    return !credVerificationResult.results || 
+           credVerificationResult.results.every(result => result.verified);
+  };
+  
+  const isStatusValid = () => {
+    // If no status check is required, consider it valid
+    // If status check exists, it must pass verification
+    return !credVerificationResult.statusResult || 
+           credVerificationResult.statusResult.verified;
+  };
+  
+  // Check signature verification: Add error
+  if (!isSignatureValid()) {
+    errors.push({
+      code: "VC-100", // Official verification error code from GS1 package
+      rule: "Credential signature verification failed."
+    });
+  }
+  
+  // Check status verification: Add error
+  if (!isStatusValid()) {
+    errors.push({
+      code: "VC-110", // Custom code for status verification failures (revocation).
+      rule: "Credential status verification failed (credential is revoked)."
+    });
+  }
+  
+  const { credentialId, credentialName } = extractCredentialInfo(credential);
+  
+  // Credential is verified only if both signature and status are valid
+  const isVerified = isSignatureValid() && isStatusValid();
+  
   return {
-    verified: credVerificationResult.verified,
-    errors: [],
-    credentialId: typeof credential === 'string' ? 'jwt-credential' : (credential as any)?.id || 'unknown',
-    credentialName: 'External Credential',
+    verified: isVerified,
+    errors,
+    credentialId,
+    credentialName,
   } as gs1RulesResult;
 };
 
@@ -109,7 +178,10 @@ export class GS1Verifier {
           verified: false,
           credentialId: 'unknown',
           credentialName: 'unknown',
-          errors: []
+          errors: [{
+            code: "GS1-010", // Official error code for credential resolution errors
+            rule: `Error resolving or processing credential: ${errorMessage}`
+          }]
         } as gs1RulesResult,
         errorMessage
       };
