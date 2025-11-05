@@ -4,6 +4,10 @@ VC Verifier Changelog
 WIP
 ---
 
+3.0.2 (2025-11-05)
+
+- add helath and readiness endpoints
+
 3.0.1 (2025-10-28)
 
 - add error codes for failed signature validation and revocation
