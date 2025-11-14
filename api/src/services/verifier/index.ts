@@ -5,6 +5,8 @@ import { Ed25519Signature2018 } from "@digitalbazaar/ed25519-signature-2018";
 // @ts-ignore
 import { Ed25519Signature2020 } from "@digitalbazaar/ed25519-signature-2020";
 // @ts-ignore
+import { ES256Signature2020 } from "@eecc/es256-signature-2020";
+// @ts-ignore
 import { checkStatus as checkStatus2020 } from "@digitalbazaar/vc-revocation-list";
 // @ts-ignore
 import { checkStatus as checkStatus2021 } from "@digitalbazaar/vc-status-list";
@@ -43,6 +45,7 @@ const CREDENTIAL_TYPES = {
 const PROOF_TYPES = {
   ED25519_2018: 'Ed25519Signature2018',
   ED25519_2020: 'Ed25519Signature2020',
+  ES256_2020: 'JsonWebSignature2020',
   DATA_INTEGRITY: 'DataIntegrityProof'
 } as const;
 
@@ -70,6 +73,9 @@ function getSuite(proof: Proof): unknown {
 
     case PROOF_TYPES.ED25519_2020:
       return new Ed25519Signature2020();
+
+    case PROOF_TYPES.ES256_2020:
+      return new ES256Signature2020();
 
     case PROOF_TYPES.DATA_INTEGRITY:
       return new DataIntegrityProof({
