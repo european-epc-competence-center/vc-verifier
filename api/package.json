@@ -35,7 +35,7 @@
     "@digitalbazaar/vc": "^7.2.0",
     "@digitalbazaar/vc-revocation-list": "^5.0.1",
     "@digitalbazaar/vc-status-list": "^7.1.0",
-    "@eecc/es256-signature-2020": "^1.1.2",
+    "@eecc/es256-signature-2020": "^1.2.0",
     "@eecc/vc-verifier-rules": "^2.4.0",
     "@noble/curves": "^2.0.0",
     "cors": "^2.8.5",
