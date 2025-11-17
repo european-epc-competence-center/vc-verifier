@@ -4,9 +4,15 @@ VC Verifier Changelog
 WIP
 ---
 
+3.1.0 (2025-11-17)
+
+- add ES256 suite for verification
+
+
 3.0.2 (2025-11-05)
 
 - add helath and readiness endpoints
+
 
 3.0.1 (2025-10-28)
 
