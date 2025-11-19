@@ -9,30 +9,20 @@
     "@context": {
       "type": "array",
       "readOnly": true,
-      "allOf": [
-        {
-          "contains": {
-            "const": "https://www.w3.org/ns/credentials/v2"
-          }
-        },
-        {
-          "contains": {
-            "const": "https://ref.gs1.org/gs1/vc/license-context"
-          }
-        },
-        {
-          "contains": {
-            "const": "https://w3id.org/vc/render-method/v1"
-          }
-        }
+      "const": [
+        "https://www.w3.org/ns/credentials/v2",
+        "https://ref.gs1.org/gs1/vc/license-context"
       ],
       "default": [
         "https://www.w3.org/ns/credentials/v2",
-        "https://ref.gs1.org/gs1/vc/license-context",
-        "https://w3id.org/vc/render-method/v1"
+        "https://ref.gs1.org/gs1/vc/license-context"
       ],
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": [
+          "https://www.w3.org/ns/credentials/v2",
+          "https://ref.gs1.org/gs1/vc/license-context"
+        ]
       }
     },
     "type": {
@@ -182,7 +172,7 @@
             "gs1:partyGLN": {
               "title": "13-digit GLN that is being used to identify a legal entity or function. If gs1:glnType is present, gs1:partyGLN SHALL only be used when gs1:GLN_TypeCode includes LEGAL_ENTITY and/or FUNCTION",
               "type": "string",
-             "pattern": "^\\d{13}$"
+              "pattern": "^\\d{13}$"
             },
             "gs1:organizationName": {
               "title": "The name of the organization expressed in text.",
@@ -223,8 +213,7 @@
   "example": {
     "@context": [
       "https://www.w3.org/ns/credentials/v2",
-      "https://ref.gs1.org/gs1/vc/license-context",
-      "https://w3id.org/vc/render-method/v1"
+      "https://ref.gs1.org/gs1/vc/license-context"
     ],
     "id": "did:key:z6Mkp5zGya5YjRVdAk4iu9vGb29Cy67gZ6YwCxMH8scsLRbq",
     "type": [

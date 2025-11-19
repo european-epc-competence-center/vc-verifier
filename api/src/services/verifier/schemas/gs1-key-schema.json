@@ -9,30 +9,20 @@
     "@context": {
       "type": "array",
       "readOnly": true,
-      "allOf": [
-        {
-          "contains": {
-            "const": "https://www.w3.org/ns/credentials/v2"
-          }
-        },
-        {
-          "contains": {
-            "const": "https://ref.gs1.org/gs1/vc/declaration-context"
-          }
-        },
-        {
-          "contains": {
-            "const": "https://w3id.org/vc/render-method/v1"
-          }
-        }
+      "const": [
+        "https://www.w3.org/ns/credentials/v2",
+        "https://ref.gs1.org/gs1/vc/declaration-context"
       ],
       "default": [
         "https://www.w3.org/ns/credentials/v2",
-        "https://ref.gs1.org/gs1/vc/declaration-context",
-        "https://w3id.org/vc/render-method/v1"
+        "https://ref.gs1.org/gs1/vc/declaration-context"
       ],
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": [
+          "https://www.w3.org/ns/credentials/v2",
+          "https://ref.gs1.org/gs1/vc/declaration-context"
+        ]
       }
     },
     "type": {
@@ -199,23 +189,22 @@
   "example": {
     "@context": [
       "https://www.w3.org/ns/credentials/v2",
-      "https://ref.gs1.org/gs1/vc/declaration-context",
-      "https://w3id.org/vc/render-method/v1"
+      "https://ref.gs1.org/gs1/vc/declaration-context"
     ],
-    "id": "did:key:z6MkrSXAsv2UTtNp3eZv8ypKNupbpYEqmBxpqDF994EhxQAk",
+    "issuer": {
+      "id": "did:web:healthytots.net",
+      "name": "Healthy Tots"
+    },
     "type": [
       "VerifiableCredential",
       "KeyCredential"
     ],
-    "issuer": {
-      "id": "did:web:cbpvsvip-vc.gs1us.org",
-      "name": "GS1 US"
-    },
     "name": "GS1 Key Credential",
     "description": "THIS GS1 DIGITAL LICENSE CREDENTIAL IS FOR TESTING PURPOSES ONLY. This is the Verifiable Credential that indicates that something has been identified. It contains no data about what has been identified as that is done via the association process. This credential is used only to indicate that the key that it contains exists and is valid.",
+    "id": "did:key:z6MkjJLbS3eAmBG6AX7AuPgjVeDNdgz34fC7pF5RghwYNutE",
     "validFrom": "2024-01-25T12:30:00.000Z",
     "credentialSubject": {
-      "id": "https://id.gs1.org/417/0810159550000",
+      "id": "https://id.gs1.org/01/00810159550000",
       "extendsCredential": "http://did-vc.gs1us.org/vc/license/081015955"
     },
     "credentialSchema": {
@@ -223,11 +212,11 @@
       "type": "JsonSchema"
     },
     "credentialStatus": {
-      "id": "https://cbpvsvip-vc.dev.gs1us.org/status/2c0a1f02-d545-481b-902a-1e919cd706e2/12920",
+      "id": "https://www.healthytots.net/status/d6800dbc-9573-4522-bf54-dcea2813e661/12320",
       "type": "BitstringStatusListEntry",
       "statusPurpose": "revocation",
-      "statusListIndex": "12920",
-      "statusListCredential": "https://cbpvsvip-vc.dev.gs1us.org/status/2c0a1f02-d545-481b-902a-1e919cd706e2/"
+      "statusListIndex": "12320",
+      "statusListCredential": "https://www.healthytots.net/status/d6800dbc-9573-4522-bf54-dcea2813e661/"
     }
   }
 }
