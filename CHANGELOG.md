@@ -4,6 +4,9 @@ VC Verifier Changelog
 WIP
 ---
 
+- DID documents and Verifiable Credentials use 60-minute TTL cache for data freshness
+- Static resources (contexts, schemas) use permanent cache
+
 3.1.0 (2025-11-17)
 
 - add ES256 suite for verification
