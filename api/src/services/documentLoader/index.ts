@@ -9,6 +9,7 @@ const cache = contexts;
 const uncachedStatusListCredentialTypes = [
   "RevocationList2020Credential",
   "StatusList2021Credential",
+  "BitstringStatusListCredential"
 ];
 
 const documentLoader: (url: string) => Promise<any> =
