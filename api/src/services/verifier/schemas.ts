@@ -41,7 +41,6 @@ export function loadLocalSchemas(): void {
         const schemaContent = readFileSync(schemaPath, 'utf-8');
         const schema = JSON.parse(schemaContent);
         schemaCache.set(schemaUrl, schema);
-        console.log(`Loaded local schema: ${filename} for ${schemaUrl}`);
       }
     } catch (error) {
       console.error(`Failed to load local schema ${filename}:`, error);

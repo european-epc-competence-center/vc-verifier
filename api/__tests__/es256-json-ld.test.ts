@@ -177,7 +177,6 @@ describe("Verifier API Test for JSON-LD Credentials with ES256", () => {
             .post("/api/verifier/gs1")
             .send([gs1PrefixLicenseJsonLD]);
 
-        console.log("Response:", JSON.stringify(res.body, null, 2));
         expect(res.statusCode).toEqual(200);
         expect(res.body).toBeInstanceOf(Array);
         expect(res.body[0].verified).toBe(true);
