@@ -19,22 +19,16 @@
           "contains": {
             "const": "https://ref.gs1.org/gs1/vc/license-context"
           }
-        },
-        {
-          "contains": {
-            "const": "https://w3id.org/vc/render-method/v1"
-          }
         }
       ],
       "default": [
         "https://www.w3.org/ns/credentials/v2",
-        "https://ref.gs1.org/gs1/vc/license-context",
-        "https://w3id.org/vc/render-method/v1"
+        "https://ref.gs1.org/gs1/vc/license-context"
       ],
       "items": {
         "type": "string"
       },
-      "minItems": 3
+      "minItems": 2
     },
     "type": {
       "type": "array",
@@ -224,8 +218,7 @@
   "example": {
     "@context": [
       "https://www.w3.org/ns/credentials/v2",
-      "https://ref.gs1.org/gs1/vc/license-context",
-      "https://w3id.org/vc/render-method/v1"
+      "https://ref.gs1.org/gs1/vc/license-context"
     ],
     "id": "did:key:z6Mkp5zGya5YjRVdAk4iu9vGb29Cy67gZ6YwCxMH8scsLRbq",
     "type": [

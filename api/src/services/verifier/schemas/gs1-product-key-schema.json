@@ -22,14 +22,14 @@
         },
         {
           "contains": {
-            "const": "https://w3id.org/vc/render-method/v1"
+            "const": "https://ref.gs1.org/gs1/vc/license-context"
           }
         }
       ],
       "default": [
         "https://www.w3.org/ns/credentials/v2",
         "https://ref.gs1.org/gs1/vc/declaration-context",
-        "https://w3id.org/vc/render-method/v1"
+        "https://ref.gs1.org/gs1/vc/license-context"
       ],
       "items": {
         "type": "string"
@@ -201,7 +201,7 @@
     "@context": [
       "https://www.w3.org/ns/credentials/v2",
       "https://ref.gs1.org/gs1/vc/declaration-context",
-      "https://w3id.org/vc/render-method/v1"
+      "https://ref.gs1.org/gs1/vc/license-context"
     ],
     "issuer": {
       "id": "did:web:healthytots.net",
