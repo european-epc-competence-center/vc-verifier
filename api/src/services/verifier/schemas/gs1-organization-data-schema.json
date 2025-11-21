@@ -9,21 +9,32 @@
     "@context": {
       "type": "array",
       "readOnly": true,
-      "const": [
-        "https://www.w3.org/ns/credentials/v2",
-        "https://ref.gs1.org/gs1/vc/license-context"
+      "allOf": [
+        {
+          "contains": {
+            "const": "https://www.w3.org/ns/credentials/v2"
+          }
+        },
+        {
+          "contains": {
+            "const": "https://ref.gs1.org/gs1/vc/license-context"
+          }
+        },
+        {
+          "contains": {
+            "const": "https://w3id.org/vc/render-method/v1"
+          }
+        }
       ],
       "default": [
         "https://www.w3.org/ns/credentials/v2",
-        "https://ref.gs1.org/gs1/vc/license-context"
+        "https://ref.gs1.org/gs1/vc/license-context",
+        "https://w3id.org/vc/render-method/v1"
       ],
       "items": {
-        "type": "string",
-        "enum": [
-          "https://www.w3.org/ns/credentials/v2",
-          "https://ref.gs1.org/gs1/vc/license-context"
-        ]
-      }
+        "type": "string"
+      },
+      "minItems": 3
     },
     "type": {
       "type": "array",
@@ -213,7 +224,8 @@
   "example": {
     "@context": [
       "https://www.w3.org/ns/credentials/v2",
-      "https://ref.gs1.org/gs1/vc/license-context"
+      "https://ref.gs1.org/gs1/vc/license-context",
+      "https://w3id.org/vc/render-method/v1"
     ],
     "id": "did:key:z6Mkp5zGya5YjRVdAk4iu9vGb29Cy67gZ6YwCxMH8scsLRbq",
     "type": [

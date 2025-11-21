@@ -9,24 +9,38 @@
     "@context": {
       "type": "array",
       "readOnly": true,
-      "const": [
-        "https://www.w3.org/ns/credentials/v2",
-        "https://ref.gs1.org/gs1/vc/declaration-context",
-        "https://ref.gs1.org/gs1/vc/product-context"
+      "allOf": [
+        {
+          "contains": {
+            "const": "https://www.w3.org/ns/credentials/v2"
+          }
+        },
+        {
+          "contains": {
+            "const": "https://ref.gs1.org/gs1/vc/declaration-context"
+          }
+        },
+        {
+          "contains": {
+            "const": "https://ref.gs1.org/gs1/vc/product-context"
+          }
+        },
+        {
+          "contains": {
+            "const": "https://w3id.org/vc/render-method/v1"
+          }
+        }
       ],
       "default": [
         "https://www.w3.org/ns/credentials/v2",
         "https://ref.gs1.org/gs1/vc/declaration-context",
-        "https://ref.gs1.org/gs1/vc/product-context"
+        "https://ref.gs1.org/gs1/vc/product-context",
+        "https://w3id.org/vc/render-method/v1"
       ],
       "items": {
-        "type": "string",
-        "enum": [
-          "https://www.w3.org/ns/credentials/v2",
-          "https://ref.gs1.org/gs1/vc/declaration-context",
-          "https://ref.gs1.org/gs1/vc/product-context"
-        ]
-      }
+        "type": "string"
+      },
+      "minItems": 4
     },
     "type": {
       "type": "array",
@@ -222,7 +236,8 @@
     "@context": [
       "https://www.w3.org/ns/credentials/v2",
       "https://ref.gs1.org/gs1/vc/declaration-context",
-      "https://ref.gs1.org/gs1/vc/product-context"
+      "https://ref.gs1.org/gs1/vc/product-context",
+      "https://w3id.org/vc/render-method/v1"
     ],
     "type": [
       "VerifiableCredential",
