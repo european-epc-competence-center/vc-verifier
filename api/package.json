@@ -1,6 +1,6 @@
 {
   "name": "vc-verifier",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "The EECC verifier for verifiable credentials which provides an verification API as well as the corresponding UI.",
   "main": "index.js",
   "type": "module",
