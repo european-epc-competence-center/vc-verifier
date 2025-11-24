@@ -1,0 +1,256 @@
+{
+  "$id": "GS1-Organization-Data-Schema",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "title": "OrganizationDataCredential",
+  "description": "The organization data credential is the Verifiable Credential that is shared with parties interested in the basic information associated with an organization identified by a GLN.",
+  "type": "object",
+  "properties": {
+    "@context": {
+      "type": "array",
+      "readOnly": true,
+      "allOf": [
+        {
+          "contains": {
+            "const": "https://www.w3.org/ns/credentials/v2"
+          }
+        },
+        {
+          "contains": {
+            "const": "https://ref.gs1.org/gs1/vc/license-context"
+          }
+        }
+      ],
+      "default": [
+        "https://www.w3.org/ns/credentials/v2",
+        "https://ref.gs1.org/gs1/vc/license-context"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "minItems": 2
+    },
+    "type": {
+      "type": "array",
+      "readOnly": true,
+      "const": [
+        "VerifiableCredential",
+        "OrganizationDataCredential"
+      ],
+      "default": [
+        "VerifiableCredential",
+        "OrganizationDataCredential"
+      ],
+      "items": {
+        "type": "string",
+        "enum": [
+          "VerifiableCredential",
+          "OrganizationDataCredential"
+        ]
+      }
+    },
+    "id": {
+      "type": "string",
+      "format": "uri"
+    },
+    "credentialSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "title": "Credential Schema Identifier",
+          "type": "string",
+          "format": "uri",
+          "const": "https://id.gs1.org/vc/schema/v1/organizationdata"
+        },
+        "type": {
+          "title": "Credential Schema Type",
+          "const": "JsonSchema"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type"
+      ]
+    },
+    "credentialStatus": {
+      "type": "object",
+      "description": "Revocation supported.",
+      "properties": {
+        "id": {
+          "title": "Credential Status",
+          "type": "string",
+          "format": "url",
+          "example": "https://cbpvsvip-vc.dev.gs1us.org/status/2c0a1f02-d545-481b-902a-1e919cd706e2/1121973"
+        },
+        "type": {
+          "type": "string",
+          "const": "BitstringStatusListEntry"
+        },
+        "statusPurpose": {
+          "type": "string",
+          "const": "revocation"
+        },
+        "statusListIndex": {
+          "type": "string",
+          "example": "1121973"
+        },
+        "statusSize": {
+          "type": "number",
+          "example": 2
+        },
+        "statusListCredential": {
+          "type": "string",
+          "format": "url",
+          "example": "https://cbpvsvip-vc.dev.gs1us.org/status/2c0a1f02-d545-481b-902a-1e919cd706e2/"
+        },
+        "statusMessage": {
+          "type": "array",
+          "readOnly": true,
+          "items": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "0x0",
+                  "0x1"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "enum": [
+                  "valid",
+                  "revoked"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "statusPurpose",
+        "statusListIndex",
+        "statusListCredential"
+      ]
+    },
+    "validFrom": {
+      "description": "Date from which the credential is to be considered valid.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "issuer": {
+      "title": "Issuer",
+      "description": "The issuer of the credential",
+      "type": "object",
+      "properties": {
+        "id": {
+          "title": "Issuer Identifier",
+          "type": "string",
+          "format": "uri"
+        },
+        "name": {
+          "title": "Issuer Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "credentialSubject": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "title": "Credential Subject ID can be a valid GS1 Digital Link URI, DID or URI.",
+          "type": "string",
+          "format": "uri"
+        },
+        "organization": {
+          "title": "An Organization is any legal or physical entity involved at any point in any supply chain and upon which there is a need to retrieve predefined information. An Organization is uniquely identified by a Global Location Number (GLN).",
+          "type": "object",
+          "properties": {
+            "gs1:partyGLN": {
+              "title": "13-digit GLN that is being used to identify a legal entity or function. If gs1:glnType is present, gs1:partyGLN SHALL only be used when gs1:GLN_TypeCode includes LEGAL_ENTITY and/or FUNCTION",
+              "type": "string",
+              "pattern": "^\\d{13}$"
+            },
+            "gs1:organizationName": {
+              "title": "The name of the organization expressed in text.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "gs1:partyGLN",
+            "gs1:organizationName"
+          ]
+        },
+        "sameAs": {
+          "title": "If the credential subject ID is not a GS1 Digital Link URI, this specifies the GS1 Digital Link URI.",
+          "type": "string"
+        },
+        "keyAuthorization": {
+          "title": "Reference to a credential that authorizes the issuer to declare data for the credential subject (the key). Normally, this is the key credential itself, in which case the issuer of this and the key credential must be the same. For data that is declared by other parties on behalf of the issuer of the key credential, an authorization credential may be provided instead. In some circumstances, where the issuer of the data declaration is entirely independent, the key authorization may be entirely outside of the GS1 system (e.g., aproof-of-purchase Verifiable Credential for a product review).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "organization",
+        "keyAuthorization"
+      ]
+    }
+  },
+  "required": [
+    "@context",
+    "id",
+    "type",
+    "issuer",
+    "validFrom",
+    "credentialSchema",
+    "credentialStatus",
+    "credentialSubject"
+  ],
+  "example": {
+    "@context": [
+      "https://www.w3.org/ns/credentials/v2",
+      "https://ref.gs1.org/gs1/vc/license-context"
+    ],
+    "id": "did:key:z6Mkp5zGya5YjRVdAk4iu9vGb29Cy67gZ6YwCxMH8scsLRbq",
+    "type": [
+      "VerifiableCredential",
+      "OrganizationDataCredential"
+    ],
+    "issuer": {
+      "id": "did:web:cbpvsvip-vc.gs1us.org",
+      "name": "GS1 Company Prefix License"
+    },
+    "name": "GS1 Party Identification Credential",
+    "description": "THIS GS1 DIGITAL LICENSE CREDENTIAL IS FOR TESTING PURPOSES ONLY. The party data credential is the Verifiable Credential that is shared with parties interested in the basic information associated with a party identified by a GLN.",
+    "validFrom": "2024-01-25T12:30:00.000Z",
+    "credentialSubject": {
+      "id": "did:key:z6Mkh25iRUd3SeMjyvmTyzBVTNsLrpUoc7Eq4PDLpuSPwHgG/1",
+      "sameAs": "https://id.gs1.org/417/0810159550000",
+      "keyAuthorization": "did:key:z6MkrSXAsv2UTtNp3eZv8ypKNupbpYEqmBxpqDF994EhxQAk",
+      "organization": {
+        "gs1:partyGLN": "0810159550000",
+        "gs1:organizationName": "Healthy Tots"
+      }
+    },
+    "credentialSchema": {
+      "id": "https://id.gs1.org/vc/schema/v1/organizationdata",
+      "type": "JsonSchema"
+    },
+    "credentialStatus": {
+      "id": "https://cbpvsvip-vc.dev.gs1us.org/status/2c0a1f02-d545-481b-902a-1e919cd706e2/12921",
+      "type": "BitstringStatusListEntry",
+      "statusPurpose": "revocation",
+      "statusListIndex": "12921",
+      "statusListCredential": "https://cbpvsvip-vc.dev.gs1us.org/status/2c0a1f02-d545-481b-902a-1e919cd706e2/"
+    }
+  }
+}

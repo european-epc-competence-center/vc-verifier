@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsc-watch --onSuccess 'nodemon ./dist/index.js'",
-    "build-tsc": "npx tsc",
+    "copy-schemas": "copyfiles -u 1 \"src/services/verifier/schemas/*.json\" dist",
+    "build-tsc": "npx tsc && npm run copy-schemas",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --verbose --coverage --detectOpenHandles --forceExit"
   },
   "repository": {
@@ -36,7 +37,7 @@
     "@digitalbazaar/vc-revocation-list": "^5.0.1",
     "@digitalbazaar/vc-status-list": "^7.1.0",
     "@eecc/es256-signature-2020": "^1.2.0",
-    "@eecc/vc-verifier-rules": "^2.4.0",
+    "@eecc/vc-verifier-rules": "^2.4.3",
     "@noble/curves": "^2.0.0",
     "cors": "^2.8.5",
     "did-resolver": "^4.1.0",
@@ -60,6 +61,7 @@
     "@types/node": "^17.0.45",
     "@types/parse-link-header": "^2.0.0",
     "@types/supertest": "^2.0.12",
+    "copyfiles": "^2.4.1",
     "jest": "^30.2.0",
     "nodemon": "^2.0.19",
     "supertest": "^6.3.3",
