@@ -5,8 +5,9 @@ import { fetch_jsonld_or_jwt, fetchIPFS } from "../fetch/index.js";
 import { contexts } from "./context/index.js";
 import { TTLCache } from "./ttlCache.js";
 
-// TTL cache for dynamically fetched documents (60 minutes)
-const cache = new TTLCache<any>(60);
+// TTL cache for dynamically fetched documents (configurable via DOCUMENT_CACHE_TTL_HOURS, defaults to 1 hour)
+const cacheTTLHours = process.env.DOCUMENT_CACHE_TTL_HOURS ? Number.parseInt(process.env.DOCUMENT_CACHE_TTL_HOURS) : 1;
+const cache = new TTLCache<any>(cacheTTLHours);
 
 
 const documentLoader: (url: string) => Promise<any> =
@@ -65,21 +66,8 @@ const documentLoader: (url: string) => Promise<any> =
       } else {
         document = await fetch_jsonld_or_jwt(url);
       }
-
       
-      // Check if it's a DID document or Verifiable Credential - use TTL cache
-      const isDidDocument = url.startsWith("did:") || 
-                            (document?.id && document.id.startsWith("did:")) ||
-                            (document?.["@context"] && 
-                            (Array.isArray(document["@context"]) 
-                              ? document["@context"].includes("https://www.w3.org/ns/did/v1")
-                              : document["@context"] === "https://www.w3.org/ns/did/v1"));
-      
-      const isVerifiableCredential = document?.type && 
-                                    Array.isArray(document.type) && 
-                                    document.type.includes("VerifiableCredential");
-      
-      if (isDidDocument || isVerifiableCredential) {
+      if (url.startsWith("did:") || isVerifiableCredential(document)) {
         // Use TTL cache for DID documents and Verifiable Credentials
         cache.set(url, document);
       } else {
@@ -95,5 +83,13 @@ const documentLoader: (url: string) => Promise<any> =
       document: document,
     };
   });
+
+function isVerifiableCredential(document: any): boolean {
+  if (!document) return false;
+  const payload = typeof document === 'string' && document.startsWith('ey') && document.split('.').length === 3 ? JSON.parse(atob(document.split('.')[1])) : document;
+  return payload?.type && 
+         Array.isArray(payload.type) && 
+         payload.type.includes("VerifiableCredential");
+}
 
 export { documentLoader };

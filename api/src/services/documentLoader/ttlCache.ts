@@ -7,8 +7,8 @@ export class TTLCache<T> {
   private cache = new Map<string, CacheEntry<T>>();
   private ttlMs: number;
 
-  constructor(ttlMinutes: number = 60) {
-    this.ttlMs = ttlMinutes * 60 * 1000; // Convert minutes to milliseconds
+  constructor(ttlHours: number = 1) {
+    this.ttlMs = ttlHours * 60 * 60 * 1000; // Convert hours to milliseconds
     
     // Clean up expired entries every 5 minutes
     setInterval(() => {
@@ -55,6 +55,7 @@ export class TTLCache<T> {
   }
 
   private cleanup(): void {
+    console.log("Cleaning up TTL cache");
     const now = Date.now();
     const keysToDelete: string[] = [];
     
@@ -67,5 +68,6 @@ export class TTLCache<T> {
     keysToDelete.forEach(key => {
       this.cache.delete(key);
     });
+    console.log("Keys deleted from TTL cache", keysToDelete);
   }
 }

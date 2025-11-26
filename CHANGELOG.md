@@ -4,6 +4,11 @@ VC Verifier Changelog
 WIP
 ---
 
+3.1.2 (2025-11-26)
+
+- fix ttl cache for jwt
+- make ttl cache configurable
+
 3.1.1 (2025-11-24)
 
 - DID documents and Verifiable Credentials use 60-minute TTL cache for data freshness

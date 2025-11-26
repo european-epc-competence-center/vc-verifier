@@ -16,14 +16,12 @@ export async function fetch_jsonld_or_jwt(url: string): Promise<any> {
     const contentType = response.headers.get("content-type");
 
     // return if proper json-ld is returned
-    if (contentType && contentType.indexOf('application/ld+json') != -1) {
-
+    if (contentType && (contentType.indexOf('application/ld+json') != -1 || contentType.indexOf('application/json') != -1)) {
         return await response.json();
 
     }
 
      if (contentType && contentType.indexOf('application/vc+jwt') != -1) {
-        
         return await response.text();
     
     }
@@ -39,8 +37,12 @@ export async function fetch_jsonld_or_jwt(url: string): Promise<any> {
 
     }
 
-    // try fetching json in any case
-    return await response.json();
+    try {
+        // try fetching json in any case
+        return await response.json();
+    } catch (error) {
+        return await response.text();
+    }
 
 }
 
