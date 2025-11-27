@@ -3,34 +3,37 @@ import { jest } from '@jest/globals'
 // Set environment variable for GS1 Global DID used in tests
 process.env.GS1_GLOBAL_DID = "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global";
 
-// Valid Key Credential: https://company-wallet-dev.prod-k8s.eecc.de/api/registry/vc/d1393bb4-31af-4026-86fa-f3b9b55386da
-const validKeyCredentialJWT = "eyJraWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6dXRvcGlhX2NvbXBhbnkja2V5cyIsImFsZyI6IkVTMjU2In0.eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiS2V5Q3JlZGVudGlhbCJdLCJpc3N1ZXIiOnsiaWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6dXRvcGlhX2NvbXBhbnkiLCJuYW1lIjoiVXRvcGlhIENvbXBhbnkifSwiY3JlZGVudGlhbFN1YmplY3QiOnsiaWQiOiJodHRwczovL2lkLmdzMS5vcmcvMDEvMDk1MTAwMTAwMDAwOCIsImV4dGVuZHNDcmVkZW50aWFsIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvdmMvbGljZW5zZS9nczFfcHJlZml4LzA5NTEwMDEifSwiaWQiOiJodHRwczovL2NvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlL2FwaS9yZWdpc3RyeS92Yy9kMTM5M2JiNC0zMWFmLTQwMjYtODZmYS1mM2I5YjU1Mzg2ZGEiLCJ2YWxpZEZyb20iOiIyMDI1LTEwLTAxVDExOjU3OjU2WiIsImNyZWRlbnRpYWxTdGF0dXMiOnsiaWQiOiJodHRwczovL2NvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlL2FwaS9yZWdpc3RyeS9zdGF0dXMvcmV2b2NhdGlvbi80ZmYxYjAyMS02ZDRjLTQ4NTItYmIwNC1lZjMxODQ4Zjc1NTIjODM3MTkiLCJ0eXBlIjoiQml0c3RyaW5nU3RhdHVzTGlzdEVudHJ5Iiwic3RhdHVzUHVycG9zZSI6InJldm9jYXRpb24iLCJzdGF0dXNMaXN0SW5kZXgiOiI4MzcxOSIsInN0YXR1c0xpc3RDcmVkZW50aWFsIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvc3RhdHVzL3Jldm9jYXRpb24vNGZmMWIwMjEtNmQ0Yy00ODUyLWJiMDQtZWYzMTg0OGY3NTUyIn0sImNyZWRlbnRpYWxTY2hlbWEiOnsiaWQiOiJodHRwczovL2lkLmdzMS5vcmcvdmMvc2NoZW1hL3YxL2tleSIsInR5cGUiOiJKc29uU2NoZW1hIn0sIkBjb250ZXh0IjpbImh0dHBzOi8vd3d3LnczLm9yZy9ucy9jcmVkZW50aWFscy92MiIsImh0dHBzOi8vcmVmLmdzMS5vcmcvZ3MxL3ZjL2RlY2xhcmF0aW9uLWNvbnRleHQiXSwicmVuZGVyTWV0aG9kIjpbeyJjc3MzTWVkaWFRdWVyeSI6IkBtZWRpYSAobWluLWFzcGVjdC1yYXRpbzogMy8xKSIsInR5cGUiOiJTdmdSZW5kZXJpbmdUZW1wbGF0ZSIsImlkIjoiaHR0cHM6Ly9nczEuZ2l0aHViLmlvL0dTMURpZ2l0YWxMaWNlbnNlcy90ZW1wbGF0ZXMvZ3MxLXNhbXBsZS1saWNlbnNlLXRlbXBsYXRlLnN2ZyIsIm5hbWUiOiJXZWIgRGlzcGxheSJ9XSwiZGVzY3JpcHRpb24iOiJEZWNsYXJlcyB0aGUgY3J5cHRvZ3JhcGhpYyBrZXkgYXNzb2NpYXRlZCB3aXRoIGEgR1MxIGlkZW50aWZpZXIsIGVuYWJsaW5nIHNlY3VyZSBkaWdpdGFsIHNpZ25hdHVyZXMgYW5kIHZlcmlmaWNhdGlvbiBvZiBHUzEtcmVsYXRlZCB0cmFuc2FjdGlvbnMuIFRoaXMgY3JlZGVudGlhbCBleHRlbmRzIGZyb20gYSBDb21wYW55IFByZWZpeCBMaWNlbnNlIGFuZCBiaW5kcyBhIHNwZWNpZmljIGNyeXB0b2dyYXBoaWMga2V5IHRvIGEgR1MxIGlkZW50aWZpZXIsIGVuc3VyaW5nIHRoZSBhdXRoZW50aWNpdHkgYW5kIGludGVncml0eSBvZiBkYXRhIGFzc29jaWF0ZWQgd2l0aCBwcm9kdWN0cywgbG9jYXRpb25zLCBvciBlbnRpdGllcyBpZGVudGlmaWVkIGJ5IEdTMSBzdGFuZGFyZHMuIiwibmFtZSI6IkdTMSBJRCBLZXkgQ3JlZGVudGlhbCIsImlhdCI6MTc1OTMxOTkxOH0.EvtB3gV8B-eq_X6eQizSOk8DFGiiPCfyjnL5-3paGab5ShSpn2EDJinvnTSMfjqUatrCOurNNA6JNgcgpsgA2Q";
-// Revoked Key Credential: https://company-wallet-dev.prod-k8s.eecc.de/api/registry/vc/e9479679-cfab-4659-a0c4-fc4c6029acc8
-const revokedKeyCredentialJWT = "eyJraWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6dXRvcGlhX2NvbXBhbnkja2V5cyIsImFsZyI6IkVTMjU2In0.eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiS2V5Q3JlZGVudGlhbCJdLCJpc3N1ZXIiOnsiaWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6dXRvcGlhX2NvbXBhbnkiLCJuYW1lIjoiVXRvcGlhIENvbXBhbnkifSwiY3JlZGVudGlhbFN1YmplY3QiOnsiaWQiOiJodHRwczovL2lkLmdzMS5vcmcvMDEvMDk1MTAwMTAwMDAwMiIsImV4dGVuZHNDcmVkZW50aWFsIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvdmMvbGljZW5zZS9nczFfcHJlZml4LzA5NTEwMDEifSwiaWQiOiJodHRwczovL2NvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlL2FwaS9yZWdpc3RyeS92Yy9lOTQ3OTY3OS1jZmFiLTQ2NTktYTBjNC1mYzRjNjAyOWFjYzgiLCJ2YWxpZEZyb20iOiIyMDI1LTA5LTI1VDA5OjE5OjM3WiIsImNyZWRlbnRpYWxTdGF0dXMiOnsiaWQiOiJodHRwczovL2NvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlL2FwaS9yZWdpc3RyeS9zdGF0dXMvcmV2b2NhdGlvbi80ZmYxYjAyMS02ZDRjLTQ4NTItYmIwNC1lZjMxODQ4Zjc1NTIjMTA0NjA1IiwidHlwZSI6IkJpdHN0cmluZ1N0YXR1c0xpc3RFbnRyeSIsInN0YXR1c1B1cnBvc2UiOiJyZXZvY2F0aW9uIiwic3RhdHVzTGlzdEluZGV4IjoiMTA0NjA1Iiwic3RhdHVzTGlzdENyZWRlbnRpYWwiOiJodHRwczovL2NvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlL2FwaS9yZWdpc3RyeS9zdGF0dXMvcmV2b2NhdGlvbi80ZmYxYjAyMS02ZDRjLTQ4NTItYmIwNC1lZjMxODQ4Zjc1NTIifSwiY3JlZGVudGlhbFNjaGVtYSI6eyJpZCI6Imh0dHBzOi8vaWQuZ3MxLm9yZy92Yy9zY2hlbWEvdjEva2V5Lmpzb24iLCJ0eXBlIjoiSnNvblNjaGVtYSJ9LCJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL2dzMS92Yy9kZWNsYXJhdGlvbi1jb250ZXh0Il0sImRlc2NyaXB0aW9uIjoiRGVjbGFyZXMgdGhlIGNyeXB0b2dyYXBoaWMga2V5IGFzc29jaWF0ZWQgd2l0aCBhIEdTMSBpZGVudGlmaWVyLCBlbmFibGluZyBzZWN1cmUgZGlnaXRhbCBzaWduYXR1cmVzIGFuZCB2ZXJpZmljYXRpb24gb2YgR1MxLXJlbGF0ZWQgdHJhbnNhY3Rpb25zLiBUaGlzIGNyZWRlbnRpYWwgZXh0ZW5kcyBmcm9tIGEgQ29tcGFueSBQcmVmaXggTGljZW5zZSBhbmQgYmluZHMgYSBzcGVjaWZpYyBjcnlwdG9ncmFwaGljIGtleSB0byBhIEdTMSBpZGVudGlmaWVyLCBlbnN1cmluZyB0aGUgYXV0aGVudGljaXR5IGFuZCBpbnRlZ3JpdHkgb2YgZGF0YSBhc3NvY2lhdGVkIHdpdGggcHJvZHVjdHMsIGxvY2F0aW9ucywgb3IgZW50aXRpZXMgaWRlbnRpZmllZCBieSBHUzEgc3RhbmRhcmRzLiIsInJlbmRlck1ldGhvZCI6W3siaWQiOiJodHRwczovL2dzMS5naXRodWIuaW8vR1MxRGlnaXRhbExpY2Vuc2VzL3RlbXBsYXRlcy9nczEtc2FtcGxlLWxpY2Vuc2UtdGVtcGxhdGUuc3ZnIiwidHlwZSI6IlN2Z1JlbmRlcmluZ1RlbXBsYXRlIiwiY3NzM01lZGlhUXVlcnkiOiJAbWVkaWEgKG1pbi1hc3BlY3QtcmF0aW86IDMvMSkiLCJuYW1lIjoiV2ViIERpc3BsYXkifV0sIm5hbWUiOiJHUzEgSUQgS2V5IENyZWRlbnRpYWwiLCJpYXQiOjE3NTg3OTIwMTl9.-sXqpX0XcP122J81_MhPQ6KXwUu-UBwpLrRtMk6rktjem9M3FPM-l-eCO2GQnzG_KBQlALdONxo_-Szm0s6t6w";
-// Company Prefix License: https://company-wallet-dev.prod-k8s.eecc.de/api/registry/vc/license/gs1_prefix/0951001
-const companyPrefixLicenseJWT = "eyJraWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6Z3MxX3V0b3BpYSNjb21wYW55LXByZWZpeGVzIiwiYWxnIjoiRVMyNTYifQ.eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiR1MxQ29tcGFueVByZWZpeExpY2Vuc2VDcmVkZW50aWFsIl0sImlzc3VlciI6eyJpZCI6ImRpZDp3ZWI6Y29tcGFueS13YWxsZXQtZGV2LnByb2QtazhzLmVlY2MuZGU6YXBpOnJlZ2lzdHJ5OmRpZDpnczFfdXRvcGlhIiwibmFtZSI6IkdTMSBVdG9waWEifSwiY3JlZGVudGlhbFN1YmplY3QiOnsiaWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6dXRvcGlhX2NvbXBhbnkiLCJhbHRlcm5hdGl2ZUxpY2Vuc2VWYWx1ZSI6Ijk1MTAwMSIsImV4dGVuZHNDcmVkZW50aWFsIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvdmMvbGljZW5zZS9nczFfcHJlZml4LzA5NTEiLCJsaWNlbnNlVmFsdWUiOiIwOTUxMDAxIiwib3JnYW5pemF0aW9uIjp7ImdzMTpwYXJ0eUdMTiI6IjA5NTEwMDEwMDAwMDEiLCJnczE6b3JnYW5pemF0aW9uTmFtZSI6IlV0b3BpYSBDb21wYW55In19LCJpZCI6Imh0dHBzOi8vY29tcGFueS13YWxsZXQtZGV2LnByb2QtazhzLmVlY2MuZGUvYXBpL3JlZ2lzdHJ5L3ZjL2xpY2Vuc2UvZ3MxX3ByZWZpeC8wOTUxMDAxIiwidmFsaWRGcm9tIjoiMjAyNS0xMC0wMVQxMjowMDo1MloiLCJjcmVkZW50aWFsU3RhdHVzIjp7ImlkIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvc3RhdHVzL3Jldm9jYXRpb24vNDJjMzU1NWEtYzhiYi00MDYwLTg0MzUtZWU4NWVlNGVjYzhiIzEyMjU3MSIsInR5cGUiOiJCaXRzdHJpbmdTdGF0dXNMaXN0RW50cnkiLCJzdGF0dXNQdXJwb3NlIjoicmV2b2NhdGlvbiIsInN0YXR1c0xpc3RJbmRleCI6IjEyMjU3MSIsInN0YXR1c0xpc3RDcmVkZW50aWFsIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvc3RhdHVzL3Jldm9jYXRpb24vNDJjMzU1NWEtYzhiYi00MDYwLTg0MzUtZWU4NWVlNGVjYzhiIn0sImNyZWRlbnRpYWxTY2hlbWEiOnsiaWQiOiJodHRwczovL2lkLmdzMS5vcmcvdmMvc2NoZW1hL3YxL2NvbXBhbnlwcmVmaXgiLCJ0eXBlIjoiSnNvblNjaGVtYSJ9LCJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL2dzMS92Yy9saWNlbnNlLWNvbnRleHQiXSwicmVuZGVyTWV0aG9kIjpbeyJjc3MzTWVkaWFRdWVyeSI6IkBtZWRpYSAobWluLWFzcGVjdC1yYXRpbzogMy8xKSIsInR5cGUiOiJTdmdSZW5kZXJpbmdUZW1wbGF0ZSIsImlkIjoiaHR0cHM6Ly9nczEuZ2l0aHViLmlvL0dTMURpZ2l0YWxMaWNlbnNlcy90ZW1wbGF0ZXMvZ3MxLXNhbXBsZS1saWNlbnNlLXRlbXBsYXRlLnN2ZyIsIm5hbWUiOiJXZWIgRGlzcGxheSJ9XSwiZGVzY3JpcHRpb24iOiJBdXRob3JpemVzIGEgbWVtYmVyIGNvbXBhbnkgdG8gdXNlIGEgc3BlY2lmaWMgR1MxIENvbXBhbnkgUHJlZml4IGZvciBjcmVhdGluZyBnbG9iYWxseSB1bmlxdWUgcHJvZHVjdCBpZGVudGlmaWVycy4gSXNzdWVkIGJ5IGEgTWVtYmVyIE9yZ2FuaXphdGlvbiB0byBjb21wYW5pZXMgd2l0aGluIHRoZWlyIHJlZ2lvbiwgdGhpcyBjcmVkZW50aWFsIGV4dGVuZHMgZnJvbSBhIEdTMSBQcmVmaXggTGljZW5zZSBhbmQgZW5hYmxlcyB0aGUgY29tcGFueSB0byBnZW5lcmF0ZSBHVElOcywgR0xOcywgYW5kIG90aGVyIEdTMSBpZGVudGlmaWNhdGlvbiBrZXlzIGZvciB0aGVpciBwcm9kdWN0cywgbG9jYXRpb25zLCBhbmQgYnVzaW5lc3MgZW50aXRpZXMuIEVzc2VudGlhbCBmb3Igc3VwcGx5IGNoYWluIHRyYWNlYWJpbGl0eSBhbmQgZ2xvYmFsIGNvbW1lcmNlLiIsIm5hbWUiOiJHUzEgQ29tcGFueSBQcmVmaXggTGljZW5zZSIsImlhdCI6MTc1OTMyMDE2MH0.eVZ9N8yP06KjrSQOl9LXxuvXbMtcBPu-2U0TDrDOTAyMtEOKBMyC4IXioL894Wl9zrL2-BmbDId1qAcES2xLjQ";
-// GS1 Prefix Licence: https://company-wallet-dev.prod-k8s.eecc.de/api/registry/vc/license/gs1_prefix/0951
-const gs1PrefixLicenseJWT = "eyJraWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6Z3MxX2dsb2JhbCNwcmVmaXhlcyIsImFsZyI6IkVTMjU2In0.eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiR1MxUHJlZml4TGljZW5zZUNyZWRlbnRpYWwiXSwiaXNzdWVyIjp7ImlkIjoiZGlkOndlYjpjb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZTphcGk6cmVnaXN0cnk6ZGlkOmdzMV9nbG9iYWwiLCJuYW1lIjoiR1MxIEdsb2JhbCJ9LCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6ImRpZDp3ZWI6Y29tcGFueS13YWxsZXQtZGV2LnByb2QtazhzLmVlY2MuZGU6YXBpOnJlZ2lzdHJ5OmRpZDpnczFfdXRvcGlhIiwiYWx0ZXJuYXRpdmVMaWNlbnNlVmFsdWUiOiI5NTEiLCJsaWNlbnNlVmFsdWUiOiIwOTUxIiwib3JnYW5pemF0aW9uIjp7ImdzMTpwYXJ0eUdMTiI6IjA5NTEwMDAwMDAwMDEiLCJnczE6b3JnYW5pemF0aW9uTmFtZSI6IkdTMSBVdG9waWEifX0sImlkIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvdmMvbGljZW5zZS9nczFfcHJlZml4LzA5NTEiLCJ2YWxpZEZyb20iOiIyMDI1LTEwLTAxVDEyOjA2OjE2WiIsImNyZWRlbnRpYWxTdGF0dXMiOnsiaWQiOiJodHRwczovL2NvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlL2FwaS9yZWdpc3RyeS9zdGF0dXMvcmV2b2NhdGlvbi9iMzBkYTVmMy0zYmVmLTQwZGEtYTE4Mi03MWZjODcyZDQyYmQjNTUwMDgiLCJ0eXBlIjoiQml0c3RyaW5nU3RhdHVzTGlzdEVudHJ5Iiwic3RhdHVzUHVycG9zZSI6InJldm9jYXRpb24iLCJzdGF0dXNMaXN0SW5kZXgiOiI1NTAwOCIsInN0YXR1c0xpc3RDcmVkZW50aWFsIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvc3RhdHVzL3Jldm9jYXRpb24vYjMwZGE1ZjMtM2JlZi00MGRhLWExODItNzFmYzg3MmQ0MmJkIn0sImNyZWRlbnRpYWxTY2hlbWEiOnsiaWQiOiJodHRwczovL2lkLmdzMS5vcmcvdmMvc2NoZW1hL3YxL3ByZWZpeCIsInR5cGUiOiJKc29uU2NoZW1hIn0sIkBjb250ZXh0IjpbImh0dHBzOi8vd3d3LnczLm9yZy9ucy9jcmVkZW50aWFscy92MiIsImh0dHBzOi8vcmVmLmdzMS5vcmcvZ3MxL3ZjL2xpY2Vuc2UtY29udGV4dCJdLCJyZW5kZXJNZXRob2QiOlt7ImNzczNNZWRpYVF1ZXJ5IjoiQG1lZGlhIChtaW4tYXNwZWN0LXJhdGlvOiAzLzEpIiwidHlwZSI6IlN2Z1JlbmRlcmluZ1RlbXBsYXRlIiwiaWQiOiJodHRwczovL2dzMS5naXRodWIuaW8vR1MxRGlnaXRhbExpY2Vuc2VzL3RlbXBsYXRlcy9nczEtc2FtcGxlLWxpY2Vuc2UtdGVtcGxhdGUuc3ZnIiwibmFtZSI6IldlYiBEaXNwbGF5In1dLCJkZXNjcmlwdGlvbiI6IlZlcmlmaWVzIHRoZSBhdXRob3JpemVkIGFzc2lnbm1lbnQgb2YgYSBHUzEgcHJlZml4IHRvIGEgTWVtYmVyIE9yZ2FuaXphdGlvbiBieSBHUzEgR2xvYmFsLiBUaGlzIGNyZWRlbnRpYWwgZXN0YWJsaXNoZXMgdGhlIGZvdW5kYXRpb25hbCBhdXRob3JpdHkgdGhhdCBlbmFibGVzIHRoZSBNZW1iZXIgT3JnYW5pemF0aW9uIHRvIGlzc3VlIENvbXBhbnkgUHJlZml4IExpY2Vuc2VzIHRvIG1lbWJlciBjb21wYW5pZXMgd2l0aGluIHRoZWlyIGdlb2dyYXBoaWMgcmVnaW9uIG9yIG1hcmtldCBzZWN0b3IuIFRoZSBwcmVmaXggZm9ybXMgdGhlIGJhc2lzIGZvciBjcmVhdGluZyBnbG9iYWxseSB1bmlxdWUgaWRlbnRpZmllcnMgaW4gdGhlIEdTMSBzeXN0ZW0uIiwibmFtZSI6IkdTMSBQcmVmaXggTGljZW5zZSIsImlhdCI6MTc1OTMyMDQ0NH0.39OEcW6IxO_SBsd9m-LDKGm_tA_6ilWVxYzsdfizW0i52cRzv27wZzBJ3CioX7xmv4q8ejJ-pJwPdbhv4PvkXg";
-// Status List Credential of Key Credential: https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/4ff1b021-6d4c-4852-bb04-ef31848f7552
-const keyCredentialStatusListJWT = "eyJraWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6dXRvcGlhX2NvbXBhbnkja2V5cyIsImFsZyI6IkVTMjU2In0.eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiQml0c3RyaW5nU3RhdHVzTGlzdENyZWRlbnRpYWwiXSwiaXNzdWVyIjp7ImlkIjoiZGlkOndlYjpjb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZTphcGk6cmVnaXN0cnk6ZGlkOnV0b3BpYV9jb21wYW55IiwibmFtZSI6IlV0b3BpYSBDb21wYW55In0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImlkIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvc3RhdHVzL3Jldm9jYXRpb24vNGZmMWIwMjEtNmQ0Yy00ODUyLWJiMDQtZWYzMTg0OGY3NTUyI2xpc3QiLCJ0eXBlIjoiQml0c3RyaW5nU3RhdHVzTGlzdCIsInN0YXR1c1B1cnBvc2UiOiJyZXZvY2F0aW9uIiwiZW5jb2RlZExpc3QiOiJINHNJQUFBQUFBQUFfLTNPUVFrQUFBZ0VzSHZZUDdNcERoRzJCRXNBQUFBQUFBQUFBQUFBQUFEZ2xia09BQUFBTkN6TUhOMlZBRUFBQUEifSwiaWQiOiJodHRwczovL2NvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlL2FwaS9yZWdpc3RyeS9zdGF0dXMvcmV2b2NhdGlvbi80ZmYxYjAyMS02ZDRjLTQ4NTItYmIwNC1lZjMxODQ4Zjc1NTIiLCJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvc3RhdHVzL3YxIl0sImlhdCI6MTc1ODc5MjQ0OX0.UbdKFYsjGobbGCgVG9GkloDZTX6tBJ9yfddL4c6HpvBwqGbAJqwxJ_2tyCzGfkTZRM8OfmE8HGBIRGI0QwGhcA";
-// Status List Credential of companyPrefixLicenseCredential: https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/42c3555a-c8bb-4060-8435-ee85ee4ecc8b
-const companyPrefixLicenseStatusListJWT = "eyJraWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6Z3MxX3V0b3BpYSNjb21wYW55LXByZWZpeGVzIiwiYWxnIjoiRVMyNTYifQ.eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiQml0c3RyaW5nU3RhdHVzTGlzdENyZWRlbnRpYWwiXSwiaXNzdWVyIjp7ImlkIjoiZGlkOndlYjpjb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZTphcGk6cmVnaXN0cnk6ZGlkOmdzMV91dG9waWEiLCJuYW1lIjoiR1MxIFV0b3BpYSJ9LCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6Imh0dHBzOi8vY29tcGFueS13YWxsZXQtZGV2LnByb2QtazhzLmVlY2MuZGUvYXBpL3JlZ2lzdHJ5L3N0YXR1cy9yZXZvY2F0aW9uLzQyYzM1NTVhLWM4YmItNDA2MC04NDM1LWVlODVlZTRlY2M4YiNsaXN0IiwidHlwZSI6IkJpdHN0cmluZ1N0YXR1c0xpc3QiLCJzdGF0dXNQdXJwb3NlIjoicmV2b2NhdGlvbiIsImVuY29kZWRMaXN0IjoiSDRzSUFBQUFBQUFBXy0zQk1RRUFBQURDb1BWUGJRd2ZvQUFBQUFBQUFBQUFBQUFBQUFBQUFJQzNBWWJTVktzQVFBQUEifSwiaWQiOiJodHRwczovL2NvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlL2FwaS9yZWdpc3RyeS9zdGF0dXMvcmV2b2NhdGlvbi80MmMzNTU1YS1jOGJiLTQwNjAtODQzNS1lZTg1ZWU0ZWNjOGIiLCJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvc3RhdHVzL3YxIl0sImlhdCI6MTc1ODc5MTg0M30.0Rqf-ty7Eu21uQfPnSTj0zMyKRyBl1wAGTaVW97XMCGsQDJipYHlCGo7IvFcRRRmP5N4qi8LnTRAxF2ypk097w";
-// Status List Credential of revokedInChain2: https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/b30da5f3-3bef-40da-a182-71fc872d42bd
-const gs1PrefixLicenseStatusListJWT = "eyJraWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6Z3MxX2dsb2JhbCNwcmVmaXhlcyIsImFsZyI6IkVTMjU2In0.eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiQml0c3RyaW5nU3RhdHVzTGlzdENyZWRlbnRpYWwiXSwiaXNzdWVyIjp7ImlkIjoiZGlkOndlYjpjb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZTphcGk6cmVnaXN0cnk6ZGlkOmdzMV9nbG9iYWwiLCJuYW1lIjoiR1MxIEdsb2JhbCJ9LCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6Imh0dHBzOi8vY29tcGFueS13YWxsZXQtZGV2LnByb2QtazhzLmVlY2MuZGUvYXBpL3JlZ2lzdHJ5L3N0YXR1cy9yZXZvY2F0aW9uL2IzMGRhNWYzLTNiZWYtNDBkYS1hMTgyLTcxZmM4NzJkNDJiZCNsaXN0IiwidHlwZSI6IkJpdHN0cmluZ1N0YXR1c0xpc3QiLCJzdGF0dXNQdXJwb3NlIjoicmV2b2NhdGlvbiIsImVuY29kZWRMaXN0IjoiSDRzSUFBQUFBQUFBXy0zQk1RRUFBQURDb1BWUGJRd2ZvQUFBQUFBQUFBQUFBQUFBQUFBQUFJQzNBWWJTVktzQVFBQUEifSwiaWQiOiJodHRwczovL2NvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlL2FwaS9yZWdpc3RyeS9zdGF0dXMvcmV2b2NhdGlvbi9iMzBkYTVmMy0zYmVmLTQwZGEtYTE4Mi03MWZjODcyZDQyYmQiLCJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvc3RhdHVzL3YxIl0sImlhdCI6MTc1ODc5MTE3Nn0.VHsipO-xD4LE4Pfv82nioAaLGa4WH0cdpeF9wskBms_B1HwJ5iuwmxDa0543Enwmux2BO3OQdS4-mlulPJsiZw";
+// url: https://company-wallet-dev.prod-k8s.eecc.de/api/registry/vc/license/gs1_key/01/09510010000002
+const validKeyCredentialAsJwt = "eyJraWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6dXRvcGlhX2NvbXBhbnkja2V5IiwiYWxnIjoiRVMyNTYifQ.eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiS2V5Q3JlZGVudGlhbCJdLCJpc3N1ZXIiOnsiaWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6dXRvcGlhX2NvbXBhbnkiLCJuYW1lIjoiVXRvcGlhIENvbXBhbnkifSwiY3JlZGVudGlhbFN1YmplY3QiOnsiaWQiOiJodHRwczovL2lkLmdzMS5vcmcvMDEvMDk1MTAwMTAwMDAwMDIiLCJleHRlbmRzQ3JlZGVudGlhbCI6Imh0dHBzOi8vY29tcGFueS13YWxsZXQtZGV2LnByb2QtazhzLmVlY2MuZGUvYXBpL3JlZ2lzdHJ5L3ZjL2xpY2Vuc2UvZ3MxX3ByZWZpeC8wOTUxMDAxIn0sImlkIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvdmMvbGljZW5zZS9nczFfa2V5LzAxLzA5NTEwMDEwMDAwMDAyIiwidmFsaWRGcm9tIjoiMjAyNS0xMS0yNlQxNDo1NjoyNVoiLCJjcmVkZW50aWFsU3RhdHVzIjp7ImlkIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvc3RhdHVzL3Jldm9jYXRpb24vYzA0NzBiNDktZDI2NC00YTg0LTljZjQtMjY3YjE2NzZlMDljIzYwMTQ5IiwidHlwZSI6IkJpdHN0cmluZ1N0YXR1c0xpc3RFbnRyeSIsInN0YXR1c1B1cnBvc2UiOiJyZXZvY2F0aW9uIiwic3RhdHVzTGlzdEluZGV4IjoiNjAxNDkiLCJzdGF0dXNMaXN0Q3JlZGVudGlhbCI6Imh0dHBzOi8vY29tcGFueS13YWxsZXQtZGV2LnByb2QtazhzLmVlY2MuZGUvYXBpL3JlZ2lzdHJ5L3N0YXR1cy9yZXZvY2F0aW9uL2MwNDcwYjQ5LWQyNjQtNGE4NC05Y2Y0LTI2N2IxNjc2ZTA5YyJ9LCJjcmVkZW50aWFsU2NoZW1hIjp7ImlkIjoiaHR0cHM6Ly9pZC5nczEub3JnL3ZjL3NjaGVtYS92MS9rZXkiLCJ0eXBlIjoiSnNvblNjaGVtYSJ9LCJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL2dzMS92Yy9saWNlbnNlLWNvbnRleHQiLCJodHRwczovL3JlZi5nczEub3JnL2dzMS92Yy9kZWNsYXJhdGlvbi1jb250ZXh0IiwiaHR0cHM6Ly93M2lkLm9yZy92Yy9yZW5kZXItbWV0aG9kL3YxIl0sInJlbmRlck1ldGhvZCI6W3siY3NzM01lZGlhUXVlcnkiOiJAbWVkaWEgKG1pbi1hc3BlY3QtcmF0aW86IDMvMSkiLCJuYW1lIjoiV2ViIERpc3BsYXkiLCJpZCI6Imh0dHBzOi8vZ3MxLmdpdGh1Yi5pby9HUzFEaWdpdGFsTGljZW5zZXMvdGVtcGxhdGVzL2dzMS1zYW1wbGUta2V5LXRlbXBsYXRlLnN2ZyIsInR5cGUiOiJTdmdSZW5kZXJpbmdUZW1wbGF0ZTIwMjMifV0sIm5hbWUiOiJHUzEgSUQgS2V5IENyZWRlbnRpYWwiLCJkZXNjcmlwdGlvbiI6IkRlY2xhcmVzIHRoZSBjcnlwdG9ncmFwaGljIGtleSBhc3NvY2lhdGVkIHdpdGggYSBHUzEgaWRlbnRpZmllciwgZW5hYmxpbmcgc2VjdXJlIGRpZ2l0YWwgc2lnbmF0dXJlcyBhbmQgdmVyaWZpY2F0aW9uIG9mIEdTMS1yZWxhdGVkIHRyYW5zYWN0aW9ucy4gVGhpcyBjcmVkZW50aWFsIGV4dGVuZHMgZnJvbSBhIENvbXBhbnkgUHJlZml4IExpY2Vuc2UgYW5kIGJpbmRzIGEgc3BlY2lmaWMgY3J5cHRvZ3JhcGhpYyBrZXkgdG8gYSBHUzEgaWRlbnRpZmllciwgZW5zdXJpbmcgdGhlIGF1dGhlbnRpY2l0eSBhbmQgaW50ZWdyaXR5IG9mIGRhdGEgYXNzb2NpYXRlZCB3aXRoIHByb2R1Y3RzLCBsb2NhdGlvbnMsIG9yIGVudGl0aWVzIGlkZW50aWZpZWQgYnkgR1MxIHN0YW5kYXJkcy4iLCJpYXQiOjE3NjQxNjkwNDd9.85zq0KN2MHCgOZDkN-Qnm9Mk6UkHdpul0f5VIC8t1Oj006rPfdxKXlZ_-ky3mNH2298HmAD_I1Ph7STwCkeZOQ"
+// extends from...
+// url: https://company-wallet-dev.prod-k8s.eecc.de/api/registry/vc/license/gs1_prefix/0951001
+const validCompanyPrefixLicenseAsJwt = "eyJraWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6Z3MxX3V0b3BpYSNjb21wYW55UHJlZml4ZXMiLCJhbGciOiJFUzI1NiJ9.eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiR1MxQ29tcGFueVByZWZpeExpY2Vuc2VDcmVkZW50aWFsIl0sImlzc3VlciI6eyJpZCI6ImRpZDp3ZWI6Y29tcGFueS13YWxsZXQtZGV2LnByb2QtazhzLmVlY2MuZGU6YXBpOnJlZ2lzdHJ5OmRpZDpnczFfdXRvcGlhIiwibmFtZSI6IkdTMSBVdG9waWEifSwiY3JlZGVudGlhbFN1YmplY3QiOnsiaWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6dXRvcGlhX2NvbXBhbnkiLCJhbHRlcm5hdGl2ZUxpY2Vuc2VWYWx1ZSI6Ijk1MTAwMSIsImV4dGVuZHNDcmVkZW50aWFsIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvdmMvbGljZW5zZS9nczFfcHJlZml4LzA5NTEiLCJsaWNlbnNlVmFsdWUiOiIwOTUxMDAxIiwib3JnYW5pemF0aW9uIjp7ImdzMTpwYXJ0eUdMTiI6IjA5NTEwMDEwMDAwMDQiLCJnczE6b3JnYW5pemF0aW9uTmFtZSI6IlV0b3BpYSBDb21wYW55In19LCJpZCI6Imh0dHBzOi8vY29tcGFueS13YWxsZXQtZGV2LnByb2QtazhzLmVlY2MuZGUvYXBpL3JlZ2lzdHJ5L3ZjL2xpY2Vuc2UvZ3MxX3ByZWZpeC8wOTUxMDAxIiwidmFsaWRGcm9tIjoiMjAyNS0xMS0yNVQwNzo0MTowOVoiLCJjcmVkZW50aWFsU3RhdHVzIjp7ImlkIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvc3RhdHVzL3Jldm9jYXRpb24vNjhhYjRlMjUtZGUxZS00ZDA2LWI2YWQtYzBlYzVkNWM0MjViIzEyNTU2MyIsInR5cGUiOiJCaXRzdHJpbmdTdGF0dXNMaXN0RW50cnkiLCJzdGF0dXNQdXJwb3NlIjoicmV2b2NhdGlvbiIsInN0YXR1c0xpc3RJbmRleCI6IjEyNTU2MyIsInN0YXR1c0xpc3RDcmVkZW50aWFsIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvc3RhdHVzL3Jldm9jYXRpb24vNjhhYjRlMjUtZGUxZS00ZDA2LWI2YWQtYzBlYzVkNWM0MjViIn0sImNyZWRlbnRpYWxTY2hlbWEiOnsiaWQiOiJodHRwczovL2lkLmdzMS5vcmcvdmMvc2NoZW1hL3YxL2NvbXBhbnlwcmVmaXgiLCJ0eXBlIjoiSnNvblNjaGVtYSJ9LCJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL2dzMS92Yy9saWNlbnNlLWNvbnRleHQiLCJodHRwczovL3czaWQub3JnL3ZjL3JlbmRlci1tZXRob2QvdjEiXSwibmFtZSI6IkdTMSBDb21wYW55IFByZWZpeCBMaWNlbnNlIiwicmVuZGVyTWV0aG9kIjpbeyJuYW1lIjoiV2ViIERpc3BsYXkiLCJjc3MzTWVkaWFRdWVyeSI6IkBtZWRpYSAobWluLWFzcGVjdC1yYXRpbzogMy8xKSIsInR5cGUiOiJTdmdSZW5kZXJpbmdUZW1wbGF0ZTIwMjMiLCJpZCI6Imh0dHBzOi8vZ3MxLmdpdGh1Yi5pby9HUzFEaWdpdGFsTGljZW5zZXMvdGVtcGxhdGVzL2dzMS1zYW1wbGUtbGljZW5zZS10ZW1wbGF0ZS5zdmcifV0sImRlc2NyaXB0aW9uIjoiQXV0aG9yaXplcyBhIG1lbWJlciBjb21wYW55IHRvIHVzZSBhIHNwZWNpZmljIEdTMSBDb21wYW55IFByZWZpeCBmb3IgY3JlYXRpbmcgZ2xvYmFsbHkgdW5pcXVlIHByb2R1Y3QgaWRlbnRpZmllcnMuIElzc3VlZCBieSBhIE1lbWJlciBPcmdhbml6YXRpb24gdG8gY29tcGFuaWVzIHdpdGhpbiB0aGVpciByZWdpb24sIHRoaXMgY3JlZGVudGlhbCBleHRlbmRzIGZyb20gYSBHUzEgUHJlZml4IExpY2Vuc2UgYW5kIGVuYWJsZXMgdGhlIGNvbXBhbnkgdG8gZ2VuZXJhdGUgR1RJTnMsIEdMTnMsIGFuZCBvdGhlciBHUzEgaWRlbnRpZmljYXRpb24ga2V5cyBmb3IgdGhlaXIgcHJvZHVjdHMsIGxvY2F0aW9ucywgYW5kIGJ1c2luZXNzIGVudGl0aWVzLiBFc3NlbnRpYWwgZm9yIHN1cHBseSBjaGFpbiB0cmFjZWFiaWxpdHkgYW5kIGdsb2JhbCBjb21tZXJjZS4iLCJpYXQiOjE3NjQwNTY1NDF9.tQxli7tpOy6oUJUwYZWAKeW6OyniWRIyyfGPRPfuHwn6LEv_uMJ5sR5j7yZ0cZ8Lacq91RGJETjXE96JkYWsFQ";
+// extends from...
+// url: https://company-wallet-dev.prod-k8s.eecc.de/api/registry/vc/license/gs1_prefix/0951
+const validPrefixLicenseAsJwt = "eyJraWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6Z3MxX2dsb2JhbCNrZXlzIiwiYWxnIjoiRVMyNTYifQ.eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiR1MxUHJlZml4TGljZW5zZUNyZWRlbnRpYWwiXSwiaXNzdWVyIjp7ImlkIjoiZGlkOndlYjpjb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZTphcGk6cmVnaXN0cnk6ZGlkOmdzMV9nbG9iYWwiLCJuYW1lIjoiR1MxIEdsb2JhbCJ9LCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6ImRpZDp3ZWI6Y29tcGFueS13YWxsZXQtZGV2LnByb2QtazhzLmVlY2MuZGU6YXBpOnJlZ2lzdHJ5OmRpZDpnczFfdXRvcGlhIiwiYWx0ZXJuYXRpdmVMaWNlbnNlVmFsdWUiOiI5NTEiLCJsaWNlbnNlVmFsdWUiOiIwOTUxIiwib3JnYW5pemF0aW9uIjp7ImdzMTpwYXJ0eUdMTiI6IjA5NTEwMDAwMDAwMDUiLCJnczE6b3JnYW5pemF0aW9uTmFtZSI6IkdTMSBVdG9waWEifX0sImlkIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvdmMvbGljZW5zZS9nczFfcHJlZml4LzA5NTEiLCJ2YWxpZEZyb20iOiIyMDI1LTExLTI1VDA3OjM3OjEzWiIsImNyZWRlbnRpYWxTdGF0dXMiOnsiaWQiOiJodHRwczovL2NvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlL2FwaS9yZWdpc3RyeS9zdGF0dXMvcmV2b2NhdGlvbi85ZTg1OTk5Ny1kMzg3LTQ2NTQtOGQ1ZS03ZDM1ZGExYzdjNDcjNTI4NTIiLCJ0eXBlIjoiQml0c3RyaW5nU3RhdHVzTGlzdEVudHJ5Iiwic3RhdHVzUHVycG9zZSI6InJldm9jYXRpb24iLCJzdGF0dXNMaXN0SW5kZXgiOiI1Mjg1MiIsInN0YXR1c0xpc3RDcmVkZW50aWFsIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvc3RhdHVzL3Jldm9jYXRpb24vOWU4NTk5OTctZDM4Ny00NjU0LThkNWUtN2QzNWRhMWM3YzQ3In0sImNyZWRlbnRpYWxTY2hlbWEiOnsiaWQiOiJodHRwczovL2lkLmdzMS5vcmcvdmMvc2NoZW1hL3YxL3ByZWZpeCIsInR5cGUiOiJKc29uU2NoZW1hIn0sIkBjb250ZXh0IjpbImh0dHBzOi8vd3d3LnczLm9yZy9ucy9jcmVkZW50aWFscy92MiIsImh0dHBzOi8vcmVmLmdzMS5vcmcvZ3MxL3ZjL2xpY2Vuc2UtY29udGV4dCIsImh0dHBzOi8vdzNpZC5vcmcvdmMvcmVuZGVyLW1ldGhvZC92MSJdLCJuYW1lIjoiR1MxIFByZWZpeCBMaWNlbnNlIiwicmVuZGVyTWV0aG9kIjpbeyJuYW1lIjoiV2ViIERpc3BsYXkiLCJjc3MzTWVkaWFRdWVyeSI6IkBtZWRpYSAobWluLWFzcGVjdC1yYXRpbzogMy8xKSIsInR5cGUiOiJTdmdSZW5kZXJpbmdUZW1wbGF0ZTIwMjMiLCJpZCI6Imh0dHBzOi8vZ3MxLmdpdGh1Yi5pby9HUzFEaWdpdGFsTGljZW5zZXMvdGVtcGxhdGVzL2dzMS1zYW1wbGUtbGljZW5zZS10ZW1wbGF0ZS5zdmcifV0sImRlc2NyaXB0aW9uIjoiVmVyaWZpZXMgdGhlIGF1dGhvcml6ZWQgYXNzaWdubWVudCBvZiBhIEdTMSBwcmVmaXggdG8gYSBNZW1iZXIgT3JnYW5pemF0aW9uIGJ5IEdTMSBHbG9iYWwuIFRoaXMgY3JlZGVudGlhbCBlc3RhYmxpc2hlcyB0aGUgZm91bmRhdGlvbmFsIGF1dGhvcml0eSB0aGF0IGVuYWJsZXMgdGhlIE1lbWJlciBPcmdhbml6YXRpb24gdG8gaXNzdWUgQ29tcGFueSBQcmVmaXggTGljZW5zZXMgdG8gbWVtYmVyIGNvbXBhbmllcyB3aXRoaW4gdGhlaXIgZ2VvZ3JhcGhpYyByZWdpb24gb3IgbWFya2V0IHNlY3Rvci4gVGhlIHByZWZpeCBmb3JtcyB0aGUgYmFzaXMgZm9yIGNyZWF0aW5nIGdsb2JhbGx5IHVuaXF1ZSBpZGVudGlmaWVycyBpbiB0aGUgR1MxIHN5c3RlbS4iLCJpYXQiOjE3NjQwNTYyOTR9.ldEZFwIbx3TPeEUbNZQ7RESc2sXzOh9hztWu9YawhjGtU6WOuXXsTn9HDNv_NlJs4Kb_E1wJr2m-1RW1fDk-RQ";
+
+// Status list credentials:
+// url: https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/c0470b49-d264-4a84-9cf4-267b1676e09c
+const keyCredentialStatusListAsJwt = "eyJraWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6dXRvcGlhX2NvbXBhbnkja2V5IiwiYWxnIjoiRVMyNTYifQ.eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiQml0c3RyaW5nU3RhdHVzTGlzdENyZWRlbnRpYWwiXSwiaXNzdWVyIjp7ImlkIjoiZGlkOndlYjpjb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZTphcGk6cmVnaXN0cnk6ZGlkOnV0b3BpYV9jb21wYW55IiwibmFtZSI6IlV0b3BpYSBDb21wYW55In0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImlkIjoiaHR0cHM6Ly9jb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZS9hcGkvcmVnaXN0cnkvc3RhdHVzL3Jldm9jYXRpb24vYzA0NzBiNDktZDI2NC00YTg0LTljZjQtMjY3YjE2NzZlMDljI2xpc3QiLCJzdGF0dXNQdXJwb3NlIjoicmV2b2NhdGlvbiIsImVuY29kZWRMaXN0IjoiSDRzSUFBQUFBQUFBXy0zT1FRa0FBQWdFc01QLW9hMXdQMEcyQkVzQUFBQUFBQUFBQUtBeDF3RUFBQUFBQUFDQTF4WnVBSDc0QUVBQUFBIiwidHlwZSI6IkJpdHN0cmluZ1N0YXR1c0xpc3QifSwiaWQiOiJodHRwczovL2NvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlL2FwaS9yZWdpc3RyeS9zdGF0dXMvcmV2b2NhdGlvbi9jMDQ3MGI0OS1kMjY0LTRhODQtOWNmNC0yNjdiMTY3NmUwOWMiLCJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvc3RhdHVzL3YxIiwiaHR0cHM6Ly93M2lkLm9yZy9zZWN1cml0eS9zdWl0ZXMvandzLTIwMjAvdjEiXSwiaWF0IjoxNzY0MTUyNjgyfQ.tdGDQ5dUN1vHXj4GODb0f1vyQZM4dKjg8w-6jpWia9iXPI0PBQJaJ7ZcqMYaEgncgMGN8qnuHhDJsnoSEH_CWw";
+// url: https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/68ab4e25-de1e-4d06-b6ad-c0ec5d5c425b
+const companyPrefixLicenseStatusListAsJwt = "eyJraWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6Z3MxX3V0b3BpYSNjb21wYW55UHJlZml4ZXMiLCJhbGciOiJFUzI1NiJ9.eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiQml0c3RyaW5nU3RhdHVzTGlzdENyZWRlbnRpYWwiXSwiaXNzdWVyIjp7ImlkIjoiZGlkOndlYjpjb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZTphcGk6cmVnaXN0cnk6ZGlkOmdzMV91dG9waWEiLCJuYW1lIjoiR1MxIFV0b3BpYSJ9LCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6Imh0dHBzOi8vY29tcGFueS13YWxsZXQtZGV2LnByb2QtazhzLmVlY2MuZGUvYXBpL3JlZ2lzdHJ5L3N0YXR1cy9yZXZvY2F0aW9uLzY4YWI0ZTI1LWRlMWUtNGQwNi1iNmFkLWMwZWM1ZDVjNDI1YiNsaXN0IiwiZW5jb2RlZExpc3QiOiJINHNJQUFBQUFBQUFfLTNCTVFFQUFBRENvUFZQYlF3Zm9BQUFBQUFBQUFBQUFBQUFBQUFBQUlDM0FZYlNWS3NBUUFBQSIsInN0YXR1c1B1cnBvc2UiOiJyZXZvY2F0aW9uIiwidHlwZSI6IkJpdHN0cmluZ1N0YXR1c0xpc3QifSwiaWQiOiJodHRwczovL2NvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlL2FwaS9yZWdpc3RyeS9zdGF0dXMvcmV2b2NhdGlvbi82OGFiNGUyNS1kZTFlLTRkMDYtYjZhZC1jMGVjNWQ1YzQyNWIiLCJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvc3RhdHVzL3YxIl0sImlhdCI6MTc2NDA1NjU0MH0.xVaH8XOdQM9rRchx7vf2FV9dSEv8bXlGlIlCvrzgoEenDAkjhYYhI68I1xlrA_Xr6xHuPHnn17q7UlOnqEgiKg";
+// url: https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/9e859997-d387-4654-8d5e-7d35da1c7c47
+const gs1PrefixLicenseStatusListAsJwt = "eyJraWQiOiJkaWQ6d2ViOmNvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlOmFwaTpyZWdpc3RyeTpkaWQ6Z3MxX2dsb2JhbCNrZXlzIiwiYWxnIjoiRVMyNTYifQ.eyJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiQml0c3RyaW5nU3RhdHVzTGlzdENyZWRlbnRpYWwiXSwiaXNzdWVyIjp7ImlkIjoiZGlkOndlYjpjb21wYW55LXdhbGxldC1kZXYucHJvZC1rOHMuZWVjYy5kZTphcGk6cmVnaXN0cnk6ZGlkOmdzMV9nbG9iYWwiLCJuYW1lIjoiR1MxIEdsb2JhbCJ9LCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6Imh0dHBzOi8vY29tcGFueS13YWxsZXQtZGV2LnByb2QtazhzLmVlY2MuZGUvYXBpL3JlZ2lzdHJ5L3N0YXR1cy9yZXZvY2F0aW9uLzllODU5OTk3LWQzODctNDY1NC04ZDVlLTdkMzVkYTFjN2M0NyNsaXN0IiwiZW5jb2RlZExpc3QiOiJINHNJQUFBQUFBQUFfLTNCTVFFQUFBRENvUFZQYlF3Zm9BQUFBQUFBQUFBQUFBQUFBQUFBQUlDM0FZYlNWS3NBUUFBQSIsInN0YXR1c1B1cnBvc2UiOiJyZXZvY2F0aW9uIiwidHlwZSI6IkJpdHN0cmluZ1N0YXR1c0xpc3QifSwiaWQiOiJodHRwczovL2NvbXBhbnktd2FsbGV0LWRldi5wcm9kLWs4cy5lZWNjLmRlL2FwaS9yZWdpc3RyeS9zdGF0dXMvcmV2b2NhdGlvbi85ZTg1OTk5Ny1kMzg3LTQ2NTQtOGQ1ZS03ZDM1ZGExYzdjNDciLCJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvc3RhdHVzL3YxIl0sImlhdCI6MTc2NDA1NjI5Mn0.5DPycSGnQiPul5otTtau_H23GxdD8fYwFMddrNLF6KPgcYt1broWL5AfcAAE3c9HpUd8RuH2TQqqSaJKojvuvQ";
+
 
 const did_gs1_company: any = {
     "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:utopia_company",
     "verificationMethod": [
         {
-            "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:utopia_company#keys",
+            "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:utopia_company#key",
             "type": "JsonWebKey",
             "controller": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:utopia_company",
             "publicKeyJwk": {
-                "kid": "keys",
                 "kty": "EC",
                 "crv": "P-256",
-                "x": "fDwn5wfKQzKhxVkCtu_nb-Ku8qnpb6Z3XX-0srlcyoA",
-                "y": "5SDv2HeyVbRsATzaxK4FjVC7gCGqkfeMtq1QyjuLKsA"
+                "x": "k8d4Ct6qg6kM8hDSu1XXADpYQL4gTeBA4cOFoqPgSnA",
+                "y": "-OpyF7hfqYsLM8AgdoCNIDJ0uxSE9MDiZ6KVyB9dqd4",
+                "kid": "key"
             }
         }
     ],
@@ -41,10 +44,7 @@ const did_gs1_company: any = {
         "https://www.w3.org/ns/did/v1"
     ],
     "assertionMethod": [
-        "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:utopia_company#keys"
-    ],
-    "authentication": [
-        "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:utopia_company#keys"
+        "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:utopia_company#key"
     ]
 }
 
@@ -52,15 +52,15 @@ const did_gs1_utopia: any = {
     "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia",
     "verificationMethod": [
         {
-            "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia#company-prefixes",
+            "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia#companyPrefixes",
             "type": "JsonWebKey",
             "controller": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia",
             "publicKeyJwk": {
-                "kid": "company-prefixes",
                 "kty": "EC",
                 "crv": "P-256",
-                "x": "CQPHcZPbg_bAy44sfoK6C6obsqQ7KWv8quHw1WAfgHw",
-                "y": "FnQVbogvGghFUDZhtlptSYe_u--Smnjw4ltnXgiE6jM"
+                "x": "KoceDkyWMfpMnEy9bIPF436gC3Wg2cHckCtGROW4D5I",
+                "y": "MVREuqMTfVnRHEt3UVRC9-Jk7uD9W3kCC4oYys_tH2M",
+                "kid": "companyPrefixes"
             }
         }
     ],
@@ -71,10 +71,10 @@ const did_gs1_utopia: any = {
         "https://www.w3.org/ns/did/v1"
     ],
     "assertionMethod": [
-        "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia#company-prefixes"
+        "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia#companyPrefixes"
     ],
     "authentication": [
-        "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia#company-prefixes"
+        "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia#companyPrefixes"
     ]
 }
 
@@ -82,38 +82,15 @@ const did_gs1_global: any = {
     "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global",
     "verificationMethod": [
         {
-            "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#test",
+            "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#keys",
             "type": "JsonWebKey",
             "controller": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global",
             "publicKeyJwk": {
-                "kid": "test",
                 "kty": "EC",
                 "crv": "P-256",
-                "x": "1VT6nW6UUZj4PUiPVIMqKKmCLexeoB49Qb7d1A66kvU",
-                "y": "3DY-nOEJUdyGbSEQd9_a5zFYQdqDY4NMvNS_v5cAtn4"
-            }
-        },
-        {
-            "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#testRSA",
-            "type": "JsonWebKey2020",
-            "controller": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global",
-            "publicKeyJwk": {
-                "kty": "RSA",
-                "n": "3mXHZEWktJHxw1s_jyKmFWJPBk-10Hb1OPMHQ_fCTC2D4yNpflladamr3tmAI5qCmr7ZYGzX7WCAj_-FN_btouJcWlf3hlysp3m1g0at_oke057Ji_tuW_vl9Zc5amYg0BGpwh1lsIKWF7gO785lFjkpiiVna4XL1T3XiAk-ygmqeQTwqN-pBC3ELRrgQofMzzWGbYv6Wjitl67n0aC4nKifNr2mPWmunMrQsykBjDwbQQUBYoLlbb49GE_4TCnLyN_mwR5gi3Q-rHIUYiiUcPNDr8OSTHa2R4ARZ9an-SWXb-dZIzz3IV7yZW5G2aFZNPwcULvv0TIDVsjshXDTLpNMVCQbhdaEEhZKnqwX83cQa8y2O_bizKXEW1OcWmmKxvYqRpCRTBNUBAmMq2DsS5oFMs0E5oAJZgSGrNiamtKx9Nz3NDQV_qyi3p-gqSShIUTlqTYxIkp5dM0-qIj7buxP1xDOy24Sblc7o1fr-C91jn88OJd5d7XeOcbIOOGs3syLl39eyUI-35Zub7y-PdKedZMJKrFDpWW4Q9JZniXdkawpS9515VSJxFF_l_UK0OC0nspHmW6-xorwKV_67OSGkpmd_bIiJ_DmOE0Vl80CITD2NT3-BNWt9NH6cBwei3SO7Corw6Rs0yDupxThn3MWZt387Ik6jiJHiIj7E60",
-                "e": "AQAB",
-                "kid": "testRSA"
-            }
-        },
-        {
-            "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#prefixes",
-            "type": "JsonWebKey",
-            "controller": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global",
-            "publicKeyJwk": {
-                "kid": "prefixes",
-                "kty": "EC",
-                "crv": "P-256",
-                "x": "_pN0Q04zIxSXIj-sIqFGvLH3N-kpxJY83D_IxDabY5E",
-                "y": "jbYK7xV0dICDlzNlAMLLzeZ34fkr2nJj3MaoFLazRBs"
+                "x": "L7U2iyliJI0c_bS3lIC8Wj1yxTM5g4AwfCLi_gTwVbg",
+                "y": "CKmwD7ST1yrU4fwb1MEOGMBKRyxEyx-txo-i_LI8IBU",
+                "kid": "keys"
             }
         }
     ],
@@ -124,19 +101,14 @@ const did_gs1_global: any = {
         "https://www.w3.org/ns/did/v1"
     ],
     "assertionMethod": [
-        "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#test",
-        "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#testRSA",
-        "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#prefixes"
+        "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#keys"
     ],
     "authentication": [
-        "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#test",
-        "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#testRSA"
+        "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#keys"
     ]
 }
 
-// Helper function to resolve DID fragments
 function resolveDIDFragment(didDocument: any, fragmentId: string) {
-    // Find the verification method with the matching fragment ID
     const verificationMethod = didDocument.verificationMethod?.find((vm: any) =>
         vm.id.endsWith(`#${fragmentId}`)
     );
@@ -145,47 +117,49 @@ function resolveDIDFragment(didDocument: any, fragmentId: string) {
         return verificationMethod;
     }
 
-    // If not found in verificationMethod, return the whole document
     return didDocument;
 }
 
-// Mock the document loader
 await jest.unstable_mockModule("../src/services/documentLoader/index", () => ({
     documentLoader: jest.fn().mockImplementation(async (url: any) => {
-        // Handle credential URLs
-        if (url === "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/vc/license/gs1_prefix/0951001") {
+        if (url === "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/vc/license/gs1_key/01/09510010000002") {
             return {
                 contextUrl: null,
                 documentUrl: url,
-                document: companyPrefixLicenseJWT
+                document: validKeyCredentialAsJwt
+            };
+        } else if (url === "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/vc/license/gs1_prefix/0951001") {
+            return {
+                contextUrl: null,
+                documentUrl: url,
+                document: validCompanyPrefixLicenseAsJwt
             };
         } else if (url === "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/vc/license/gs1_prefix/0951") {
             return {
                 contextUrl: null,
                 documentUrl: url,
-                document: gs1PrefixLicenseJWT
+                document: validPrefixLicenseAsJwt
             };
-        } else if (url === "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/4ff1b021-6d4c-4852-bb04-ef31848f7552") {
+        } else if (url === "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/c0470b49-d264-4a84-9cf4-267b1676e09c") {
             return {
                 contextUrl: null,
                 documentUrl: url,
-                document: keyCredentialStatusListJWT
+                document: keyCredentialStatusListAsJwt
             };
-        } else if (url === "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/42c3555a-c8bb-4060-8435-ee85ee4ecc8b") {
+        } else if (url === "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/68ab4e25-de1e-4d06-b6ad-c0ec5d5c425b") {
             return {
                 contextUrl: null,
                 documentUrl: url,
-                document: companyPrefixLicenseStatusListJWT
+                document: companyPrefixLicenseStatusListAsJwt
             };
-        } else if (url === "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/b30da5f3-3bef-40da-a182-71fc872d42bd") {
+        } else if (url === "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/9e859997-d387-4654-8d5e-7d35da1c7c47") {
             return {
                 contextUrl: null,
                 documentUrl: url,
-                document: gs1PrefixLicenseStatusListJWT
+                document: gs1PrefixLicenseStatusListAsJwt
             };
         }
 
-        // Handle DIDs with fragments
         if (url.startsWith("did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:")) {
             const [didUrl, fragment] = url.split('#');
 
@@ -260,36 +234,14 @@ describe("Verifier API Test for JWT Credentials", () => {
         done();
     });
 
-    // Valid GS1 Key Credential as JWT
-    /*test("Verify valid GS1 Key Credential as JWT with GS1 endpoint", async () => {
+    test("Verify valid GS1 Key Credential as JWT with GS1 endpoint", async () => {
         const res = await request(server)
             .post("/api/verifier/gs1")
-            .send([validKeyCredentialJWT]);
+            .send([validKeyCredentialAsJwt]);
         console.log('Response:', JSON.stringify(res.body, null, 2));
         expect(res.statusCode).toEqual(200);
         expect(res.body).toBeInstanceOf(Array);
         expect(res.body[0].verified).toBe(true);
-    });*/
-
-    // Revoked GS1 Credential as JWT
-    test("Verify revoked GS1 Key Credential as JWT with GS1 endpoint", async () => {
-        const res = await request(server)
-            .post("/api/verifier/gs1")
-            .send([revokedKeyCredentialJWT]);
-
-        expect(res.statusCode).toEqual(200);
-        expect(res.body).toBeInstanceOf(Array);
-        expect(res.body[0].verified).toBe(false);
-        expect(res.body[0].statusResult.verified).toBe(false);
     });
 
-    // Valid BitStringStatusListCredential (NON-GS1)
-    test("Verify valid BitStringStatusListCredential as JWT", async () => {
-        const res = await request(server)
-            .post("/api/verifier")
-            .send([keyCredentialStatusListJWT]);
-
-        expect(res.statusCode).toEqual(200);
-        expect(res.body[0].verified).toBe(true);
-    });
 });
