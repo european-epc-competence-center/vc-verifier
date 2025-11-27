@@ -4,6 +4,10 @@ VC Verifier Changelog
 WIP
 ---
 
+3.1.3 (2025-11-27)
+
+- hard code identify foundation context because not sending json
+
 3.1.2 (2025-11-26)
 
 - fix ttl cache for jwt
