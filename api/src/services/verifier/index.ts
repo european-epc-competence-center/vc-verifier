@@ -7,6 +7,8 @@ import { Ed25519Signature2020 } from "@digitalbazaar/ed25519-signature-2020";
 // @ts-ignore
 import { ES256Signature2020 } from "@eecc/es256-signature-2020";
 // @ts-ignore
+import { PS256Signature2020 } from "@eecc/ps256-signature-2020";
+// @ts-ignore
 import { checkStatus as checkStatus2020 } from "@digitalbazaar/vc-revocation-list";
 // @ts-ignore
 import { checkStatus as checkStatus2021 } from "@digitalbazaar/vc-status-list";
@@ -17,7 +19,6 @@ import { DataIntegrityProof } from "@digitalbazaar/data-integrity";
 // @ts-ignore
 import jsigs from "jsonld-signatures";
 
-// Types for better type safety
 interface VerificationResult {
   verified: boolean;
   results?: any[];
@@ -36,7 +37,6 @@ interface VerificationOptions {
   domain?: string;
 }
 
-// Constants for better maintainability
 const CREDENTIAL_TYPES = {
   VERIFIABLE_CREDENTIAL: 'VerifiableCredential',
   VERIFIABLE_PRESENTATION: 'VerifiablePresentation'
@@ -46,6 +46,7 @@ const PROOF_TYPES = {
   ED25519_2018: 'Ed25519Signature2018',
   ED25519_2020: 'Ed25519Signature2020',
   ES256_2020: 'JsonWebSignature2020',
+  PS256_2020: 'JsonWebSignature2020',
   DATA_INTEGRITY: 'DataIntegrityProof'
 } as const;
 
@@ -76,6 +77,9 @@ function getSuite(proof: Proof): unknown {
 
     case PROOF_TYPES.ES256_2020:
       return new ES256Signature2020();
+
+    case PROOF_TYPES.PS256_2020:
+      return new PS256Signature2020();
 
     case PROOF_TYPES.DATA_INTEGRITY:
       return new DataIntegrityProof({
