@@ -4,6 +4,7 @@ type Proof = {
     challenge?: string;
     domain?: string;
     cryptosuite?: string;
+    verificationMethod?: string;
 }
 
 type CredentialStatus = {

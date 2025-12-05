@@ -67,7 +67,23 @@ const {
   purposes: { AssertionProofPurpose },
 } = jsigs;
 
-function getSuite(proof: Proof): unknown {
+async function getKeyType(verificationMethod: string): Promise<string | null> {
+  try {
+    const didDocument = await documentLoader(verificationMethod);
+    const publicKey = didDocument?.document?.publicKeyJwk;
+    
+    if (publicKey && publicKey.kty) {
+      return publicKey.kty;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error(`Failed to resolve key type for ${verificationMethod}:`, error);
+    return null;
+  }
+}
+
+async function getSuite(proof: Proof): Promise<unknown> {
   switch (proof?.type) {
     case PROOF_TYPES.ED25519_2018:
       return new Ed25519Signature2018();
@@ -76,10 +92,22 @@ function getSuite(proof: Proof): unknown {
       return new Ed25519Signature2020();
 
     case PROOF_TYPES.ES256_2020:
+    case PROOF_TYPES.PS256_2020: {
+      // Both ES256 and PS256 use JsonWebSignature2020, check key type
+      const verificationMethod = proof.verificationMethod;
+      if (verificationMethod) {
+        const kty = await getKeyType(verificationMethod);
+        
+        if (kty === 'EC') {
+          return new ES256Signature2020();
+        } else if (kty === 'RSA') {
+          return new PS256Signature2020();
+        }
+      }
+      
+      // Fallback: default to ES256 if cannot determine
       return new ES256Signature2020();
-
-    case PROOF_TYPES.PS256_2020:
-      return new PS256Signature2020();
+    }
 
     case PROOF_TYPES.DATA_INTEGRITY:
       return new DataIntegrityProof({
@@ -91,13 +119,15 @@ function getSuite(proof: Proof): unknown {
   }
 }
 
-function getSuites(proof: Proof | Proof[]): unknown[] {
+async function getSuites(proof: Proof | Proof[]): Promise<unknown[]> {
   const suites: unknown[] = [];
 
   if (Array.isArray(proof)) {
-    proof.forEach((singleProof: Proof) => suites.push(getSuite(singleProof)));
+    for (const singleProof of proof) {
+      suites.push(await getSuite(singleProof));
+    }
   } else {
-    suites.push(getSuite(proof));
+    suites.push(await getSuite(proof));
   }
 
   // Always add Ed25519Signature2020 for status verification
@@ -257,7 +287,7 @@ export class Verifier {
       throw new Error('Invalid verifiable object: missing or invalid type property');
     }
 
-    const suite = getSuites(verifiable.proof);
+    const suite = await getSuites(verifiable.proof);
 
     if (verifiable.type.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL)) {
       return this.verifyCredential(verifiable as VerifiableCredential, suite);
