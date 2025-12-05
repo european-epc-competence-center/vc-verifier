@@ -49,7 +49,7 @@ export class JWTService {
     }
 
     const { issuer, kid, alg } = this.extractJWTParams(decoded);
-    
+
     if (!issuer || !kid) {
       return this.createFailureResult(jwt, decoded);
     }
@@ -91,7 +91,7 @@ export class JWTService {
   }
 
   private static async performVerification(jwt: string, verificationMethod: any, alg: string): Promise<boolean> {
-    if (verificationMethod.type === 'JsonWebKey' && verificationMethod.publicKeyJwk) {
+    if ((verificationMethod.type === 'JsonWebKey' || verificationMethod.type === 'JsonWebKey2020') && verificationMethod.publicKeyJwk) {
       return this.verifyWithJWK(jwt, verificationMethod.publicKeyJwk, alg);
     }
     
