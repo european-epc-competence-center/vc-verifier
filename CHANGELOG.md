@@ -4,6 +4,8 @@ VC Verifier Changelog
 WIP
 ---
 
+- add support for all data integrity proof cryptosuites
+
 3.1.3 (2025-11-27)
 
 - hard code identify foundation context because not sending json

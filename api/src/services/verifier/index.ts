@@ -13,6 +13,12 @@ import { checkStatus as checkStatus2021 } from "@digitalbazaar/vc-status-list";
 // @ts-ignore
 import * as ecdsaSd2023Cryptosuite from "@digitalbazaar/ecdsa-sd-2023-cryptosuite";
 // @ts-ignore
+import {cryptosuite as eddsaRdfc2022CryptoSuite} from "@digitalbazaar/eddsa-rdfc-2022-cryptosuite";
+// @ts-ignore
+import {cryptosuite as ecdsaRdfc2019CryptoSuite} from "@digitalbazaar/ecdsa-rdfc-2019-cryptosuite";
+// @ts-ignore
+import {cryptosuite as rsaRdfc2025CryptoSuite} from "@eecc/rsa-rdfc-2025-cryptosuite";
+// @ts-ignore
 import { DataIntegrityProof } from "@digitalbazaar/data-integrity";
 // @ts-ignore
 import jsigs from "jsonld-signatures";
@@ -63,8 +69,27 @@ import { checkBitstringStatus } from "./status.js";
 
 const { createVerifyCryptosuite } = ecdsaSd2023Cryptosuite;
 const {
-  purposes: { AssertionProofPurpose },
+  purposes: { AssertionProofPurpose, AuthenticationProofPurpose },
 } = jsigs;
+
+function getDataIntegritySuite(cryptosuite?: string): unknown {
+  if (!cryptosuite) {
+    throw new Error('Cryptosuite is required for data integrity proof');
+  }
+
+  switch (cryptosuite) {
+    case 'eddsa-rdfc-2022':
+      return eddsaRdfc2022CryptoSuite;
+    case 'ecdsa-rdfc-2019':
+      return ecdsaRdfc2019CryptoSuite;
+    case 'rsa-rdfc-2025':
+      return rsaRdfc2025CryptoSuite;
+    case 'ecdsa-sd-2023':
+      return createVerifyCryptosuite();
+    default:
+      throw new Error(`Cryptosuite ${cryptosuite} not implemented`);
+  }
+}
 
 function getSuite(proof: Proof): unknown {
   switch (proof?.type) {
@@ -79,7 +104,7 @@ function getSuite(proof: Proof): unknown {
 
     case PROOF_TYPES.DATA_INTEGRITY:
       return new DataIntegrityProof({
-        cryptosuite: createVerifyCryptosuite(),
+        cryptosuite: getDataIntegritySuite(proof.cryptosuite)
       });
 
     default:
@@ -95,9 +120,6 @@ function getSuites(proof: Proof | Proof[]): unknown[] {
   } else {
     suites.push(getSuite(proof));
   }
-
-  // Always add Ed25519Signature2020 for status verification
-  suites.push(new Ed25519Signature2020());
 
   return suites;
 }
@@ -323,14 +345,27 @@ export class Verifier {
 
     const checkStatus = getCheckStatus(getPresentationStatus(presentation));
 
-    const result = await verify({
-      presentation,
-      suite,
-      documentLoader,
-      challenge,
-      domain,
-      checkStatus,
-    });
+    let result;
+
+    if (this.isDataIntegrityProof(presentation.proof)) {
+      result = await jsigs.verify(presentation, {
+        suite,
+        purpose: new AuthenticationProofPurpose(),
+        documentLoader,
+        challenge,
+        domain,
+        checkStatus,
+      });
+    } else {
+      result = await verify({
+        presentation,
+        suite,
+        documentLoader,
+        challenge,
+        domain,
+        checkStatus,
+      });
+    }
 
     return this.normalizeResult(result);
   }
