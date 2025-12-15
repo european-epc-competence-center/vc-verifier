@@ -4,6 +4,8 @@ VC Verifier Changelog
 WIP
 ---
 
+3.2.0 (2025-11-27)
+
 - add support for all data integrity proof cryptosuites
 
 3.1.3 (2025-11-27)
