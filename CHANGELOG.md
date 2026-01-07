@@ -4,6 +4,14 @@ VC Verifier Changelog
 WIP
 ---
 
+3.2.3 (2025-01-07)
+
+- fix: prevent caching of StatusListCredentials to ensure fresh revocation checks
+
+3.2.2 (2025-01-06)
+
+- gs1 chaining library upgraded to allow for SGTIN credential chains and other key credentials with qualifiers
+
 3.2.1 (2025-12-15)
 
 - fix data integrity version
