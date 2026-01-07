@@ -67,8 +67,8 @@ const documentLoader: (url: string) => Promise<any> =
         document = await fetch_jsonld_or_jwt(url);
       }
       
-      if (url.startsWith("did:") || isVerifiableCredential(document)) {
-        // Use TTL cache for DID documents and Verifiable Credentials
+      if (url.startsWith("did:") || isCacheableVerifiableCredential(document)) {
+        // Use TTL cache for DID documents and cacheable Verifiable Credentials
         cache.set(url, document);
       } else {
         // Use permanent cache for contexts, schemas, etc.
@@ -84,12 +84,24 @@ const documentLoader: (url: string) => Promise<any> =
     };
   });
 
-function isVerifiableCredential(document: any): boolean {
+function isCacheableVerifiableCredential(document: any): boolean {
   if (!document) return false;
   const payload = typeof document === 'string' && document.startsWith('ey') && document.split('.').length === 3 ? JSON.parse(atob(document.split('.')[1])) : document;
-  return payload?.type && 
-         Array.isArray(payload.type) && 
-         payload.type.includes("VerifiableCredential");
+  
+  // Check if it's a VerifiableCredential
+  const isVC = payload?.type && 
+               Array.isArray(payload.type) && 
+               payload.type.includes("VerifiableCredential");
+  
+  if (!isVC) return false;
+  
+  // Exclude StatusListCredentials - they must always be fetched fresh
+  const types = payload.type;
+  const isStatusList = types.includes("BitstringStatusListCredential") ||
+                       types.includes("StatusList2021Credential") ||
+                       types.includes("RevocationList2020Credential");
+  
+  return !isStatusList;
 }
 
 export { documentLoader };
