@@ -4,6 +4,10 @@ VC Verifier Changelog
 WIP
 ---
 
+3.2.4 (2026-01-14)
+
+- bump gs1-vc-verifer-rules fro epcis validation
+
 3.2.3 (2026-01-07)
 
 - fix: prevent caching of StatusListCredentials to ensure fresh revocation checks
