@@ -40,7 +40,7 @@
     "@digitalbazaar/vc-status-list": "^8.0.1",
     "@eecc/es256-signature-2020": "^1.2.0",
     "@eecc/rsa-rdfc-2025-cryptosuite": "^1.0.1",
-    "@eecc/vc-verifier-rules": "^2.6.0",
+    "@eecc/vc-verifier-rules": "^2.6.1",
     "@noble/curves": "^2.0.0",
     "cors": "^2.8.5",
     "did-resolver": "^4.1.0",
