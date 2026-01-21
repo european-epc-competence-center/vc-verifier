@@ -26,6 +26,11 @@ VC Verifier Changelog
     - `"Verify single DataIntegrityProof credential"`: ecdsa-sd-2023 v3.x requires updated proof format
     - `"Verify revoked credential - RevocationList2020"`: v7.0 behavior change needs investigation
     - 11 of 13 API tests passing
+- **Type compatibility fix (API)**: Fixed TypeScript compilation errors in `gs1.ts` after upgrading `@eecc/vc-verifier-rules` to v2.6.2
+    - Resolved type mismatch between imported `verifiableJwt` type from `@eecc/vc-verifier-rules` and local `Verifiable` type
+    - The new version's `verifiableJwt.type` allows `string | string[] | undefined`, while internal types require `string[]`
+    - Added `unknown` as intermediate type in type assertions at lines 40, 45, and 205 in `normalizeVerifiable()` function
+    - All TypeScript checks pass and all 11 API tests pass successfully
 - Initialize comprehensive AI knowledge base (`.cursor/notes/`) with documentation covering:
     - Repository structure and file organization
     - API architecture (services, routing, verification flow)

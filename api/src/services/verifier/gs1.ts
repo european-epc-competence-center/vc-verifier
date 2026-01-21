@@ -4,10 +4,10 @@ import { checkGS1CredentialPresentationValidation,
   verifyExternalCredential, 
   gs1RulesResult, 
   gs1RulesResultContainer, 
-  VerifiableCredential,
-  VerifiablePresentation, 
+  VerifiableCredential as GS1VerifiableCredential,
+  VerifiablePresentation as GS1VerifiablePresentation, 
   gs1ValidatorRequest,
-  verifiableJwt,
+  verifiableJwt as gs1VerifiableJwt,
   // @ts-ignore
 } from "@eecc/vc-verifier-rules";
 
@@ -18,8 +18,42 @@ import { getJsonSchema, downloadAndCacheSchemas } from "./schemas.js";
 
 await downloadAndCacheSchemas();
 
+// Type guard to check if an object can be used as a Verifiable
+function isVerifiableObject(obj: any): obj is Verifiable | VerifiableCredential | VerifiablePresentation {
+  return obj && 
+         typeof obj === 'object' && 
+         obj.type && 
+         (Array.isArray(obj.type) || typeof obj.type === 'string');
+}
+
+// Normalize GS1 types to internal Verifiable types
+// The GS1 library allows type: string | string[] | undefined
+// But our Verifier requires type: string[]
+function normalizeVerifiable(credential: GS1VerifiableCredential | gs1VerifiableJwt | string): Verifiable | VerifiableCredential | string {
+  // If it's a string (JWT), pass through
+  if (typeof credential === 'string') {
+    return credential;
+  }
+  
+  // If type is already an array, pass through
+  if (Array.isArray(credential.type)) {
+    return credential as unknown as Verifiable;
+  }
+  
+  // If type is a string, normalize to array
+  if (typeof credential.type === 'string') {
+    return {
+      ...credential,
+      type: [credential.type]
+    } as unknown as Verifiable;
+  }
+  
+  // If type is undefined or missing, this is invalid
+  throw new Error('Invalid verifiable object: missing type property');
+}
+
 // Helper function to extract credential information
-function extractCredentialInfo(credential: VerifiableCredential | verifiableJwt | string) {
+function extractCredentialInfo(credential: GS1VerifiableCredential | gs1VerifiableJwt | string) {
   let credentialPayload: any;
   
   // Handle JWT credentials
@@ -34,7 +68,7 @@ function extractCredentialInfo(credential: VerifiableCredential | verifiableJwt 
     credentialPayload = decoded.payload;
   } else {
     // Handle JSON-LD credentials
-    credentialPayload = credential as VerifiableCredential;
+    credentialPayload = credential as GS1VerifiableCredential;
   }
   
   // Extract ID (use the credentials id field)
@@ -42,19 +76,21 @@ function extractCredentialInfo(credential: VerifiableCredential | verifiableJwt 
   
   // Extract Name (use the most specific type, excluding "VerifiableCredential")
   let credentialName = 'unknown';
-  if (credentialPayload?.type && Array.isArray(credentialPayload.type)) {
-    // Find the most specific type (not "VerifiableCredential")
-    const specificType = credentialPayload.type.find((t: string) => t !== 'VerifiableCredential');
-    if (specificType) {
-      credentialName = specificType;
-    }
+  const typeArray = Array.isArray(credentialPayload?.type) 
+    ? credentialPayload.type 
+    : (typeof credentialPayload?.type === 'string' ? [credentialPayload.type] : []);
+  
+  // Find the most specific type (not "VerifiableCredential")
+  const specificType = typeArray.find((t: string) => t !== 'VerifiableCredential');
+  if (specificType) {
+    credentialName = specificType;
   }
   
   return { credentialId, credentialName };
 }
 
 export async function checkGS1Credential(
-  verifiableCredential: VerifiableCredential | verifiableJwt | string,
+  verifiableCredential: GS1VerifiableCredential | gs1VerifiableJwt | string,
   challenge?: string,
   domain?: string
 ): Promise<gs1RulesResult> {
@@ -64,7 +100,7 @@ export async function checkGS1Credential(
 }
 
 export async function verifyGS1Credentials(
-  verifiablePresentation: VerifiablePresentation
+  verifiablePresentation: GS1VerifiablePresentation
 ): Promise<gs1RulesResultContainer> {
   return await checkGS1CredentialPresentationValidation(
       gs1ValidatorRequest,
@@ -74,7 +110,7 @@ export async function verifyGS1Credentials(
 
 const loadExternalCredential: externalCredential = async (
   url: string
-): Promise<VerifiableCredential> => {
+): Promise<GS1VerifiableCredential> => {
   try {
     const result = await documentLoader(url);
     return result.document;
@@ -85,11 +121,13 @@ const loadExternalCredential: externalCredential = async (
 };
 
 export const validateExternalCredential: verifyExternalCredential = async (
-  credential: VerifiableCredential | verifiableJwt | string,
+  credential: GS1VerifiableCredential | gs1VerifiableJwt | string,
   challenge?: string,
   domain?: string
 ): Promise<gs1RulesResult> => {
-  const credVerificationResult = await Verifier.verify(credential, challenge, domain);
+  // Normalize the GS1 credential type to our internal Verifiable type
+  const normalizedCredential = normalizeVerifiable(credential);
+  const credVerificationResult = await Verifier.verify(normalizedCredential, challenge, domain);
 
   const errors: any[] = [];
 
@@ -153,13 +191,18 @@ interface GS1VerificationResponse {
 
 export class GS1Verifier {
   static async verify(
-    verifiable: Verifiable | VerifiableCredential | verifiableJwt | string,
+    verifiable: Verifiable | VerifiableCredential | GS1VerifiableCredential | gs1VerifiableJwt | string,
     challenge?: string,
     domain?: string
   ): Promise<GS1VerificationResponse> { 
     try {
+      // Normalize the credential type if needed (for GS1 types)
+      const normalizedVerifiable = typeof verifiable === 'string' || isVerifiableObject(verifiable)
+        ? (typeof verifiable === 'string' ? verifiable : normalizeVerifiable(verifiable as any))
+        : verifiable;
+      
       // Perform standard credential/presentation verification
-      const credentialVerificationResult = await Verifier.verify(verifiable, challenge, domain);
+      const credentialVerificationResult = await Verifier.verify(normalizedVerifiable as any, challenge, domain);
       
       // Extract credential payload for type checking
       const credentialPayload = this.extractCredentialPayload(verifiable);
@@ -194,11 +237,16 @@ export class GS1Verifier {
     challenge?: string,
     domain?: string
   ): Promise<gs1RulesResult | gs1RulesResultContainer> {
-    if (credentialPayload?.type?.includes?.("VerifiableCredential")) {
+    // Normalize type to array for checking
+    const types = Array.isArray(credentialPayload?.type) 
+      ? credentialPayload.type 
+      : (typeof credentialPayload?.type === 'string' ? [credentialPayload.type] : []);
+    
+    if (types.includes("VerifiableCredential")) {
       return await checkGS1Credential(originalVerifiable, challenge, domain);
     }
     
-    if (credentialPayload?.type?.includes?.("VerifiablePresentation")) {
+    if (types.includes("VerifiablePresentation")) {
       return await verifyGS1Credentials(credentialPayload);
     }
     

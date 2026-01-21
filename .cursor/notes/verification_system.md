@@ -286,6 +286,13 @@ const gs1ValidatorRequest = {
 }
 ```
 
+**Type Compatibility Note** (v2.6.2+):
+- The `@eecc/vc-verifier-rules` package defines types (`VerifiableCredential`, `verifiableJwt`) that differ slightly from internal types
+- Key difference: GS1 types allow `type: string | string[] | undefined`, while internal types require `type: string[]`
+- Solution: Use `normalizeVerifiable()` function in `gs1.ts` to convert GS1 types to internal types
+- Type assertions use `unknown` as intermediate type for safe type conversion
+- Always normalize GS1 types before passing to `Verifier.verify()`
+
 ### External Credential Verification
 
 **Function**: `validateExternalCredential(credential, challenge?, domain?)`
