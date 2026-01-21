@@ -1,0 +1,44 @@
+---
+alwaysApply: true
+---
+
+# Changelog Conventions
+
+**Always update the Changelog.md file in the specific subproject you're modifying to track changes applied to each sub project.**
+
+## Sections and Structure
+
+### WIP Section
+
+- Located at the top of the file after the title
+  - Format: `## WIP` followed by bullet point entries
+  - This is where all unreleased changes should be documented!
+
+## Entry Guidelines
+
+- Start each entry with a dash `-`
+- Group related changes together
+- Use backticks for code references: `` `methodName` ``
+- Use indentation for sub-details:
+  ```
+  - New feature X
+      - Detail 1
+      - Detail 2
+  ```
+
+## Entry Categories
+
+- **New features**: Usually warrant a MINOR version bump
+- **Bugfixes**: Usually warrant a PATCH version bump
+- **Breaking changes**: Usually warrant a MAJOR version bump (mark these clearly)
+- **Internal improvements**: Depends on impact
+
+## Best Practices
+
+- Be specific about what changed
+- Document regression tests when added
+- For API changes, document both old and new behavior
+- If an endpoint changed, explicitly mention the old and new endpoint path
+- Use consistent terminology
+- Keep entries concise but descriptive
+- Do not manually add version headers - they are added by the release

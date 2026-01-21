@@ -1,0 +1,50 @@
+---
+alwaysApply: true
+---
+# AI Notes
+
+The  `.cursor/notes` folder contains notes about the project.
+The notes form a knowledge base about the project to be used by the AI Agents working on the project. They should help you when working with the same code again in the future.
+
+**Always find and read relevant notes before executing a task and update your notes afterwards!**
+
+
+## Read notes before reading anything else
+
+- Before you analyse files, in particular before you start searching files or analysing the general project structure, consult your notes.
+  - The notes contain an `index.md` file which is to help you to quickly find the relevant information. In particular this file points you to the right notes files for specific topics.
+
+## Update Notes with new knowledge
+
+- After you learn anything about the code base, e.g. after analyzing any files or finishing tasks, check the notes folder for a file with related content to what you have just learned. 
+  - If there is no such file, create a mark down file with a suitable (i.e. topic related) name. 
+  - Add a concise summary of what you have learned to your notes file. 
+  - Update the notes index and make sure that your knowledge is properly referenced so that you can easily find it.
+- After updating the notes, deduplicate content, also across multiple notes files.
+  - Update the `index.md`. 
+  - The index should in particular contain a brief summary of the projects folder structure and information about what files and folders are related to which sub projects/parts/features/functionality.
+  - The index should at least contain a link to every other file in the notes directory with a brief description of the purpose and content of that file.
+- In particular, make sure to preserve knowledge gained in long running tasks such as web research in a notes file
+
+## Rules and Notes Synchronization
+
+- When updating or modifying Cursor Rules, always check if related notes need to be updated as well.
+  - If rule information is replicated in notes, ensure they're consistent or consider removing duplicated content from notes and referencing the rule instead.
+  - If working with rules that contain project structure information (like changelog conventions), make sure the repository_structure.md notes reflect the same information.
+- Conversely, when updating notes, consider if any rules should be updated to match the new knowledge.
+- When information exists in both rules and notes, prefer keeping detailed information in rules and having notes reference the rules.
+
+## Housekeeping after each update
+
+- Keep the notes tidy, well structured and concise. 
+- The notes should contain general notes about styles, strategies, code structures, and general behavioral hints like which tools to use. 
+  - Notes should not be too detailed. Rather reference source files from notes than including too many details.
+- The notes should not contain individual changelog about details that have been changed. There are dedicated Changelog.md files for this kind of information. 
+  - Do not write historical notes about changes into the notes, only describe the current state. 
+- Before adding notes content or new files, consider if reading them in the future will be helpful for you to understand the project more quickly.
+  - Do not pollute the notes folder with distracting information or superficial descriptions which are easily derived from sources. Rather just reference where to find such information.
+- After adding notes, try to consolidate all `.cursor/notes`.
+  - Rather keep summaries and key words than long text.
+  - Try to reduce the number of notes files by joining files which cover similar topics.
+- Remember to always keep the `index.md` up to date
+
