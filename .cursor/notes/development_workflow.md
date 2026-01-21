@@ -469,6 +469,51 @@ npm test
 
 **Important**: Update `package-lock.json` by running `npm install`
 
+#### Known Breaking Changes (January 2026)
+
+The following major version upgrades introduced breaking changes:
+
+**API Dependencies:**
+
+1. **`@digitalbazaar/ecdsa-sd-2023-cryptosuite` (1.0.2 → 3.4.1)**
+   - **Breaking Change**: Stricter validation for selective disclosure proofs
+   - **Error**: `"publicKey" must be a Uint8Array of length 35`
+   - **Impact**: Old test credentials with ecdsa-sd-2023 proofs fail verification
+   - **Solution**: Regenerate credentials using v3.x cryptosuite, or pin to `^1.0.2`
+   - **Test Status**: `"Verify single DataIntegrityProof credential"` test skipped
+
+2. **`@digitalbazaar/vc-revocation-list` (5.0.1 → 7.0.0)**
+   - **Breaking Change**: Behavior changes in RevocationList2020 status checking
+   - **Impact**: Revoked credentials may not be detected as revoked
+   - **Solution**: Investigate if RevocationList2020 is still needed, or migrate to BitstringStatusListEntry (StatusList2021)
+   - **Test Status**: `"Verify revoked credential - RevocationList2020"` test skipped
+   - **Note**: StatusList2021 and BitstringStatusListEntry tests pass successfully
+
+3. **Express (4.x → 5.x)**
+   - No breaking changes affecting current codebase
+   - All tests pass with Express 5
+
+4. **TypeScript (4.9 → 5.9)**
+   - No breaking changes affecting current codebase
+   - Compilation successful
+
+**Frontend Dependencies:**
+
+1. **ESLint (8.x required, not 9.x)**
+   - ESLint 9 has breaking changes incompatible with Vue CLI 5
+   - Keep at `eslint@^8.0.0` until Vue CLI updates
+   - Vue CLI 5 is in maintenance mode; consider future migration to Vite
+
+2. **Vue ecosystem updates**
+   - All Vue 3.2 → 3.5 updates compatible
+   - No breaking changes in Bootstrap 5.2 → 5.3
+
+**Recommendations:**
+- When upgrading Digital Bazaar libraries, check for test credential compatibility
+- Consider generating test credentials with a test harness that uses current library versions
+- Monitor RevocationList2020 deprecation; StatusList2021/BitstringStatusList is the newer standard
+- For ecdsa-sd-2023 credentials, use v3.x format or pin to older cryptosuite version
+
 ## Troubleshooting
 
 ### API Won't Start

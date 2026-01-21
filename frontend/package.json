@@ -30,8 +30,8 @@
     "bootstrap-icons": "^1.9.1",
     "export-from-json": "^1.7.0",
     "jshashes": "^1.0.8",
-    "jsonld": "^8.1.0",
-    "pdfmake": "^0.2.7",
+    "jsonld": "^9.0.0",
+    "pdfmake": "^0.3.0",
     "qrcode.vue": "^3.3.3",
     "vue": "^3.2.41",
     "vue-router": "^4.1.6",
@@ -52,14 +52,15 @@
     "@vue/test-utils": "^2.0.0-0",
     "@vue/vue3-jest": "^27.0.0-alpha.1",
     "babel-jest": "^27.0.6",
-    "cypress": "^8.7.0",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-vue": "^8.0.3",
+    "cypress": "^15.8.2",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-vue": "^9.33.0",
     "jest": "^27.0.5",
-    "prettier": "^2.4.1",
+    "prettier": "^3.7.4",
     "sass": "^1.32.7",
-    "sass-loader": "^12.0.0"
+    "sass-loader": "^16.0.6",
+    "vue-eslint-parser": "^10.2.0"
   }
 }
