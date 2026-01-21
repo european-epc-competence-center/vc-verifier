@@ -33,6 +33,14 @@ VC Verifier Changelog
     - Verification system deep dive (cryptographic suites, JWT, GS1)
     - Development workflow (build, test, deploy)
 
+## 3.2.4 (2026-01-14)
+
+- bump gs1-vc-verifer-rules fro epcis validation
+
+## 3.2.3 (2026-01-07)
+
+- fix: prevent caching of StatusListCredentials to ensure fresh revocation checks
+
 ## 3.2.2 (2026-01-06)
 
 - gs1 chaining library upgraded to allow for SGTIN credential chains and other key credentials with qualifiers
@@ -41,7 +49,6 @@ VC Verifier Changelog
 
 - fix data integrity version
 
-## 3.2.0 (2025-12-15)
 
 - add support for all data integrity proof cryptosuites
 
