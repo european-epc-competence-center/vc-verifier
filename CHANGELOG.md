@@ -3,6 +3,8 @@ VC Verifier Changelog
 
 ## WIP
 
+## 3.3.0 (2026-01-30)
+
 - **GS1 JSON Schema updates (API)**: Updated all GS1 credential JSON schemas to use flexible validation
     - Changed `@context` validation from strict array equality to `allOf` with `contains` checks
     - Changed `type` validation from strict array equality to `allOf` with `contains` checks
