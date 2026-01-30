@@ -215,11 +215,13 @@ docker build -t vc-verifier-api .
 
 **Dockerfile Pattern**:
 1. Base: Node.js image
-2. Install dependencies
+2. Install dependencies (`npm i` installs all from `package.json`)
 3. Copy source
 4. Build TypeScript
 5. Expose port 3000
 6. Start server
+
+**Important**: The API uses `@eecc/vc-verifier-rules` (specified in `package.json`), not `@gs1us/vc-verifier-rules`. Dependencies are installed via `npm i`, which reads from `package.json`.
 
 **Frontend Docker Image**:
 ```bash
