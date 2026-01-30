@@ -9,6 +9,13 @@
     "@context": {
       "type": "array",
       "readOnly": true,
+      "default": [
+        "https://www.w3.org/ns/credentials/v2",
+        "https://ref.gs1.org/gs1/vc/license-context"
+      ],
+      "items": {
+        "type": "string"
+      },
       "allOf": [
         {
           "contains": {
@@ -20,34 +27,30 @@
             "const": "https://ref.gs1.org/gs1/vc/license-context"
           }
         }
-      ],
-      "default": [
-        "https://www.w3.org/ns/credentials/v2",
-        "https://ref.gs1.org/gs1/vc/license-context"
-      ],
-      "items": {
-        "type": "string"
-      },
-      "minItems": 2
+      ]
     },
     "type": {
       "type": "array",
       "readOnly": true,
-      "const": [
-        "VerifiableCredential",
-        "GS1PrefixLicenseCredential"
-      ],
       "default": [
         "VerifiableCredential",
         "GS1PrefixLicenseCredential"
       ],
       "items": {
-        "type": "string",
-        "enum": [
-          "VerifiableCredential",
-          "GS1PrefixLicenseCredential"
-        ]
-      }
+        "type": "string"
+      },
+      "allOf": [
+        {
+          "contains": {
+            "const": "VerifiableCredential"
+          }
+        },
+        {
+          "contains": {
+            "const": "GS1PrefixLicenseCredential"
+          }
+        }
+      ]
     },
     "id": {
       "type": "string",
@@ -231,7 +234,7 @@
       "name": "GS1 Global"
     },
     "name": "GS1 Prefix License",
-    "description": "FOR DEMONSTRATION PURPOSES ONLY: NOT TO BE USED FOR PRODUCTION GRADE SYSTEMS! A company prefix that complies with GS1 Standards (a “GS1 Company Prefix”) is a unique identification number that is assigned to just your company by GS1 US. It’s the foundation of GS1 Standards and can be found in all of the GS1 Identification Numbers.",
+    "description": "FOR DEMONSTRATION PURPOSES ONLY: NOT TO BE USED FOR PRODUCTION GRADE SYSTEMS! A company prefix that complies with GS1 Standards (a "GS1 Company Prefix") is a unique identification number that is assigned to just your company by GS1 US. It's the foundation of GS1 Standards and can be found in all of the GS1 Identification Numbers.",
     "validFrom": "2024-01-25T12:30:00.000Z",
     "credentialSubject": {
       "id": "did:web:cbpvsvip-vc.gs1us.org",

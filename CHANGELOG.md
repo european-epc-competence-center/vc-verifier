@@ -3,6 +3,12 @@ VC Verifier Changelog
 
 ## WIP
 
+- **GS1 JSON Schema updates (API)**: Updated all GS1 credential JSON schemas to use flexible validation
+    - Changed `@context` validation from strict array equality to `allOf` with `contains` checks
+    - Changed `type` validation from strict array equality to `allOf` with `contains` checks
+    - Updated schemas: `gs1-key-schema.json`, `gs1-company-prefix-schema.json`, `gs1-prefix-schema.json`, `gs1-product-data-schema.json`, `gs1-organization-data-schema.json`, `gs1-product-key-schema.json`
+    - Schemas now accept contexts and types in any order with additional entries
+    - `gs1-key-schema.json`: Removed `license-context` requirement (now only requires 2 base contexts)
 - **Dependency upgrades (API)**: Updated all dependencies to latest versions
     - TypeScript: 4.9.5 → 5.9.3
     - Express: 4.21.1 → 5.2.1

@@ -9,6 +9,13 @@
     "@context": {
       "type": "array",
       "readOnly": true,
+      "default": [
+        "https://www.w3.org/ns/credentials/v2",
+        "https://ref.gs1.org/gs1/vc/declaration-context"
+      ],
+      "items": {
+        "type": "string"
+      },
       "allOf": [
         {
           "contains": {
@@ -19,41 +26,31 @@
           "contains": {
             "const": "https://ref.gs1.org/gs1/vc/declaration-context"
           }
-        },
-        {
-          "contains": {
-            "const": "https://ref.gs1.org/gs1/vc/license-context"
-          }
         }
-      ],
-      "default": [
-        "https://www.w3.org/ns/credentials/v2",
-        "https://ref.gs1.org/gs1/vc/declaration-context",
-        "https://ref.gs1.org/gs1/vc/license-context"
-      ],
-      "items": {
-        "type": "string"
-      },
-      "minItems": 3
+      ]
     },
     "type": {
       "type": "array",
       "readOnly": true,
-      "const": [
-        "VerifiableCredential",
-        "KeyCredential"
-      ],
       "default": [
         "VerifiableCredential",
         "KeyCredential"
       ],
       "items": {
-        "type": "string",
-        "enum": [
-          "VerifiableCredential",
-          "KeyCredential"
-        ]
-      }
+        "type": "string"
+      },
+      "allOf": [
+        {
+          "contains": {
+            "const": "VerifiableCredential"
+          }
+        },
+        {
+          "contains": {
+            "const": "KeyCredential"
+          }
+        }
+      ]
     },
     "id": {
       "type": "string",
@@ -200,8 +197,7 @@
   "example": {
     "@context": [
       "https://www.w3.org/ns/credentials/v2",
-      "https://ref.gs1.org/gs1/vc/declaration-context",
-      "https://ref.gs1.org/gs1/vc/license-context"
+      "https://ref.gs1.org/gs1/vc/declaration-context"
     ],
     "issuer": {
       "id": "did:web:healthytots.net",

@@ -9,6 +9,13 @@
     "@context": {
       "type": "array",
       "readOnly": true,
+      "default": [
+        "https://www.w3.org/ns/credentials/v2",
+        "https://ref.gs1.org/gs1/vc/license-context"
+      ],
+      "items": {
+        "type": "string"
+      },
       "allOf": [
         {
           "contains": {
@@ -20,34 +27,30 @@
             "const": "https://ref.gs1.org/gs1/vc/license-context"
           }
         }
-      ],
-      "default": [
-        "https://www.w3.org/ns/credentials/v2",
-        "https://ref.gs1.org/gs1/vc/license-context"
-      ],
-      "items": {
-        "type": "string"
-      },
-      "minItems": 2
+      ]
     },
     "type": {
       "type": "array",
       "readOnly": true,
-      "const": [
-        "VerifiableCredential",
-        "GS1CompanyPrefixLicenseCredential"
-      ],
       "default": [
         "VerifiableCredential",
         "GS1CompanyPrefixLicenseCredential"
       ],
       "items": {
-        "type": "string",
-        "enum": [
-          "VerifiableCredential",
-          "GS1CompanyPrefixLicenseCredential"
-        ]
-      }
+        "type": "string"
+      },
+      "allOf": [
+        {
+          "contains": {
+            "const": "VerifiableCredential"
+          }
+        },
+        {
+          "contains": {
+            "const": "GS1CompanyPrefixLicenseCredential"
+          }
+        }
+      ]
     },
     "id": {
       "type": "string",
@@ -166,7 +169,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "title": "Member Company Decentralized Identifier. The subject of this credential must be the issuer of all GS1 Key and Data Credential inherit from the company prefix.",
+          "title": "Member Company Decentralized Identifier. The subject of this credential must be the issuer of all GS1 Key and Data Credential inherit from the company prefix.", 
           "type": "string",
           "format": "uri"
         },
@@ -185,8 +188,7 @@
             }
           },
           "required": [
-            "gs1:partyGLN",
-            "gs1:organizationName"
+            "gs1:partyGLN", "gs1:organizationName"
           ]
         },
         "licenseValue": {
@@ -204,10 +206,7 @@
         }
       },
       "required": [
-        "id",
-        "licenseValue",
-        "organization",
-        "extendsCredential"
+        "id", "licenseValue", "organization", "extendsCredential"
       ]
     }
   },

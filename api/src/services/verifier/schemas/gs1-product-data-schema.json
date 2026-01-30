@@ -9,6 +9,14 @@
     "@context": {
       "type": "array",
       "readOnly": true,
+      "default": [
+        "https://www.w3.org/ns/credentials/v2",
+        "https://ref.gs1.org/gs1/vc/declaration-context",
+        "https://ref.gs1.org/gs1/vc/product-context"
+      ],
+      "items": {
+        "type": "string"
+      },
       "allOf": [
         {
           "contains": {
@@ -25,35 +33,30 @@
             "const": "https://ref.gs1.org/gs1/vc/product-context"
           }
         }
-      ],
-      "default": [
-        "https://www.w3.org/ns/credentials/v2",
-        "https://ref.gs1.org/gs1/vc/declaration-context",
-        "https://ref.gs1.org/gs1/vc/product-context"
-      ],
-      "items": {
-        "type": "string"
-      },
-      "minItems": 3
+      ]
     },
     "type": {
       "type": "array",
       "readOnly": true,
-      "const": [
-        "VerifiableCredential",
-        "ProductDataCredential"
-      ],
       "default": [
         "VerifiableCredential",
         "ProductDataCredential"
       ],
       "items": {
-        "type": "string",
-        "enum": [
-          "VerifiableCredential",
-          "ProductDataCredential"
-        ]
-      }
+        "type": "string"
+      },
+      "allOf": [
+        {
+          "contains": {
+            "const": "VerifiableCredential"
+          }
+        },
+        {
+          "contains": {
+            "const": "ProductDataCredential"
+          }
+        }
+      ]
     },
     "id": {
       "type": "string",
@@ -226,7 +229,7 @@
     "credentialStatus",
     "credentialSubject"
   ],
-  "example": {
+  "example":{
     "@context": [
       "https://www.w3.org/ns/credentials/v2",
       "https://ref.gs1.org/gs1/vc/declaration-context",
