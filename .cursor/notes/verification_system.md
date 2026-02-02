@@ -316,9 +316,18 @@ const gs1ValidatorRequest = {
 - `gs1-organization-data-schema.json`
 - `gs1-prefix-schema.json`
 - `gs1-product-data-schema.json`
-- `gs1-product-key-schema.json`
+
+**Schema Flexibility**:
+- `@context` and `type` fields accept flexible arrays (using `allOf` + `contains`)
+- `RenderMethod` supports flexible `id` placement: top-level `id` OR nested `template.id`
 
 **Loading**: Schemas are downloaded and cached on module initialization
+
+**Schema Sources and Caching**:
+- Local schemas loaded from `schemas/` directory using gs1.org URLs as keys
+- Remote schemas fetched from GitHub but cached using gs1.org URLs for consistency
+- `githubToGs1Mapping` maps GitHub raw URLs to canonical gs1.org schema URLs
+- Both local and remote loading use the same gs1.org URL cache keys
 
 **Function**: `getJsonSchema(schemaUrl)` - Returns cached schema or throws
 

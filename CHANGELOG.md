@@ -6,6 +6,14 @@ VC Verifier Changelog
 - **Dockerfile fix (API)**: Removed obsolete `@gs1us/vc-verifier-rules` installation from Dockerfile
     - The project uses `@eecc/vc-verifier-rules` (specified in `package.json`)
     - The redundant line was installing the old GS1 US package before `npm i` installed the correct EECC version
+- **RenderMethod schema flexibility (API)**: Updated GS1 JSON schemas to support flexible `renderMethod.id` placement
+    - Modified `RenderMethod` definition to accept `id` at top level or nested under `template.id`
+    - Updated schemas: `gs1-key-schema.json`, `gs1-company-prefix-schema.json`, `gs1-prefix-schema.json`, `gs1-product-data-schema.json`, `gs1-organization-data-schema.json`
+    - Maintains backward compatibility with existing credentials while supporting new nested structure
+- **Schema caching improvement (API)**: Updated `downloadSchemasFromRemote()` to use gs1.org URLs as cache keys
+    - Added `githubToGs1Mapping` to map GitHub raw URLs to canonical gs1.org schema URLs
+    - Schemas fetched from GitHub are now cached with gs1.org URLs for consistency with local schema loading
+    - Ensures seamless transition between local and remote schema sources
 
 ## 3.3.0 (2026-01-30)
 

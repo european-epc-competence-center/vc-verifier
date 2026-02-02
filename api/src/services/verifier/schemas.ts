@@ -9,13 +9,22 @@ const __dirname = dirname(__filename);
 // Cache for loaded schemas
 const schemaCache = new Map<string, any>();
 
-// Schema mapping: URL to local filename
+// Schema mapping: GS1 URL to local filename
 const schemaMapping: Record<string, string> = {
   'https://id.gs1.org/vc/schema/v1/key': 'gs1-key-schema.json',
   'https://id.gs1.org/vc/schema/v1/companyprefix': 'gs1-company-prefix-schema.json',
   'https://id.gs1.org/vc/schema/v1/prefix': 'gs1-prefix-schema.json',
   'https://id.gs1.org/vc/schema/v1/productdata': 'gs1-product-data-schema.json',
   'https://id.gs1.org/vc/schema/v1/organizationdata': 'gs1-organization-data-schema.json'
+};
+
+// GitHub URL to GS1 URL mapping for remote downloads
+const githubToGs1Mapping: Record<string, string> = {
+  'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/key.json': 'https://id.gs1.org/vc/schema/v1/key',
+  'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/companyprefix.json': 'https://id.gs1.org/vc/schema/v1/companyprefix',
+  'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/prefix.json': 'https://id.gs1.org/vc/schema/v1/prefix',
+  'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/productdata.json': 'https://id.gs1.org/vc/schema/v1/productdata',
+  'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/organizationdata.json': 'https://id.gs1.org/vc/schema/v1/organizationdata'
 };
 
 // Synchronous schema loader for GS1 library
@@ -53,28 +62,21 @@ export function loadLocalSchemas(): void {
 // Original function to download schemas from remote URLs
 // Currently not in use, but kept for future use once the upstream schemas are fixed
 export async function downloadSchemasFromRemote(): Promise<void> {
-  const schemas = [
-    'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/key.json',
-    'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/companyprefix.json',
-    'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/prefix.json',
-    'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/productdata.json',
-    'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/organizationdata.json'
-  ];
+  const githubSchemas = Object.keys(githubToGs1Mapping);
 
-  for (const schemaUrl of schemas) {
+  for (const githubUrl of githubSchemas) {
+    const gs1Url = githubToGs1Mapping[githubUrl];
     try {
-      if (!schemaCache.has(schemaUrl)) {
-        const response = await fetch(schemaUrl);
+      if (!schemaCache.has(gs1Url)) {
+        const response = await fetch(githubUrl);
         if (response.ok) {
           const schema = await response.json();
-          schemaCache.set(schemaUrl, schema);
-          // Also cache without .json extension
-          const urlWithoutExtension = schemaUrl.replace('.json', '');
-          schemaCache.set(urlWithoutExtension, schema);
+          // Cache using the gs1.org URL as the key
+          schemaCache.set(gs1Url, schema);
         }
       }
     } catch (error) {
-      console.error(`Failed to download schema ${schemaUrl}:`, error);
+      console.error(`Failed to download schema from ${githubUrl}:`, error);
     }
   }
 }
