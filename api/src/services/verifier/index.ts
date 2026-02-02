@@ -45,7 +45,8 @@ interface VerificationOptions {
 // Constants for better maintainability
 const CREDENTIAL_TYPES = {
   VERIFIABLE_CREDENTIAL: 'VerifiableCredential',
-  VERIFIABLE_PRESENTATION: 'VerifiablePresentation'
+  VERIFIABLE_PRESENTATION: 'VerifiablePresentation',
+  ENVELOPED_VERIFIABLE_CREDENTIAL: 'EnvelopedVerifiableCredential'
 } as const;
 
 const PROOF_TYPES = {
@@ -60,6 +61,8 @@ const STATUS_TYPES = {
   REVOCATION_LIST_2020: 'RevocationList2020Status',
   BITSTRING_STATUS_LIST: 'BitstringStatusListEntry'
 } as const;
+
+const DATA_URL_PREFIX = 'data:application/vc+jwt,';
 
 import { documentLoader } from "../documentLoader/index.js";
 
@@ -181,18 +184,53 @@ function getCheckStatus(
 }
 
 export class Verifier {
+  /**
+   * Extracts JWT from an enveloped verifiable credential structure
+   * @param input - The input that might be an envelope wrapper
+   * @returns The JWT string if enveloped, or the original input
+   */
+  private static extractFromEnvelope(
+    input: any
+  ): Verifiable | verifiableJwt | string {
+    // Check if input has verifiableCredential wrapper
+    if (input && typeof input === 'object' && 'verifiableCredential' in input) {
+      const envelope = input.verifiableCredential;
+      
+      // Check if it's an EnvelopedVerifiableCredential
+      if (envelope && typeof envelope === 'object') {
+        const types = Array.isArray(envelope.type) ? envelope.type : [envelope.type];
+        
+        if (types.includes(CREDENTIAL_TYPES.ENVELOPED_VERIFIABLE_CREDENTIAL)) {
+          // Extract JWT from id field
+          if (envelope.id && typeof envelope.id === 'string') {
+            // Remove data URL prefix if present
+            if (envelope.id.startsWith(DATA_URL_PREFIX)) {
+              return envelope.id.substring(DATA_URL_PREFIX.length);
+            }
+            return envelope.id;
+          }
+        }
+      }
+    }
+    
+    return input;
+  }
+
   static async verify(
-    input: Verifiable | verifiableJwt | string,
+    input: Verifiable | verifiableJwt | string | EnvelopeWrapper,
     challenge?: string,
     domain?: string
   ): Promise<VerificationResult> {
     const options: VerificationOptions = { challenge, domain };
 
-    if (typeof input === 'string') {
-      return this.verifyJWTInput(input, options);
+    // Extract from envelope if present
+    const unwrappedInput = this.extractFromEnvelope(input);
+
+    if (typeof unwrappedInput === 'string') {
+      return this.verifyJWTInput(unwrappedInput, options);
     }
 
-    return this.verifyObjectInput(input as Verifiable, options);
+    return this.verifyObjectInput(unwrappedInput as Verifiable, options);
   }
 
   private static async verifyJWTInput(

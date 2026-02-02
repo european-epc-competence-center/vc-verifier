@@ -42,3 +42,13 @@ type VerifiablePresentation = Verifiable & {
     holder: string | any;
     verifiableCredential: VerifiableCredential | VerifiableCredential[];
 }
+
+type EnvelopedVerifiableCredential = {
+    '@context': (string | any)[];
+    type: string | string[];
+    id: string;
+}
+
+interface EnvelopeWrapper {
+    verifiableCredential: EnvelopedVerifiableCredential;
+}
