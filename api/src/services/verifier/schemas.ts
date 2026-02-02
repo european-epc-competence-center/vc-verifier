@@ -54,11 +54,11 @@ export function loadLocalSchemas(): void {
 // Currently not in use, but kept for future use once the upstream schemas are fixed
 export async function downloadSchemasFromRemote(): Promise<void> {
   const schemas = [
-    'https://id.gs1.org/vc/schema/v1/key.json',
-    'https://id.gs1.org/vc/schema/v1/companyprefix.json',
-    'https://id.gs1.org/vc/schema/v1/prefix.json',
-    'https://id.gs1.org/vc/schema/v1/productdata.json',
-    'https://id.gs1.org/vc/schema/v1/organizationdata.json'
+    'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/key.json',
+    'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/companyprefix.json',
+    'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/prefix.json',
+    'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/productdata.json',
+    'https://raw.githubusercontent.com/gs1/GS1DigitalLicenses/refs/heads/main/schemas/organizationdata.json'
   ];
 
   for (const schemaUrl of schemas) {
@@ -82,5 +82,5 @@ export async function downloadSchemasFromRemote(): Promise<void> {
 // Async wrapper for compatibility (currently uses local schemas as a temporary workaround)
 export async function downloadAndCacheSchemas(): Promise<void> {
   loadLocalSchemas();
-  // TODO: Switch back to downloadSchemasFromRemote() once upstream schemas are fixed
+  // await downloadSchemasFromRemote(); // once upstream schemas are fixed
 }
