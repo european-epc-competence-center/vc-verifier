@@ -187,6 +187,25 @@ async function _checkSingleBitstringStatus({
     ({ document: slCredential } = await documentLoader(
       credentialStatus.statusListCredential
     ));
+    
+    // Check if the loaded document is an EnvelopedVerifiableCredential
+    if (slCredential && typeof slCredential === 'object') {
+      const types = Array.isArray(slCredential.type) ? slCredential.type : [slCredential.type];
+      
+      if (types.includes('EnvelopedVerifiableCredential')) {
+        // Extract JWT from the envelope
+        if (slCredential.id && typeof slCredential.id === 'string') {
+          const DATA_URL_PREFIX = 'data:application/vc+jwt,';
+          if (slCredential.id.startsWith(DATA_URL_PREFIX)) {
+            slCredential = slCredential.id.substring(DATA_URL_PREFIX.length);
+          } else {
+            slCredential = slCredential.id;
+          }
+        } else {
+          throw new Error('EnvelopedVerifiableCredential missing id field with JWT');
+        }
+      }
+    }
   } catch (e: any) {
     const err = new Error(
       'Could not load "BitstringStatusListCredential"; ' +
@@ -332,9 +351,27 @@ async function _checkSingleBitstringStatus({
   }
 
   const { encodedList } = credentialSubject;
-  const list = await BitstringStatusList.decode({ encodedList });
+  
+  // Strip multibase prefix if present (e.g., 'u' for base64url)
+  let encodedData = encodedList;
+  if (encodedList && encodedList.length > 0) {
+    const firstChar = encodedList[0];
+    if (['u', 'z', 'm', 'f'].includes(firstChar) && !/^[A-Za-z0-9+/=_-]{10,}$/.test(firstChar)) {
+      encodedData = encodedList.substring(1);
+    }
+  }
+  
+  let list;
+  try {
+    list = await BitstringStatusList.decode({ encodedList: encodedData });
+  } catch (decodeError: any) {
+    throw new Error(`Could not decode encoded status list; reason: ${decodeError?.message || decodeError}`);
+  }
 
-  const verified = !list.getStatus(index);
+  const statusBit = list.getStatus(index);
+  const verified = !statusBit;
+  
+  console.log(`Status check for index ${index}: bit=${statusBit}, verified=${verified}`);
   
   return { verified, credentialStatus };
 }
