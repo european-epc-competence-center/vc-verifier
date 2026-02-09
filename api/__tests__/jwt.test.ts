@@ -247,7 +247,7 @@ describe("Verifier API Test for JWT Credentials", () => {
         const res = await request(server)
             .post("/api/verifier/gs1")
             .send([validKeyCredentialAsJwt]);
-        console.log('Response:', JSON.stringify(res.body, null, 2));
+            
         expect(res.statusCode).toEqual(200);
         expect(res.body).toBeInstanceOf(Array);
         expect(res.body[0].verified).toBe(true);
