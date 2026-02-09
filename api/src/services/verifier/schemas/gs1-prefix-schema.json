@@ -234,7 +234,7 @@
       "name": "GS1 Global"
     },
     "name": "GS1 Prefix License",
-    "description": "FOR DEMONSTRATION PURPOSES ONLY: NOT TO BE USED FOR PRODUCTION GRADE SYSTEMS! A company prefix that complies with GS1 Standards (a "GS1 Company Prefix") is a unique identification number that is assigned to just your company by GS1 US. It's the foundation of GS1 Standards and can be found in all of the GS1 Identification Numbers.",
+    "description": "FOR DEMONSTRATION PURPOSES ONLY: NOT TO BE USED FOR PRODUCTION GRADE SYSTEMS! A company prefix that complies with GS1 Standards (a \"GS1 Company Prefix\") is a unique identification number that is assigned to just your company by GS1 US. It's the foundation of GS1 Standards and can be found in all of the GS1 Identification Numbers.",
     "validFrom": "2024-01-25T12:30:00.000Z",
     "credentialSubject": {
       "id": "did:web:cbpvsvip-vc.gs1us.org",

@@ -3,6 +3,9 @@ VC Verifier Changelog
 
 ## WIP
 
+## 3.3.1 (2026-02-05)
+
+- fix JSON error in schema
 - **Dockerfile fix (API)**: Removed obsolete `@gs1us/vc-verifier-rules` installation from Dockerfile
     - The project uses `@eecc/vc-verifier-rules` (specified in `package.json`)
     - The redundant line was installing the old GS1 US package before `npm i` installed the correct EECC version
