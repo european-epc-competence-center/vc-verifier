@@ -46,7 +46,6 @@ interface VerificationOptions {
 const CREDENTIAL_TYPES = {
   VERIFIABLE_CREDENTIAL: 'VerifiableCredential',
   VERIFIABLE_PRESENTATION: 'VerifiablePresentation',
-  ENVELOPED_VERIFIABLE_CREDENTIAL: 'EnvelopedVerifiableCredential'
 } as const;
 
 const PROOF_TYPES = {

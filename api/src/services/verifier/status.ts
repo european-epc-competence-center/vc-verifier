@@ -353,10 +353,7 @@ async function _checkSingleBitstringStatus({
     throw new Error(`Could not decode encoded status list; reason: ${decodeError?.message || decodeError}`);
   }
 
-  const statusBit = list.getStatus(index);
-  const verified = !statusBit;
-  
-  console.log(`Status check for index ${index}: bit=${statusBit}, verified=${verified}`);
+  const verified = !list.getStatus(index);
   
   return { verified, credentialStatus };
 }
