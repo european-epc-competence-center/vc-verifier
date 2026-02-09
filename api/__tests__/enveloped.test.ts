@@ -22,7 +22,6 @@ describe("Verifier API Test for EnvelopedCredentials", () => {
 
     test("Verify single credential", async () => {
         const res = await request(server).post("/api/verifier").send([envelopedCredential]);
-        console.log("EnvelopedCredential result: ", res.body[0]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
         expect(res.body[0].verified).toBe(true);

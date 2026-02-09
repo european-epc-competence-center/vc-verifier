@@ -42,10 +42,9 @@ interface VerificationOptions {
   domain?: string;
 }
 
-// Constants for better maintainability
 const CREDENTIAL_TYPES = {
   VERIFIABLE_CREDENTIAL: 'VerifiableCredential',
-  VERIFIABLE_PRESENTATION: 'VerifiablePresentation',
+  VERIFIABLE_PRESENTATION: 'VerifiablePresentation'
 } as const;
 
 const PROOF_TYPES = {
@@ -185,7 +184,7 @@ function getCheckStatus(
 export class Verifier {
 
   static async verify(
-    input: Verifiable | verifiableJwt | string | EnvelopeWrapper,
+    input: Verifiable | verifiableJwt | string,
     challenge?: string,
     domain?: string
   ): Promise<VerificationResult> {
