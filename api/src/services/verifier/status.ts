@@ -3,6 +3,7 @@ import { Bitstring } from "@digitalbazaar/bitstring";
 // @ts-ignore
 import { verifyCredential as vcVerifyCredential } from "@digitalbazaar/vc";
 import { JWTService } from './jwt.js';
+import { unwrapEnvelopedCredential } from './envelope.js';
 
 export class BitstringStatusList {
     private bitstring: any;
@@ -188,24 +189,8 @@ async function _checkSingleBitstringStatus({
       credentialStatus.statusListCredential
     ));
     
-    // Check if the loaded document is an EnvelopedVerifiableCredential
-    if (slCredential && typeof slCredential === 'object') {
-      const types = Array.isArray(slCredential.type) ? slCredential.type : [slCredential.type];
-      
-      if (types.includes('EnvelopedVerifiableCredential')) {
-        // Extract JWT from the envelope
-        if (slCredential.id && typeof slCredential.id === 'string') {
-          const DATA_URL_PREFIX = 'data:application/vc+jwt,';
-          if (slCredential.id.startsWith(DATA_URL_PREFIX)) {
-            slCredential = slCredential.id.substring(DATA_URL_PREFIX.length);
-          } else {
-            slCredential = slCredential.id;
-          }
-        } else {
-          throw new Error('EnvelopedVerifiableCredential missing id field with JWT');
-        }
-      }
-    }
+    // Unwrap if it's an enveloped credential
+    slCredential = unwrapEnvelopedCredential(slCredential);
   } catch (e: any) {
     const err = new Error(
       'Could not load "BitstringStatusListCredential"; ' +

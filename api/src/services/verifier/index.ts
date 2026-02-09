@@ -62,13 +62,13 @@ const STATUS_TYPES = {
   BITSTRING_STATUS_LIST: 'BitstringStatusListEntry'
 } as const;
 
-const DATA_URL_PREFIX = 'data:application/vc+jwt,';
-
 import { documentLoader } from "../documentLoader/index.js";
 
 import { JWTService } from "./jwt.js";
 
 import { checkBitstringStatus } from "./status.js";
+
+import { unwrapEnvelopedCredential } from "./envelope.js";
 
 const { createVerifyCryptosuite } = ecdsaSd2023Cryptosuite;
 const {
@@ -184,37 +184,6 @@ function getCheckStatus(
 }
 
 export class Verifier {
-  /**
-   * Extracts JWT from an enveloped verifiable credential structure
-   * @param input - The input that might be an envelope wrapper
-   * @returns The JWT string if enveloped, or the original input
-   */
-  private static extractFromEnvelope(
-    input: any
-  ): Verifiable | verifiableJwt | string {
-    // Check if input has verifiableCredential wrapper
-    if (input && typeof input === 'object' && 'verifiableCredential' in input) {
-      const envelope = input.verifiableCredential;
-      
-      // Check if it's an EnvelopedVerifiableCredential
-      if (envelope && typeof envelope === 'object') {
-        const types = Array.isArray(envelope.type) ? envelope.type : [envelope.type];
-        
-        if (types.includes(CREDENTIAL_TYPES.ENVELOPED_VERIFIABLE_CREDENTIAL)) {
-          // Extract JWT from id field
-          if (envelope.id && typeof envelope.id === 'string') {
-            // Remove data URL prefix if present
-            if (envelope.id.startsWith(DATA_URL_PREFIX)) {
-              return envelope.id.substring(DATA_URL_PREFIX.length);
-            }
-            return envelope.id;
-          }
-        }
-      }
-    }
-    
-    return input;
-  }
 
   static async verify(
     input: Verifiable | verifiableJwt | string | EnvelopeWrapper,
@@ -223,8 +192,8 @@ export class Verifier {
   ): Promise<VerificationResult> {
     const options: VerificationOptions = { challenge, domain };
 
-    // Extract from envelope if present
-    const unwrappedInput = this.extractFromEnvelope(input);
+    // Unwrap enveloped credential if present
+    const unwrappedInput = unwrapEnvelopedCredential(input);
 
     if (typeof unwrappedInput === 'string') {
       return this.verifyJWTInput(unwrappedInput, options);
