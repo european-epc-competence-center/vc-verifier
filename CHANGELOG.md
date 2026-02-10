@@ -3,6 +3,10 @@ VC Verifier Changelog
 
 ## WIP
 
+## 3.4.1 (2026-02-10)
+
+- support type EnvelopedVerifiableCredential and multibase base64 prefix for encodedList status VCs
+
 ## 3.3.1 (2026-02-05)
 
 - fix JSON error in schema
