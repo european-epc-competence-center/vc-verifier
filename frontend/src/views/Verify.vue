@@ -140,8 +140,15 @@ export default {
             // Clear any previous JWT metadata when starting new verification
             clearAllJWTMetadata();
             
-            // Convert JWT strings to verifiable objects before processing
+            // Process verifiables - handle wrapped credentials, JWTs, and regular credentials
             const processedVerifiables = verifiables.map(v => {
+                // Check if it's a wrapped credential with verifiableCredential property
+                if (v && typeof v === 'object' && 'verifiableCredential' in v && !v.type) {
+                    // Keep wrapped credentials as-is, they will be sent to API unchanged
+                    return v;
+                }
+                
+                // Convert JWT strings to verifiable objects for display
                 if (typeof v === 'string' && isJWT(v)) {
                     try {
                         return wrapJWTCredential(v);
@@ -294,16 +301,29 @@ export default {
 
             let isGs1 = false;
             let apiPayload = verifiable;
+            let displayCredential = verifiable;
 
-            // Check if this is a JWT credential using our metadata system
-            const jwtMetadata = getJWTMetadata(verifiable.id);
-            if (jwtMetadata && jwtMetadata.isJWTCredential) {
-                // Send the original JWT to the API for verification
-                apiPayload = jwtMetadata.originalJWT;
+            // Check if this is a wrapped credential with verifiableCredential property
+            if (verifiable && typeof verifiable === 'object' && 'verifiableCredential' in verifiable && !verifiable.type) {
+                // Send the wrapped JSON as-is to the API - API will handle unwrapping
+                apiPayload = verifiable;
                 
-                // For JWT credentials extract the actual credential for display
-                isGs1 = isGs1Credential(verifiable);
-                this.addCredential({ ...verifiable });
+                // Extract the actual credential for display only
+                displayCredential = verifiable.verifiableCredential;
+                isGs1 = isGs1Credential(displayCredential);
+                this.addCredential({ ...displayCredential });
+            }
+            // Check if this is a JWT credential using our metadata system
+            else if (verifiable.id && getJWTMetadata(verifiable.id)) {
+                const jwtMetadata = getJWTMetadata(verifiable.id);
+                if (jwtMetadata && jwtMetadata.isJWTCredential) {
+                    // Send the original JWT to the API for verification
+                    apiPayload = jwtMetadata.originalJWT;
+                    
+                    // For JWT credentials extract the actual credential for display
+                    isGs1 = isGs1Credential(verifiable);
+                    this.addCredential({ ...verifiable });
+                }
             } else if (getVerifiableType(verifiable) == VerifiableType.PRESENTATION) {
                 const presentation = {
                     presentation:
@@ -336,7 +356,15 @@ export default {
 
             console.log(result)
 
+            // Handle wrapped credentials - use displayCredential from earlier
+            if (verifiable && typeof verifiable === 'object' && 'verifiableCredential' in verifiable && !verifiable.type) {
+                this.assignResult(displayCredential.id, result);
+                verifiable.verified = result.verified;
+                return;
+            }
+
             // Handle JWT credentials using metadata system
+            const jwtMetadata = getJWTMetadata(verifiable.id);
             if (jwtMetadata && jwtMetadata.isJWTCredential) {
                 // JWT verification - assign result to the credential
                 this.assignResult(verifiable.id, result);

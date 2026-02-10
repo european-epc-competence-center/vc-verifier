@@ -42,7 +42,6 @@ interface VerificationOptions {
   domain?: string;
 }
 
-// Constants for better maintainability
 const CREDENTIAL_TYPES = {
   VERIFIABLE_CREDENTIAL: 'VerifiableCredential',
   VERIFIABLE_PRESENTATION: 'VerifiablePresentation'
@@ -66,6 +65,8 @@ import { documentLoader } from "../documentLoader/index.js";
 import { JWTService } from "./jwt.js";
 
 import { checkBitstringStatus } from "./status.js";
+
+import { unwrapEnvelopedCredential } from "./envelope.js";
 
 const { createVerifyCryptosuite } = ecdsaSd2023Cryptosuite;
 const {
@@ -181,6 +182,7 @@ function getCheckStatus(
 }
 
 export class Verifier {
+
   static async verify(
     input: Verifiable | verifiableJwt | string,
     challenge?: string,
@@ -188,11 +190,14 @@ export class Verifier {
   ): Promise<VerificationResult> {
     const options: VerificationOptions = { challenge, domain };
 
-    if (typeof input === 'string') {
-      return this.verifyJWTInput(input, options);
+    // Unwrap enveloped credential if present
+    const unwrappedInput = unwrapEnvelopedCredential(input);
+
+    if (typeof unwrappedInput === 'string') {
+      return this.verifyJWTInput(unwrappedInput, options);
     }
 
-    return this.verifyObjectInput(input as Verifiable, options);
+    return this.verifyObjectInput(unwrappedInput as Verifiable, options);
   }
 
   private static async verifyJWTInput(

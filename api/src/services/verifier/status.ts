@@ -3,6 +3,7 @@ import { Bitstring } from "@digitalbazaar/bitstring";
 // @ts-ignore
 import { verifyCredential as vcVerifyCredential } from "@digitalbazaar/vc";
 import { JWTService } from './jwt.js';
+import { unwrapEnvelopedCredential } from './envelope.js';
 
 export class BitstringStatusList {
     private bitstring: any;
@@ -187,6 +188,9 @@ async function _checkSingleBitstringStatus({
     ({ document: slCredential } = await documentLoader(
       credentialStatus.statusListCredential
     ));
+    
+    // Unwrap if it's an enveloped credential
+    slCredential = unwrapEnvelopedCredential(slCredential);
   } catch (e: any) {
     const err = new Error(
       'Could not load "BitstringStatusListCredential"; ' +
@@ -332,7 +336,34 @@ async function _checkSingleBitstringStatus({
   }
 
   const { encodedList } = credentialSubject;
-  const list = await BitstringStatusList.decode({ encodedList });
+  
+  if (!encodedList || encodedList.length === 0) {
+    throw new Error('encodedList is empty');
+  }
+  
+  let list;
+  let firstError: Error | undefined;
+  
+  // If starts with 'u', try with it stripped first (likely multibase prefix)
+  if (encodedList[0] === 'u' && encodedList.length > 1) {
+    try {
+      list = await BitstringStatusList.decode({ encodedList: encodedList.substring(1) });
+    } catch (error: any) {
+      firstError = error;
+    }
+  }
+  
+  // Try as raw base64 (either no prefix, or 'u' is part of the data)
+  if (!list) {
+    try {
+      list = await BitstringStatusList.decode({ encodedList });
+    } catch (error: any) {
+      const errorMsg = firstError 
+        ? `Could not decode encoded status list. Tried with 'u' prefix stripped (${firstError.message}), then as raw base64 (${error?.message || error})`
+        : `Could not decode encoded status list; reason: ${error?.message || error}`;
+      throw new Error(errorMsg);
+    }
+  }
 
   const verified = !list.getStatus(index);
   
