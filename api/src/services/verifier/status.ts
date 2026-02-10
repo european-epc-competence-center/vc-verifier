@@ -337,20 +337,32 @@ async function _checkSingleBitstringStatus({
 
   const { encodedList } = credentialSubject;
   
-  // Strip multibase prefix if present (e.g., 'u' for base64url)
-  let encodedData = encodedList;
-  if (encodedList && encodedList.length > 0) {
-    const firstChar = encodedList[0];
-    if (['u', 'z', 'm', 'f'].includes(firstChar) && !/^[A-Za-z0-9+/=_-]{10,}$/.test(firstChar)) {
-      encodedData = encodedList.substring(1);
-    }
+  if (!encodedList || encodedList.length === 0) {
+    throw new Error('encodedList is empty');
   }
   
   let list;
-  try {
-    list = await BitstringStatusList.decode({ encodedList: encodedData });
-  } catch (decodeError: any) {
-    throw new Error(`Could not decode encoded status list; reason: ${decodeError?.message || decodeError}`);
+  let firstError: Error | undefined;
+  
+  // If starts with 'u', try with it stripped first (likely multibase prefix)
+  if (encodedList[0] === 'u' && encodedList.length > 1) {
+    try {
+      list = await BitstringStatusList.decode({ encodedList: encodedList.substring(1) });
+    } catch (error: any) {
+      firstError = error;
+    }
+  }
+  
+  // Try as raw base64 (either no prefix, or 'u' is part of the data)
+  if (!list) {
+    try {
+      list = await BitstringStatusList.decode({ encodedList });
+    } catch (error: any) {
+      const errorMsg = firstError 
+        ? `Could not decode encoded status list. Tried with 'u' prefix stripped (${firstError.message}), then as raw base64 (${error?.message || error})`
+        : `Could not decode encoded status list; reason: ${error?.message || error}`;
+      throw new Error(errorMsg);
+    }
   }
 
   const verified = !list.getStatus(index);
