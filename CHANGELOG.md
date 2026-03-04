@@ -3,6 +3,10 @@ VC Verifier Changelog
 
 ## WIP
 
+## 3.4.2 (2026-03-04)
+
+- add did:key-Method and multikey support for jwt verification
+
 ## 3.4.1 (2026-02-10)
 
 - support type EnvelopedVerifiableCredential and multibase base64 prefix for encodedList status VCs
