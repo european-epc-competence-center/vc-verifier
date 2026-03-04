@@ -1,7 +1,16 @@
 import { DIDDocument, DIDResolutionResult, DIDResolver, ParsedDID } from 'did-resolver';
 // @ts-ignore
 import {driver} from '@digitalbazaar/did-method-key';
+// @ts-ignore
+import * as EcdsaMultikey from '@digitalbazaar/ecdsa-multikey';
+
 const didKeyDriver = driver();
+
+// Register P-256 (ES256) key support
+didKeyDriver.use({
+  multibaseMultikeyHeader: 'zDna',
+  fromMultibase: EcdsaMultikey.from
+});
 
 
 export function getResolver(): Record<string, DIDResolver> {

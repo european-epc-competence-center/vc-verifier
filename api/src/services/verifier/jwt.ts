@@ -1,5 +1,7 @@
 import * as jose from 'jose';
 import { ed25519 } from '@noble/curves/ed25519.js';
+// @ts-ignore
+import * as EcdsaMultikey from '@digitalbazaar/ecdsa-multikey';
 import { documentLoader } from '../documentLoader/index.js';
 import { extractPublicKeyBytes, stringToBytes, base64ToBytes, type KNOWN_KEY_TYPE } from '../../utils/crypto.js';
 
@@ -50,7 +52,12 @@ export class JWTService {
 
     const { issuer, kid, alg } = this.extractJWTParams(decoded);
     
-    if (!issuer || !kid) {
+    if (!kid) {
+      return this.createFailureResult(jwt, decoded);
+    }
+
+    // A did:key kid is self-contained and doesn't require an issuer
+    if (!issuer && !this.isSelfContainedDID(kid)) {
       return this.createFailureResult(jwt, decoded);
     }
 
@@ -80,9 +87,22 @@ export class JWTService {
     return { issuer, kid, alg };
   }
 
-  private static async loadVerificationMethod(issuer: string, kid: string) {
+  private static isSelfContainedDID(kid: string): boolean {
+    return kid.startsWith('did:key:');
+  }
+
+  private static async loadVerificationMethod(issuer: string | undefined, kid: string) {
     try {
-      const verificationMethodUrl = kid.includes('#') ? kid : `${issuer}#${kid}`;
+      let verificationMethodUrl: string;
+      if (kid.includes('#')) {
+        verificationMethodUrl = kid;
+      } else if (this.isSelfContainedDID(kid)) {
+        // For self-contained DIDs like did:key, the verification method id is did#keyId
+        const keyId = kid.split(':').pop()!;
+        verificationMethodUrl = `${kid}#${keyId}`;
+      } else {
+        verificationMethodUrl = `${issuer}#${kid}`;
+      }
       const res = await documentLoader(verificationMethodUrl);
       return res.document;
     } catch (error) {
@@ -98,8 +118,22 @@ export class JWTService {
     if (this.isEd25519VerificationMethod(verificationMethod.type) && this.isEd25519Algorithm(alg)) {
       return this.verifyEd25519(jwt, verificationMethod);
     }
+
+    if (verificationMethod.type === 'Multikey' && verificationMethod.publicKeyMultibase) {
+      return this.verifyWithMultikey(jwt, verificationMethod, alg);
+    }
     
     return false;
+  }
+
+  private static async verifyWithMultikey(jwt: string, verificationMethod: any, alg: string): Promise<boolean> {
+    try {
+      const keyPair = await EcdsaMultikey.from(verificationMethod);
+      const publicKeyJwk = await EcdsaMultikey.toJwk({ keyPair, secretKey: false });
+      return this.verifyWithJWK(jwt, publicKeyJwk, alg);
+    } catch (error) {
+      return false;
+    }
   }
 
   private static async verifyWithJWK(jwt: string, publicKeyJwk: any, alg: string): Promise<boolean> {
