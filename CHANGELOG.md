@@ -3,6 +3,9 @@ VC Verifier Changelog
 
 ## WIP
 
+
+## 3.4.3 (2026-03-10)
+
 - Fix GS1 JWT verification: pre-decode JWT payload before passing to `@eecc/vc-verifier-rules` to avoid `atob()` "Invalid character" error caused by base64url `-` and `_` characters
 
 ## 3.4.2 (2026-03-04)
