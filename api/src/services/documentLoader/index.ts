@@ -9,6 +9,11 @@ import { TTLCache } from "./ttlCache.js";
 const cacheTTLHours = process.env.DOCUMENT_CACHE_TTL_HOURS ? Number.parseInt(process.env.DOCUMENT_CACHE_TTL_HOURS) : 1;
 const cache = new TTLCache<any>(cacheTTLHours);
 
+// Single shared resolver instance so its internal cache (cache: true) is reused
+// across all DID lookups within a process lifetime. Without this, each call to
+// getResolver() inside the documentLoader would create a fresh instance with an
+// empty cache, causing redundant network fetches for every credential verification.
+const didResolver = getResolver();
 
 const documentLoader: (url: string) => Promise<any> =
   jsonldSignatures.extendContextLoader(async (url: string) => {
@@ -16,8 +21,12 @@ const documentLoader: (url: string) => Promise<any> =
     if (url.startsWith("did:")) {
       const [did, verificationMethod] = url.split("#");
 
-      // fetch document
-      const didDocument: any = (await getResolver().resolve(url)).didDocument;
+      // fetch document (shared resolver caches the DID document across lookups)
+      const didDocument: any = (await didResolver.resolve(url)).didDocument;
+
+      if (!didDocument) {
+        throw new Error(`Could not resolve DID document for: ${did}`);
+      }
 
       // if a verifcation method of the DID document is queried (not yet implemented in the official resolver)
       if (verificationMethod && didDocument) {
@@ -88,9 +97,24 @@ const documentLoader: (url: string) => Promise<any> =
     };
   });
 
+function decodeJWTPayload(jwt: string): any {
+  try {
+    // JWTs use base64url encoding; atob() only handles standard base64,
+    // so replace - with + and _ with / before decoding.
+    const base64 = jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(atob(base64));
+  } catch {
+    return null;
+  }
+}
+
+function isJWT(value: any): value is string {
+  return typeof value === 'string' && value.startsWith('ey') && value.split('.').length === 3;
+}
+
 function isStatusListCredential(document: any): boolean {
   if (!document) return false;
-  const payload = typeof document === 'string' && document.startsWith('ey') && document.split('.').length === 3 ? JSON.parse(atob(document.split('.')[1])) : document;
+  const payload = isJWT(document) ? decodeJWTPayload(document) : document;
   
   const types = payload?.type || [];
   return Array.isArray(types) && (
@@ -102,7 +126,7 @@ function isStatusListCredential(document: any): boolean {
 
 function isVerifiableCredential(document: any): boolean {
   if (!document) return false;
-  const payload = typeof document === 'string' && document.startsWith('ey') && document.split('.').length === 3 ? JSON.parse(atob(document.split('.')[1])) : document;
+  const payload = isJWT(document) ? decodeJWTPayload(document) : document;
   
   return payload?.type && 
          Array.isArray(payload.type) && 

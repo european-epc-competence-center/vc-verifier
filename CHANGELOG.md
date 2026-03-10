@@ -3,6 +3,12 @@ VC Verifier Changelog
 
 ## WIP
 
+## 3.4.4 (2026-03-10)
+
+
+- Remove stale tests for `RevocationList2020Status` and `ecdsa-sd-2023` selective disclosure that were deactivated due to library incompatibilities (`@digitalbazaar/vc-revocation-list` v7, `ecdsa-sd-2023-cryptosuite` v3); remove associated dead credential fixtures and commented-out domain/challenge presentation tests
+- Fix shared `didResolver` instance: instantiate `did-resolver` once at module level so its `cache: true` is effective across all DID lookups within a process, avoiding redundant network fetches
+- Fix `atob()` base64url incompatibility in `documentLoader` for JWT-based status list and credential detection; add `decodeJWTPayload` helper that converts base64url to standard base64 before decoding
 
 ## 3.4.3 (2026-03-10)
 
