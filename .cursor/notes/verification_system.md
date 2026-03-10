@@ -274,6 +274,8 @@ await checkStatus({
 
 **Package**: `@eecc/vc-verifier-rules`
 
+**Known Bug**: The package uses `atob()` to decode JWT payloads, but `atob()` only accepts standard base64, not base64url. JWTs use base64url (`-` instead of `+`, `_` instead of `/`), so any JWT with those characters causes `"Invalid character"` inside the GS1 rules package. **Workaround**: `checkGS1Credential()` in `gs1.ts` pre-decodes the JWT payload via `JWTService.decodeJWT()` and passes the plain JSON object instead of the raw JWT string to `checkGS1CredentialWithoutPresentation()`.
+
 **Configuration**:
 ```typescript
 const gs1ValidatorRequest = {
