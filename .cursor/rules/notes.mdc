@@ -1,46 +1,42 @@
 ---
 alwaysApply: true
 ---
+
 # AI Notes
 
-The  `.cursor/notes` folder contains notes about the project.
+The `.cursor/notes` folder contains notes about this project.
 The notes form a knowledge base about the project to be used by the AI Agents working on the project. They should help you when working with the same code again in the future.
 
 **Always find and read relevant notes before executing a task and update your notes afterwards!**
 
-
 ## Read notes before reading anything else
 
+- Before starting a web search, first check the notes to see if a similar search has been conducted before and what the outcome was
 - Before you analyse files, in particular before you start searching files or analysing the general project structure, consult your notes.
-  - The notes contain an `index.md` file which is to help you to quickly find the relevant information. In particular this file points you to the right notes files for specific topics.
+- The notes contain an `index.md` file which is to help you to quickly find the relevant information.
+  - In particular this file points you to the right notes files for specific topics.
 
 ## Update Notes with new knowledge
 
-- After you learn anything about the code base, e.g. after analyzing any files or finishing tasks, check the notes folder for a file with related content to what you have just learned. 
-  - If there is no such file, create a mark down file with a suitable (i.e. topic related) name. 
-  - Add a concise summary of what you have learned to your notes file. 
-  - Update the notes index and make sure that your knowledge is properly referenced so that you can easily find it.
+- After you learn anything about the code base, e.g. after analyzing any files or finishing tasks, check the notes folder for a file with related content to what you have just learned.
+  - If there is no such file, create a new mark down file with a suitable (i.e. topic related) name.
+  - Add a concise summary of what you have learned to your notes file.
+  - Update the notes index and make sure that your knowledge is properly referenced so that you can easily find it. To this end, mention what is in the new file in one sentence and add a markdown link to the new file like `[topic of the new file](./the_new_file.md)`.
+- After conducting research, in particular extensive/time consuming tasks like web searches, summarize your findings in a notes file.
 - After updating the notes, deduplicate content, also across multiple notes files.
-  - Update the `index.md`. 
+  - Update the `index.md`.
   - The index should in particular contain a brief summary of the projects folder structure and information about what files and folders are related to which sub projects/parts/features/functionality.
   - The index should at least contain a link to every other file in the notes directory with a brief description of the purpose and content of that file.
-- In particular, make sure to preserve knowledge gained in long running tasks such as web research in a notes file
-
-## Rules and Notes Synchronization
-
-- When updating or modifying Cursor Rules, always check if related notes need to be updated as well.
-  - If rule information is replicated in notes, ensure they're consistent or consider removing duplicated content from notes and referencing the rule instead.
-  - If working with rules that contain project structure information (like changelog conventions), make sure the repository_structure.md notes reflect the same information.
-- Conversely, when updating notes, consider if any rules should be updated to match the new knowledge.
-- When information exists in both rules and notes, prefer keeping detailed information in rules and having notes reference the rules.
+  - Make sure that information about a topic is condensed in a single file
 
 ## Housekeeping after each update
 
-- Keep the notes tidy, well structured and concise. 
-- The notes should contain general notes about styles, strategies, code structures, and general behavioral hints like which tools to use. 
+- Keep the notes tidy, well structured and concise.
+- Make sure that individual note files do not get to long. if files are longer than 200 lines, consider breaking them up into multiple files, if it is possible to focus on suitable sub topics. 
+- The notes should contain general notes about architecture, strategies, code structures, and general behavioral hints like which tools to use.
   - Notes should not be too detailed. Rather reference source files from notes than including too many details.
-- The notes should not contain individual changelog about details that have been changed. There are dedicated Changelog.md files for this kind of information. 
-  - Do not write historical notes about changes into the notes, only describe the current state. 
+- The notes should not contain individual changelog about details that have been changed. There are dedicated Changelog.md files for this kind of information.
+  - Do not write historical notes about changes into the notes, only describe the current state.
 - Before adding notes content or new files, consider if reading them in the future will be helpful for you to understand the project more quickly.
   - Do not pollute the notes folder with distracting information or superficial descriptions which are easily derived from sources. Rather just reference where to find such information.
 - After adding notes, try to consolidate all `.cursor/notes`.
@@ -48,3 +44,17 @@ The notes form a knowledge base about the project to be used by the AI Agents wo
   - Try to reduce the number of notes files by joining files which cover similar topics.
 - Remember to always keep the `index.md` up to date
 
+## What NOT to Include in Notes
+
+**Never create task completion reports or phase review documents.** Notes are for understanding the current codebase, not celebrating past achievements.
+
+**Bad examples:**
+- "Phase 1 Implementation Review" - detailed assessment of completed work
+- "Phase 1 Summary" - reports about what was just finished
+- Verbose descriptions of how well tests passed
+- Step-by-step historical accounts of implementation decisions
+
+**What to do instead:**
+- Update existing notes with current state (e.g., "Phase 1 complete" in implementation plan)
+- Add concise technical notes about architecture decisions if they affect future work
+- Reference code files instead of duplicating their content

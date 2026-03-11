@@ -70,11 +70,14 @@ The verification system is the core functionality of the VC Verifier. It support
 **Input Types**:
 1. **String**: Assumed JWT, validated and parsed
 2. **Object**: JSON-LD Verifiable (Credential or Presentation)
+3. **EnvelopedVerifiableCredential**: Object with `type: "EnvelopedVerifiableCredential"` — unwrapped to JWT before verification
 
 ### Verification Path Selection
 
 ```
 Verifier.verify(input)
+    ↓
+  unwrapEnvelopedCredential()  ← strips EnvelopedVerifiableCredential wrapper
     ↓
   Is string?
     Yes → verifyJWTInput()
@@ -85,6 +88,16 @@ Verifier.verify(input)
       Is VerifiablePresentation?
         Yes → verifyPresentation()
 ```
+
+### EnvelopedVerifiableCredential (W3C VC v2.0)
+
+**File**: `services/verifier/envelope.ts`
+
+Two forms supported:
+- **Direct**: `{ type: "EnvelopedVerifiableCredential", id: "data:application/vc+jwt,<jwt>" }`
+- **Wrapped**: `{ verifiableCredential: { type: "EnvelopedVerifiableCredential", id: "..." } }`
+
+The JWT is extracted from the `id` field (data URL prefix `data:application/vc+jwt,` is stripped).
 
 ## JSON-LD Verification (Linked Data Proofs)
 
@@ -197,6 +210,17 @@ switch (proof.type) {
 - `publicKeyBase58`
 - `publicKeyJwk`
 
+### Multikey Verification (did:key)
+
+**Verification Method Type**: `Multikey` with `publicKeyMultibase`
+
+**Flow**:
+1. Load verification method via `documentLoader`
+2. Convert multikey to JWK using `@digitalbazaar/ecdsa-multikey`
+3. Verify with `jose.jwtVerify()`
+
+**did:key self-contained JWTs**: `kid` starting with `did:key:` needs no issuer; verification method URL is `did:key:...#<keyId>`.
+
 ## Status Checking
 
 ### Status Types
@@ -215,6 +239,7 @@ switch (proof.type) {
 **BitstringStatusListEntry**
 - Custom implementation: `checkBitstringStatus()` in `status.ts`
 - Format: Newer bitstring format
+- Supports `multibase` base64 prefix (`u` prefix) for `encodedList` values in status VCs
 
 ### Status Check Flow
 
@@ -274,26 +299,33 @@ await checkStatus({
 
 **Package**: `@eecc/vc-verifier-rules`
 
-**Known Bug**: The package uses `atob()` to decode JWT payloads, but `atob()` only accepts standard base64, not base64url. JWTs use base64url (`-` instead of `+`, `_` instead of `/`), so any JWT with those characters causes `"Invalid character"` inside the GS1 rules package. **Workaround**: `checkGS1Credential()` in `gs1.ts` pre-decodes the JWT payload via `JWTService.decodeJWT()` and passes the plain JSON object instead of the raw JWT string to `checkGS1CredentialWithoutPresentation()`.
+**Imported functions** (in `gs1.ts`):
+- `checkGS1CredentialWithoutPresentation` — validates a single credential against GS1 rules
+- `checkGS1CredentialPresentationValidation` — validates credentials inside a presentation
+- Types: `externalCredential`, `verifyExternalCredential`, `gs1RulesResult`, `gs1RulesResultContainer`, `gs1ValidatorRequest`, `verifiableJwt`
 
-**Configuration**:
+**Configuration** — the package is given three callbacks:
 ```typescript
 const gs1ValidatorRequest = {
   fullJsonSchemaValidationOn: true,
   gs1DocumentResolver: {
-    externalCredentialLoader: loadExternalCredential,
-    externalCredentialVerification: validateExternalCredential,
-    externalJsonSchemaLoader: getJsonSchema
+    externalCredentialLoader: loadExternalCredential,       // fetches chained credentials by URL via documentLoader
+    externalCredentialVerification: validateExternalCredential, // calls Verifier.verify() on each chained credential
+    externalJsonSchemaLoader: getJsonSchema                 // returns locally cached GS1 JSON schemas
   }
 }
 ```
 
-**Type Compatibility Note** (v2.6.2+):
-- The `@eecc/vc-verifier-rules` package defines types (`VerifiableCredential`, `verifiableJwt`) that differ slightly from internal types
-- Key difference: GS1 types allow `type: string | string[] | undefined`, while internal types require `type: string[]`
-- Solution: Use `normalizeVerifiable()` function in `gs1.ts` to convert GS1 types to internal types
-- Type assertions use `unknown` as intermediate type for safe type conversion
-- Always normalize GS1 types before passing to `Verifier.verify()`
+**What GS1 rules validation does**:
+- JSON Schema validation against locally bundled GS1 schemas (5 types: key, company-prefix, prefix, product-data, organization-data)
+- GS1 trust chain verification: resolves and cryptographically verifies chained credentials (prefix → company-prefix → key → product credential delegation chain)
+- GS1 business rules (license delegation, credential type constraints)
+
+**JSON Schema loading** (`schemas.ts`): Schemas are loaded from local files in `schemas/` at startup (via `downloadAndCacheSchemas()` / `loadLocalSchemas()`). Remote download from GS1 GitHub is implemented but currently disabled because upstream schemas are incompatible with the local modified versions.
+
+**Type compatibility** (v2.6.2+): GS1 types allow `type: string | string[] | undefined`, internal types require `type: string[]`. `normalizeVerifiable()` in `gs1.ts` converts GS1 types before passing to `Verifier.verify()`.
+
+**GS1 JWT Workaround** (fixed in v3.4.3): `@eecc/vc-verifier-rules` uses `atob()` which fails on base64url characters. `checkGS1Credential()` pre-decodes the JWT payload via `JWTService.decodeJWT()` and passes the plain JSON object instead of the raw JWT string.
 
 ### External Credential Verification
 

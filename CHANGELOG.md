@@ -3,6 +3,7 @@ VC Verifier Changelog
 
 ## WIP
 
+- Update README: add GS1 trust ecosystem verification section, OpenID4VP presentation request section with screenshot, repository structure and local setup instructions
 
 ## 3.4.3 (2026-03-10)
 

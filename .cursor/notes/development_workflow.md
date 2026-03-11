@@ -3,10 +3,11 @@
 ## Project Setup
 
 ### Prerequisites
-- **Node.js**: Version compatible with ES2022 modules
+- **Node.js**: Version compatible with ES2022 modules (Node 18+)
 - **npm**: Package manager
 - **Docker**: For containerized deployment
 - **Git**: Version control
+- **TypeScript**: 5.x (compiled via `tsc`, `ts-jest` for tests)
 
 ### Initial Setup
 
@@ -471,50 +472,22 @@ npm test
 
 **Important**: Update `package-lock.json` by running `npm install`
 
-#### Known Breaking Changes (January 2026)
+#### Known Issues / Skipped Tests (as of v3.3.0)
 
-The following major version upgrades introduced breaking changes:
+2 tests are temporarily skipped due to breaking changes in Digital Bazaar v3.3.0 dependency upgrade:
 
-**API Dependencies:**
+1. **`"Verify single DataIntegrityProof credential"`** (skipped)
+   - `@digitalbazaar/ecdsa-sd-2023-cryptosuite` v3.x requires updated proof format (`"publicKey" must be a Uint8Array of length 35`)
+   - Fix: Regenerate test credentials with v3.x cryptosuite
 
-1. **`@digitalbazaar/ecdsa-sd-2023-cryptosuite` (1.0.2 → 3.4.1)**
-   - **Breaking Change**: Stricter validation for selective disclosure proofs
-   - **Error**: `"publicKey" must be a Uint8Array of length 35`
-   - **Impact**: Old test credentials with ecdsa-sd-2023 proofs fail verification
-   - **Solution**: Regenerate credentials using v3.x cryptosuite, or pin to `^1.0.2`
-   - **Test Status**: `"Verify single DataIntegrityProof credential"` test skipped
+2. **`"Verify revoked credential - RevocationList2020"`** (skipped)
+   - `@digitalbazaar/vc-revocation-list` v7.0.0 behavior changed
+   - Consider migrating to `BitstringStatusListEntry` (preferred newer standard)
+   - `StatusList2021` and `BitstringStatusListEntry` tests pass
 
-2. **`@digitalbazaar/vc-revocation-list` (5.0.1 → 7.0.0)**
-   - **Breaking Change**: Behavior changes in RevocationList2020 status checking
-   - **Impact**: Revoked credentials may not be detected as revoked
-   - **Solution**: Investigate if RevocationList2020 is still needed, or migrate to BitstringStatusListEntry (StatusList2021)
-   - **Test Status**: `"Verify revoked credential - RevocationList2020"` test skipped
-   - **Note**: StatusList2021 and BitstringStatusListEntry tests pass successfully
-
-3. **Express (4.x → 5.x)**
-   - No breaking changes affecting current codebase
-   - All tests pass with Express 5
-
-4. **TypeScript (4.9 → 5.9)**
-   - No breaking changes affecting current codebase
-   - Compilation successful
-
-**Frontend Dependencies:**
-
-1. **ESLint (8.x required, not 9.x)**
-   - ESLint 9 has breaking changes incompatible with Vue CLI 5
-   - Keep at `eslint@^8.0.0` until Vue CLI updates
-   - Vue CLI 5 is in maintenance mode; consider future migration to Vite
-
-2. **Vue ecosystem updates**
-   - All Vue 3.2 → 3.5 updates compatible
-   - No breaking changes in Bootstrap 5.2 → 5.3
-
-**Recommendations:**
-- When upgrading Digital Bazaar libraries, check for test credential compatibility
-- Consider generating test credentials with a test harness that uses current library versions
-- Monitor RevocationList2020 deprecation; StatusList2021/BitstringStatusList is the newer standard
-- For ecdsa-sd-2023 credentials, use v3.x format or pin to older cryptosuite version
+**Dependency constraints:**
+- **ESLint**: Keep at `8.x` — v9 incompatible with Vue CLI 5 (maintenance mode; consider future Vite migration)
+- **RevocationList2020**: Investigate deprecation; `StatusList2021`/`BitstringStatusListEntry` is the current standard
 
 ## Troubleshooting
 

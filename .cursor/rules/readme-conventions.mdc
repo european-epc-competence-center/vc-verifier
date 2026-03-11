@@ -1,0 +1,29 @@
+---
+globs: README*,readme*,Readme*
+alwaysApply: false
+---
+
+# Readme conventions
+
+When writing a readme document, it is most important to keep the file concise, i.e. short, well structured and understandable. 
+
+Avoid using emojis. Prefer bullet points and script snippets over long text blocks.
+
+- Before making any changes to the readme, make sure that the information you want to add is up to date and correct.
+- After changing the readme, review it and make sure it
+  - is well structured
+  - contains every information exactly once (deduplicate)
+  - is readable for humans
+
+The Readme should start with a one paragraph text summary of the projects purpose.
+
+This short summary should be followed by a very high level overview of what to find where in the repository. The Overview should answer the questions: Where can the reader find more detailed documentation/information? DOes this project have sub projects/modules, like separate folders for frontend, backend, helm charts, etc. Where are the CI/CD/Deployment related files like Dockerfiles, pipeline specifications, release scripts, etc.?
+
+Then a usage section should explain 
+- url(s) to access deployed stage(s)
+- how to get a local dev setup running
+
+
+
+
+

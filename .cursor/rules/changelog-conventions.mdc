@@ -4,41 +4,99 @@ alwaysApply: true
 
 # Changelog Conventions
 
-**Always update the Changelog.md file in the specific subproject you're modifying to track changes applied to each sub project.**
+**Always update the Changelog.md file to reflect any changes on this project**
+
+This project follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+Make sure that new changes are always added to the top of the list!
+
+Never change existing release sections. Always add to the top of the Unreleased section.
 
 ## Sections and Structure
 
-### WIP Section
+### Unreleased Section
 
 - Located at the top of the file after the title
-  - Format: `## WIP` followed by bullet point entries
-  - This is where all unreleased changes should be documented!
+- Format: `## [Unreleased]` followed by subsections for change types
+- This is where all unreleased changes should be documented
+- At release time, rename this section to the version number with date
+
+Example structure:
+```markdown
+## [Unreleased]
+
+### Added
+- New features
+
+### Changed
+- Changes in existing functionality
+
+### Fixed
+- Bug fixes
+```
+
+### Release Sections
+
+- Format: `## [X.Y.Z] - YYYY-MM-DD`
+- Use ISO 8601 date format (YYYY-MM-DD)
+- Latest version comes first
+- Each release should be linkable
+
+## Entry Categories
+
+Use these standardized categories as subsections (### heading level):
+
+- **Added** - New features
+- **Changed** - Changes in existing functionality
+- **Deprecated** - Soon-to-be removed features
+- **Removed** - Now removed features
+- **Fixed** - Any bug fixes
+- **Security** - In case of vulnerabilities
+
+Note on Semantic Versioning:
+- **MAJOR** (X.0.0): Breaking changes (Removed, Changed with breaking behavior)
+- **MINOR** (0.X.0): New features (Added, Deprecated)
+- **PATCH** (0.0.X): Bug fixes (Fixed, Security)
 
 ## Entry Guidelines
 
 - Start each entry with a dash `-`
-- Group related changes together
+- Group related changes together using indentation for sub-items
 - Use backticks for code references: `` `methodName` ``
-- Use indentation for sub-details:
-  ```
-  - New feature X
-      - Detail 1
-      - Detail 2
-  ```
+- Be specific about what changed
+- Write for humans, not machines
 
-## Entry Categories
+Examples:
+```markdown
+### Added
+- Support for custom model providers via `@registry.register()` decorator
+  - EECC API provider with Claude Sonnet models
+  - Configuration via `.env` file
 
-- **New features**: Usually warrant a MINOR version bump
-- **Bugfixes**: Usually warrant a PATCH version bump
-- **Breaking changes**: Usually warrant a MAJOR version bump (mark these clearly)
-- **Internal improvements**: Depends on impact
+### Changed
+- Updated `extract()` function to accept `model_id` parameter
+- Improved error messages for failed schema validation
+
+### Fixed
+- Fixed memory leak in long document processing
+- Corrected EPC URN format validation for SGTIN identifiers
+```
 
 ## Best Practices
 
-- Be specific about what changed
-- Document regression tests when added
-- For API changes, document both old and new behavior
-- If an endpoint changed, explicitly mention the old and new endpoint path
-- Use consistent terminology
-- Keep entries concise but descriptive
-- Do not manually add version headers - they are added by the release
+- **Be specific**: Don't just say "fixed bugs", explain what was fixed
+- **For API changes**: Document both old and new behavior
+- **For breaking changes**: Mark them clearly and explain migration path
+- **For deprecations**: Explain what replaces the deprecated feature
+- **For security issues**: Mention CVE if applicable
+- **Use consistent terminology**: Refer to features by their proper names
+- **Keep it concise**: Each entry should be a single line when possible
+- **Link to issues/PRs**: When relevant, reference GitHub issues or PRs
+
+## Release Process
+
+1. Move all items from `[Unreleased]` to a new version section
+2. Add version number following Semantic Versioning
+3. Add ISO 8601 release date
+4. Create git tag matching the version
+5. Start fresh `[Unreleased]` section for next changes
