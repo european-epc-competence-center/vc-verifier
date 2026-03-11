@@ -192,28 +192,34 @@ Integrates with `@eecc/vc-verifier-rules` package for GS1-specific validation.
 #### Caching Strategy
 
 **Two-tier caching**:
-1. **Permanent cache** (`contexts` Map): Static resources (contexts, schemas)
-2. **TTL cache** (`TTLCache`): Dynamic resources (DIDs, credentials)
-   - Default TTL: 1 hour (configurable via `DOCUMENT_CACHE_TTL_HOURS`)
+1. **Permanent cache** (`contexts` Map): Static resources (JSON-LD contexts, schemas) — never expires
+2. **TTL cache** (`TTLCache`): Dynamic resources (DIDs, VCs, status/revocation lists)
+   - Fresh TTL: configurable via `DOCUMENT_CACHE_TTL_HOURS` (default 1 h)
+   - Stale TTL: configurable via `DOCUMENT_CACHE_STALE_TTL_HOURS` (default 24 h or 24× fresh TTL)
+   - Stale entries are served as fallback when a live fetch fails (remote unavailable)
 
 #### Resolution Flow
 
 ```
 documentLoader(url)
     ↓
-  DID URL? → DID Resolver → Cache → Return
+  DID URL? → Check TTL cache (keyed on base DID)
+              Hit? → Return
+              Miss? → DID Resolver → Cache + Return
+                      Failure? → Serve stale or throw
     ↓
   Check permanent cache (contexts)
     ↓
-  Check TTL cache
+  Check TTL cache (fresh)
     ↓
   Not cached? → Fetch
     ↓
   IPFS? → fetchIPFS()
   HTTP? → fetch_jsonld_or_jwt()
+  Fetch fails? → Serve stale from TTL cache or re-throw
     ↓
   Cache based on type:
-    - VC/DID → TTL cache
+    - VC or StatusList credential → TTL cache
     - Context/Schema → Permanent cache
     ↓
   Return document
@@ -222,11 +228,11 @@ documentLoader(url)
 #### DID Resolution
 
 **Supported DID Methods**:
-- `did:web` - Web-based DIDs
-- `did:key` - Self-contained key DIDs
+- `did:web` - Web-based DIDs (network fetch)
+- `did:key` - Self-contained key DIDs (no network)
 
 **Verification Method Handling**:
-- Resolves full DID document
+- Resolves full DID document (cached by base DID without fragment)
 - Extracts specific verification method if fragment present (e.g., `did:web:example.com#key-1`)
 - Merges context from DID document to verification method
 
@@ -346,7 +352,8 @@ try {
 ### Environment Variables
 - `PORT` - Server port (default: 3000)
 - `VC_REGISTRY` - Credential registry URL (default: https://ssi.eecc.de/api/registry/vcs/)
-- `DOCUMENT_CACHE_TTL_HOURS` - Document cache TTL (default: 1)
+- `DOCUMENT_CACHE_TTL_HOURS` - Fresh cache TTL for dynamic documents (default: 1 h)
+- `DOCUMENT_CACHE_STALE_TTL_HOURS` - Stale fallback TTL (default: 24 h or 24× fresh TTL)
 
 ### Dependencies
 
@@ -372,8 +379,8 @@ All array-based verification endpoints use `Promise.all()` for parallel processi
 
 ### Caching Strategy
 - Static contexts: Never expire (Map)
-- Dynamic resources: 1-hour TTL (configurable)
-- No caching for status credentials (always fresh check)
+- Dynamic resources (VCs, DIDs, status lists): Fresh TTL (default 1 h) + stale TTL (default 24 h)
+- Stale entries served as fallback when remote is unavailable
 
 ### Module Loading
 - ES2022 modules enable tree-shaking
