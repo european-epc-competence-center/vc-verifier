@@ -6,7 +6,7 @@ EECC VC Verifier is a full-stack application for verifying W3C Verifiable Creden
 
 **License**: AGPL-3.0  
 **Maintainer**: European EPC Competence Center GmbH (EECC)  
-**Current Version**: 3.2.1
+**Current Version**: 3.4.3
 
 ## Repository Structure
 
@@ -38,18 +38,18 @@ vc-verifier/
 ## Key Technologies
 
 ### Backend (API)
-- **Runtime**: Node.js with TypeScript (ES2022 modules)
+- **Runtime**: Node.js with TypeScript 5.x (ES2022 modules)
 - **Framework**: Express.js 5
 - **Verification Libraries**: Digital Bazaar's VC libraries
-- **Standards**: W3C VC Data Model, JSON-LD, JWT, DID resolution
+- **Standards**: W3C VC Data Model v1.1 & v2.0, JSON-LD, JWT (VC-JWT), DID resolution
 - **Testing**: Jest with Supertest
 
 ### Frontend
-- **Framework**: Vue.js 3 (Composition API & Options API)
+- **Framework**: Vue.js 3.5 (Composition API & Options API)
 - **State**: Vuex 4
 - **Routing**: Vue Router 4
-- **UI**: Bootstrap 5 with custom SCSS
-- **Build**: Vue CLI 5
+- **UI**: Bootstrap 5.3 with custom SCSS
+- **Build**: Vue CLI 5 (ESLint kept at 8.x — v9 incompatible with Vue CLI 5)
 
 ## Quick Navigation
 
@@ -87,7 +87,7 @@ vc-verifier/
 - Shared types defined in `api/src/types.d.ts`
 
 ### Testing
-- API: Jest tests in `api/__tests__/`
+- API: Jest tests in `api/__tests__/` — 11/13 passing (2 temporarily skipped, see [development_workflow.md](./development_workflow.md))
 - Frontend: Unit tests with Jest, E2E with Cypress
 - Run tests before committing
 - **Never skip/deactivate tests** — dead code. If functionality changed so a test no longer covers expected behaviour, remove it. Otherwise fix the code or update the test credential so the test passes properly.

@@ -103,9 +103,10 @@ Methods correspond to router endpoints:
 #### `Verifier.verify(input, challenge?, domain?)`
 
 **Flow**:
-1. Detect input type (JWT string vs JSON-LD object)
-2. If JWT: delegate to `JWTService.verifyJWT()`
-3. If JSON-LD: 
+1. Unwrap `EnvelopedVerifiableCredential` if present (via `unwrapEnvelopedCredential()` in `envelope.ts`)
+2. Detect input type (JWT string vs JSON-LD object)
+3. If JWT: delegate to `JWTService.verifyJWT()`
+4. If JSON-LD: 
    - Extract proof(s)
    - Determine verifiable type (Credential vs Presentation)
    - Get appropriate cryptographic suite(s)
@@ -155,6 +156,9 @@ Methods correspond to router endpoints:
 **Verification Methods**:
 - `verifyWithJWK()` - Uses JOSE library for JWK-based verification
 - `verifyEd25519()` - Direct Ed25519 signature verification with `@noble/curves`
+- `verifyWithMultikey()` - Converts `Multikey` (`publicKeyMultibase`) to JWK via `@digitalbazaar/ecdsa-multikey`, then uses JWK verification
+
+**`did:key` self-contained JWTs**: When `kid` starts with `did:key:`, no issuer is required; the key ID is derived from the DID itself.
 
 ### GS1 Verifier (`services/verifier/gs1.ts`)
 
@@ -225,6 +229,13 @@ documentLoader(url)
 - Resolves full DID document
 - Extracts specific verification method if fragment present (e.g., `did:web:example.com#key-1`)
 - Merges context from DID document to verification method
+
+### Envelope Service (`services/verifier/envelope.ts`)
+
+Handles `EnvelopedVerifiableCredential` (W3C VC Data Model v2.0):
+- Detects objects with `type: "EnvelopedVerifiableCredential"` (direct or wrapped in `verifiableCredential` field)
+- Extracts the JWT from the `id` field (strips `data:application/vc+jwt,` prefix if present)
+- Called by `Verifier.verify()` before type detection
 
 ### Fetch Service (`services/fetch/index.ts`)
 
@@ -340,12 +351,15 @@ try {
 ### Dependencies
 
 **Core Libraries**:
-- `express` - Web framework
+- `express` 5.x - Web framework
 - `@digitalbazaar/vc` - VC verification
 - `@digitalbazaar/ed25519-signature-2020` - Ed25519 suite
 - `@eecc/es256-signature-2020` - ES256 suite (EECC custom)
+- `@eecc/rsa-rdfc-2025-cryptosuite` - RSA suite (EECC custom)
 - `jose` - JWT handling
+- `@digitalbazaar/ecdsa-multikey` - Multikey support for JWT verification
 - `did-resolver` + `web-did-resolver` - DID resolution
+- `@digitalbazaar/did-method-key` - did:key resolution
 - `jsonld` - JSON-LD processing (forked version with cache fix)
 
 **GS1 Integration**:

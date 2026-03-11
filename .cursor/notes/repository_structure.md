@@ -53,6 +53,7 @@ api/src/
 │       ├── jwt.ts        # JWTService for VC-JWT verification
 │       ├── gs1.ts        # GS1Verifier with rules integration
 │       ├── status.ts     # Status checking (revocation, suspension)
+│       ├── envelope.ts   # EnvelopedVerifiableCredential unwrapping
 │       ├── schemas.ts    # JSON Schema loading/caching
 │       └── schemas/      # GS1 JSON schemas (*.json)
 │

@@ -6,14 +6,14 @@ The frontend is a Vue.js 3 single-page application (SPA) that provides a user in
 
 ## Technology Stack
 
-- **Framework**: Vue.js 3.2
+- **Framework**: Vue.js 3.5
 - **State Management**: Vuex 4
 - **Routing**: Vue Router 4 (hash history)
-- **HTTP Client**: Axios
-- **UI Framework**: Bootstrap 5
-- **Build Tool**: Vue CLI 5
+- **HTTP Client**: Axios 1.x
+- **UI Framework**: Bootstrap 5.3
+- **Build Tool**: Vue CLI 5 (ESLint 8.x — v9 incompatible with Vue CLI 5)
 - **Styling**: SCSS with custom variables
-- **Testing**: Jest (unit), Cypress (E2E)
+- **Testing**: Jest (unit), Cypress 15.x (E2E)
 
 ## Application Structure
 
@@ -92,13 +92,16 @@ Wraps all pages with consistent header/footer structure. Contains:
 
 ### PresentationRequest View (`views/PresentationRequest.vue`)
 
-**Purpose**: Handle OpenID4VP presentation requests
+**Purpose**: Generate and display an OpenID4VP presentation request as a QR code
 
-**Features**:
-- Parse presentation request parameters
-- Display requested credential types
-- Initiate wallet interactions
-- Handle OID4VP protocol flow
+**Flow**:
+1. User selects "Any Credential" or "Custom Credential" (with optional type list and AND/OR logic)
+2. POSTs a presentation request to `OPENID_ENDPOINT + 'request'` → receives a `presentationRequestId`
+3. Renders `openid-presentation-request://?client_id=...&request_uri=...` as QR code
+4. Polls `OPENID_ENDPOINT + 'presentation/' + id` every 3 seconds
+5. On response: parses `vp_token`, dispatches to Vuex, navigates to `/verify`
+
+**Navigation**: Accessed via the send/arrow button (`bi-send-check-fill`) on the Entry page top-right.
 
 ## Component Architecture
 
@@ -215,7 +218,7 @@ Wraps all pages with consistent header/footer structure. Contains:
 ### State Structure
 ```javascript
 {
-  version: '3.2.1',
+  version: '3.4.3',
   authentication: undefined,           // Bearer token
   verifiables: [],                    // Array of credentials/presentations
   disclosedCredentials: [],           // IDs of disclosed credentials
