@@ -5,6 +5,8 @@ VC Verifier Changelog
 
 - Update README: add GS1 trust ecosystem verification section, OpenID4VP presentation request section with screenshot, repository structure and local setup instructions
 - Undo fix in 3.4.3: planning to fix this in `@eecc/vc-verifier-rules`
+- Fix `did:key` Ed25519 presentation proof verification: register Ed25519 (`z6Mk`) key type in `did-method-key` driver alongside P-256 (`zDna`) — the driver requires explicit registration of all key types, so adding P-256 support broke Ed25519 `did:key` resolution
+- Fix PDF export crash: `pdfmake` v0.3.x changed `vfs_fonts` export format — fonts are now exported directly instead of nested under `pdfMake.vfs`, fixed in `Credential.vue` and `ProductPassport.vue`
 
 ## 3.4.3 (2026-03-10)
 

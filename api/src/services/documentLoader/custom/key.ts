@@ -3,10 +3,18 @@ import { DIDDocument, DIDResolutionResult, DIDResolver, ParsedDID } from 'did-re
 import {driver} from '@digitalbazaar/did-method-key';
 // @ts-ignore
 import * as EcdsaMultikey from '@digitalbazaar/ecdsa-multikey';
+// @ts-ignore
+import * as Ed25519Multikey from '@digitalbazaar/ed25519-multikey';
 
 const didKeyDriver = driver();
 
-// Register P-256 (ES256) key support
+// Register Ed25519 key support (z6Mk prefix)
+didKeyDriver.use({
+  multibaseMultikeyHeader: 'z6Mk',
+  fromMultibase: Ed25519Multikey.from
+});
+
+// Register P-256 (ES256) key support (zDna prefix)
 didKeyDriver.use({
   multibaseMultikeyHeader: 'zDna',
   fromMultibase: EcdsaMultikey.from
