@@ -94,20 +94,8 @@ export async function checkGS1Credential(
   challenge?: string,
   domain?: string
 ): Promise<gs1RulesResult> {
-  // The @eecc/vc-verifier-rules package uses atob() to decode JWT strings,
-  // which does not support base64url encoding (- and _ characters are invalid in atob).
-  // JWTs always use base64url, so any JWT payload containing - or _ causes an
-  // "Invalid character" error inside the package. Pre-decoding the JWT here and
-  // passing the plain JSON payload object avoids this bug.
-  let credentialToCheck: GS1VerifiableCredential | gs1VerifiableJwt | string = verifiableCredential;
-  if (typeof verifiableCredential === 'string' && JWTService.isJWT(verifiableCredential)) {
-    const decoded = JWTService.decodeJWT(verifiableCredential);
-    if (!('error' in decoded)) {
-      credentialToCheck = decoded.payload as unknown as GS1VerifiableCredential;
-    }
-  }
   return await checkGS1CredentialWithoutPresentation(
-    gs1ValidatorRequest, credentialToCheck
+    gs1ValidatorRequest, verifiableCredential
   );
 }
 
