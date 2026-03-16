@@ -187,7 +187,7 @@ import pdfFonts from "pdfmake/build/vfs_fonts";
 import { credentialPDF } from '../pdf.js';
 import { getPlainCredential, getCredentialType, isGs1Credential } from '../utils.js';
 import * as JsHashes from 'jshashes';
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+pdfMake.vfs = pdfFonts;
 
 import { useToast } from "vue-toastification";
 import TrimmedBatch from "@/components/TrimmedBatch.vue";

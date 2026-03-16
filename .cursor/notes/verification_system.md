@@ -221,6 +221,18 @@ switch (proof.type) {
 
 **did:key self-contained JWTs**: `kid` starting with `did:key:` needs no issuer; verification method URL is `did:key:...#<keyId>`.
 
+### did:key Driver Key Type Registration
+
+**File**: `services/documentLoader/custom/key.ts`
+
+**Important**: `@digitalbazaar/did-method-key`'s `driver()` starts with an **empty** `_allowedKeyTypes` map. Every key type must be explicitly registered via `driver.use()`. Failing to register a type causes `Unsupported "multibaseMultikeyHeader"` errors.
+
+**Currently registered**:
+- `z6Mk` (Ed25519) — via `@digitalbazaar/ed25519-multikey`
+- `zDna` (P-256/ES256) — via `@digitalbazaar/ecdsa-multikey`
+
+When adding new `did:key` key type support, always add a corresponding `driver.use()` registration here.
+
 ## Status Checking
 
 ### Status Types
