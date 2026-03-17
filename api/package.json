@@ -31,7 +31,7 @@
     "@digitalbazaar/data-integrity": "^2.5.0",
     "@digitalbazaar/did-method-key": "^5.3.0",
     "@digitalbazaar/ecdsa-rdfc-2019-cryptosuite": "^1.2.0",
-    "@digitalbazaar/ecdsa-sd-2023-cryptosuite": "^3.4.1",
+    "@digitalbazaar/ecdsa-sd-2023-cryptosuite": "^1.0.2",
     "@digitalbazaar/ed25519-signature-2018": "^4.0.0",
     "@digitalbazaar/ed25519-signature-2020": "^5.2.0",
     "@digitalbazaar/eddsa-rdfc-2022-cryptosuite": "^1.2.0",
