@@ -8,6 +8,7 @@ VC Verifier Changelog
 
 ### Added
 - Test for `ProductDataCredential` (base64url JWT) with full GS1 chain and status verification using a mocked document loader
+- Update @eecc/vc-verifier-rules to 2.7.0
 
 ## 3.4.4 (2026-03-16)
 
