@@ -4,6 +4,7 @@ import { Bitstring } from "@digitalbazaar/bitstring";
 import { verifyCredential as vcVerifyCredential } from "@digitalbazaar/vc";
 import { JWTService } from './jwt.js';
 import { unwrapEnvelopedCredential } from './envelope.js';
+import { getSuites } from './suites.js';
 
 export class BitstringStatusList {
     private bitstring: any;
@@ -42,13 +43,11 @@ export class BitstringStatusList {
 export async function checkBitstringStatus({
     credential,
     documentLoader,
-    suite,
     verifyStatusListCredential = true,
     verifyMatchingIssuers = true
 }: {
     credential: any;
     documentLoader: Function;
-    suite?: any;
     verifyStatusListCredential?: boolean;
     verifyMatchingIssuers?: boolean;
 }) {
@@ -57,7 +56,6 @@ export async function checkBitstringStatus({
         result = await _checkBitstringStatuses({
             credential,
             documentLoader,
-            suite,
             verifyStatusListCredential,
             verifyMatchingIssuers,
         });
@@ -73,13 +71,11 @@ export async function checkBitstringStatus({
 async function _checkBitstringStatuses({
   credential,
   documentLoader,
-  suite,
   verifyStatusListCredential,
   verifyMatchingIssuers
 }: {
   credential: any;
   documentLoader: Function;
-  suite?: any;
   verifyStatusListCredential: boolean;
   verifyMatchingIssuers: boolean;
 }) {
@@ -107,7 +103,6 @@ async function _checkBitstringStatuses({
         return await _checkSingleBitstringStatus({
           credential,
           credentialStatus,
-          suite,
           documentLoader,
           verifyStatusListCredential,
           verifyMatchingIssuers
@@ -170,14 +165,12 @@ async function _checkSingleBitstringStatus({
   credentialStatus,
   verifyStatusListCredential,
   verifyMatchingIssuers,
-  suite,
   documentLoader
 }: {
   credential: any;
   credentialStatus: any;
   verifyStatusListCredential: boolean;
   verifyMatchingIssuers: boolean;
-  suite?: any;
   documentLoader: Function;
 }) {
   const { statusListIndex } = credentialStatus;
@@ -238,10 +231,10 @@ async function _checkSingleBitstringStatus({
         throw err;
       }
     } else {
-      // JSON-LD verification using the original library
+      // JSON-LD verification — derive suite from the status list credential's own proof
       const verifyResult = await vcVerifyCredential({
         credential: slCredential,
-        suite,
+        suite: getSuites(slCredential.proof),
         documentLoader
       });
       if (!verifyResult.verified) {
