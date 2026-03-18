@@ -1,7 +1,7 @@
 VC Verifier Changelog
 =================
 
-## [Unreleased]
+## 3.4.7 (2026-03-18)
 
 ### Fixed
 - Fix JWT credential status verification failing when the referenced status list credential uses a JSON-LD proof: extract suite building to `suites.ts` and derive the suite from the status list credential's own proof inside `checkBitstringStatus` instead of inheriting it from the caller
