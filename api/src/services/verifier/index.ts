@@ -1,25 +1,9 @@
 // @ts-ignore
 import { verifyCredential, verify } from "@digitalbazaar/vc";
 // @ts-ignore
-import { Ed25519Signature2018 } from "@digitalbazaar/ed25519-signature-2018";
-// @ts-ignore
-import { Ed25519Signature2020 } from "@digitalbazaar/ed25519-signature-2020";
-// @ts-ignore
-import { ES256Signature2020 } from "@eecc/es256-signature-2020";
-// @ts-ignore
 import { checkStatus as checkStatus2020 } from "@digitalbazaar/vc-revocation-list";
 // @ts-ignore
 import { checkStatus as checkStatus2021 } from "@digitalbazaar/vc-status-list";
-// @ts-ignore
-import * as ecdsaSd2023Cryptosuite from "@digitalbazaar/ecdsa-sd-2023-cryptosuite";
-// @ts-ignore
-import {cryptosuite as eddsaRdfc2022CryptoSuite} from "@digitalbazaar/eddsa-rdfc-2022-cryptosuite";
-// @ts-ignore
-import {cryptosuite as ecdsaRdfc2019CryptoSuite} from "@digitalbazaar/ecdsa-rdfc-2019-cryptosuite";
-// @ts-ignore
-import {cryptosuite as rsaRdfc2025CryptoSuite} from "@eecc/rsa-rdfc-2025-cryptosuite";
-// @ts-ignore
-import { DataIntegrityProof } from "@digitalbazaar/data-integrity";
 // @ts-ignore
 import jsigs from "jsonld-signatures";
 
@@ -61,69 +45,14 @@ const STATUS_TYPES = {
 } as const;
 
 import { documentLoader } from "../documentLoader/index.js";
-
 import { JWTService } from "./jwt.js";
-
 import { checkBitstringStatus } from "./status.js";
-
 import { unwrapEnvelopedCredential } from "./envelope.js";
+import { getSuites } from "./suites.js";
 
-const { createVerifyCryptosuite } = ecdsaSd2023Cryptosuite;
 const {
   purposes: { AssertionProofPurpose, AuthenticationProofPurpose },
 } = jsigs;
-
-function getDataIntegritySuite(cryptosuite?: string): unknown {
-  if (!cryptosuite) {
-    throw new Error('Cryptosuite is required for data integrity proof');
-  }
-
-  switch (cryptosuite) {
-    case 'eddsa-rdfc-2022':
-      return eddsaRdfc2022CryptoSuite;
-    case 'ecdsa-rdfc-2019':
-      return ecdsaRdfc2019CryptoSuite;
-    case 'rsa-rdfc-2025':
-      return rsaRdfc2025CryptoSuite;
-    case 'ecdsa-sd-2023':
-      return createVerifyCryptosuite();
-    default:
-      throw new Error(`Cryptosuite ${cryptosuite} not implemented`);
-  }
-}
-
-function getSuite(proof: Proof): unknown {
-  switch (proof?.type) {
-    case PROOF_TYPES.ED25519_2018:
-      return new Ed25519Signature2018();
-
-    case PROOF_TYPES.ED25519_2020:
-      return new Ed25519Signature2020();
-
-    case PROOF_TYPES.ES256_2020:
-      return new ES256Signature2020();
-
-    case PROOF_TYPES.DATA_INTEGRITY:
-      return new DataIntegrityProof({
-        cryptosuite: getDataIntegritySuite(proof.cryptosuite)
-      });
-
-    default:
-      throw new Error(`Proof type ${proof?.type} not implemented`);
-  }
-}
-
-function getSuites(proof: Proof | Proof[]): unknown[] {
-  const suites: unknown[] = [];
-
-  if (Array.isArray(proof)) {
-    proof.forEach((singleProof: Proof) => suites.push(getSuite(singleProof)));
-  } else {
-    suites.push(getSuite(proof));
-  }
-
-  return suites;
-}
 
 function getPresentationStatus(
   presentation: VerifiablePresentation
@@ -243,7 +172,6 @@ export class Verifier {
       const statusResult = await checkStatus({
         credential: payload,
         documentLoader,
-        suite: null, // No suite needed for JWT status checking
         verifyStatusListCredential: true,
         verifyMatchingIssuers: false,
       });
@@ -314,7 +242,6 @@ export class Verifier {
         result.statusResult = await checkStatus({
           credential,
           documentLoader,
-          suite,
           verifyStatusListCredential: true,
           verifyMatchingIssuers: false,
         });

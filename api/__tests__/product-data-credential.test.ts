@@ -256,18 +256,14 @@ describe("Verifier API Regression Test for ProductDataCredential (base64url JWT)
         done();
     });
 
-    test("Verify revoked ProductDataCredential JWT with full GS1 chain via GS1 endpoint", async () => {
+    test("Verify valid ProductDataCredential JWT with full GS1 chain via GS1 endpoint", async () => {
         const res = await request(server)
             .post("/api/verifier/gs1")
             .send([productDataCredentialAsJwt]);
 
         expect(res.statusCode).toEqual(200);
         expect(res.body).toBeInstanceOf(Array);
-
-        const result = res.body[0];
-        expect(result.gs1Result.verified).toBe(true);
-        expect(result.statusResult.verified).toBe(false);
-        expect(result.results[0].verified).toBe(true);
+        expect(res.body[0].verified).toBe(true);
     });
 
 });

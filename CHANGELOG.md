@@ -1,6 +1,14 @@
 VC Verifier Changelog
 =================
 
+## [Unreleased]
+
+### Fixed
+- Fix JWT credential status verification failing when the referenced status list credential uses a JSON-LD proof: extract suite building to `suites.ts` and derive the suite from the status list credential's own proof inside `checkBitstringStatus` instead of inheriting it from the caller
+
+### Added
+- Test for `ProductDataCredential` (base64url JWT) with full GS1 chain and status verification using a mocked document loader
+
 ## 3.4.4 (2026-03-16)
 
 - Update README: add GS1 trust ecosystem verification section, OpenID4VP presentation request section with screenshot, repository structure and local setup instructions
