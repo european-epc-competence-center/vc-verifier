@@ -284,9 +284,9 @@ await checkStatus({
 
 ### Status Caching
 
-**Important**: Status credentials are **never cached** in documentLoader
-- Ensures fresh revocation/suspension checks
-- Prevents stale status information
+Status credentials are now cached with the same TTL as other dynamic resources:
+- Fresh for `DOCUMENT_CACHE_TTL_HOURS` (default 1 h) — re-fetched after this
+- Stale fallback kept for `DOCUMENT_CACHE_STALE_TTL_HOURS` (default 24 h) — served when remote is unavailable
 
 ## GS1 Integration
 
@@ -401,12 +401,11 @@ const gs1ValidatorRequest = {
 - Never expires
 - Preloaded contexts
 
-**2. TTL Cache** (class-based)
-- DID documents (default: 1 hour)
-- Verifiable credentials (default: 1 hour)
-- Configurable via `DOCUMENT_CACHE_TTL_HOURS`
-
-**Status Credentials Exception**: Never cached (always fresh)
+**2. TTL Cache** (class-based, two-tier)
+- DID documents, Verifiable credentials, Status/revocation list credentials
+- Fresh TTL: `DOCUMENT_CACHE_TTL_HOURS` (default 1 h) — live resource returned
+- Stale TTL: `DOCUMENT_CACHE_STALE_TTL_HOURS` (default 24 h) — fallback when remote unavailable
+- Stale entries served via `getStale()` only when a live fetch fails
 
 ### DID Resolution
 
@@ -503,7 +502,7 @@ const gs1ValidatorRequest = {
 ### Status Checking
 - Always verify status list credential itself
 - Prevent forged status lists
-- Fresh checks (no caching of status credentials)
+- Status credentials cached for up to `DOCUMENT_CACHE_TTL_HOURS`; stale entries used only when remote is unavailable
 
 ### DID Resolution Security
 - `did:web` enforces HTTPS

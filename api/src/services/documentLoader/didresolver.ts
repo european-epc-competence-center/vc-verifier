@@ -7,8 +7,6 @@ export function getResolver() {
         ...key.getResolver(),
         ...web.getResolver()
         //...you can flatten multiple resolver methods into the Resolver
-    },
-    {
-        cache: true
     })
+    // Note: built-in cache disabled; TTL-based caching is handled in documentLoader
 }

@@ -12,6 +12,10 @@ VC Verifier Changelog
 
 ## 3.4.4 (2026-03-16)
 
+- **Improved document caching (API)**: Extended `TTLCache` to a two-tier stale-on-error cache; all remote resources now expire after `DOCUMENT_CACHE_TTL_HOURS` (default 1 h) but are kept as stale fallbacks for `DOCUMENT_CACHE_STALE_TTL_HOURS` (default 24 h) so that verification can continue when a remote is temporarily unavailable
+  - DID documents now use the TTL cache (DID resolver's permanent built-in cache disabled)
+  - Status/revocation list credentials are now cached with TTL instead of never being cached
+  - Stale fallback applied to DID resolution, HTTP/IPFS fetches, and status list fetches
 - Update README: add GS1 trust ecosystem verification section, OpenID4VP presentation request section with screenshot, repository structure and local setup instructions
 - Undo fix in 3.4.3: planning to fix this in `@eecc/vc-verifier-rules`
 - Fix `did:key` Ed25519 presentation proof verification: register Ed25519 (`z6Mk`) key type in `did-method-key` driver alongside P-256 (`zDna`) — the driver requires explicit registration of all key types, so adding P-256 support broke Ed25519 `did:key` resolution

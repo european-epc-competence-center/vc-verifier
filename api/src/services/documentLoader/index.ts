@@ -5,24 +5,55 @@ import { fetch_jsonld_or_jwt, fetchIPFS } from "../fetch/index.js";
 import { contexts } from "./context/index.js";
 import { TTLCache } from "./ttlCache.js";
 
-// TTL cache for dynamically fetched documents (configurable via DOCUMENT_CACHE_TTL_HOURS, defaults to 1 hour)
-const cacheTTLHours = process.env.DOCUMENT_CACHE_TTL_HOURS ? Number.parseInt(process.env.DOCUMENT_CACHE_TTL_HOURS) : 1;
-const cache = new TTLCache<any>(cacheTTLHours);
+// Fresh TTL: how long remote resources are considered up-to-date (default 1 h)
+const cacheTTLHours = process.env.DOCUMENT_CACHE_TTL_HOURS
+  ? Number.parseInt(process.env.DOCUMENT_CACHE_TTL_HOURS)
+  : 1;
+
+// Stale TTL: how long to keep entries as a fallback when the remote is
+// unavailable (default 24 h, must be >= fresh TTL)
+const cacheStaleTTLHours = process.env.DOCUMENT_CACHE_STALE_TTL_HOURS
+  ? Math.max(Number.parseInt(process.env.DOCUMENT_CACHE_STALE_TTL_HOURS), cacheTTLHours)
+  : Math.max(cacheTTLHours * 24, 24);
+
+const cache = new TTLCache<any>(cacheTTLHours, cacheStaleTTLHours);
 
 
 const documentLoader: (url: string) => Promise<any> =
   jsonldSignatures.extendContextLoader(async (url: string) => {
-    // Fetch did documents
+    // ── DID documents ────────────────────────────────────────────────────────
     if (url.startsWith("did:")) {
       const [did, verificationMethod] = url.split("#");
 
-      // fetch document
-      const didDocument: any = (await getResolver().resolve(url)).didDocument;
+      // Check TTL cache first (keyed on the base DID without fragment)
+      let didDocument: any = cache.get(did);
 
-      // if a verifcation method of the DID document is queried (not yet implemented in the official resolver)
+      if (!didDocument) {
+        // Try live resolution
+        let resolved: any = null;
+        try {
+          resolved = (await getResolver().resolve(did)).didDocument;
+        } catch (resolveError) {
+          console.warn(`DID resolution threw for ${did}:`, resolveError);
+        }
+
+        if (resolved) {
+          didDocument = resolved;
+          cache.set(did, didDocument);
+        } else {
+          // Fall back to stale entry if the remote is unavailable
+          const stale = cache.getStale(did);
+          if (stale) {
+            console.warn(`DID resolution failed for ${did}, serving stale cached document`);
+            didDocument = stale;
+          }
+        }
+      }
+
+      // Extract the specific verification method when a fragment is present
       if (verificationMethod && didDocument) {
         const verificationMethodDoc: any | undefined =
-          didDocument.verificationMethod.filter(function (method: any) {
+          didDocument.verificationMethod?.filter(function (method: any) {
             return method.id === url || method.id === verificationMethod;
           })[0];
 
@@ -51,34 +82,43 @@ const documentLoader: (url: string) => Promise<any> =
       };
     }
 
-    // First check pre-loaded contexts
+    // ── Static pre-loaded contexts ───────────────────────────────────────────
     let document = contexts.get(url);
-    
-    // If not in pre-loaded contexts, check TTL cache
+
+    // ── TTL cache ────────────────────────────────────────────────────────────
     if (!document) {
       document = cache.get(url);
     }
 
-    // fetch if not in any cache
+    // ── Live fetch ───────────────────────────────────────────────────────────
     if (!document) {
-      if (url.startsWith("ipfs://")) {
-        document = await fetchIPFS(url);
-      } else {
-        document = await fetch_jsonld_or_jwt(url);
-      }
-      
-      // Determine caching strategy based on document type
-      // StatusListCredentials are never cached, always fetch fresh for revocation checks
-      if (!isStatusListCredential(document)) {
-        if (url.startsWith("did:") || isVerifiableCredential(document)) {
-          // Use TTL cache for DID documents and Verifiable Credentials
+      try {
+        if (url.startsWith("ipfs://")) {
+          document = await fetchIPFS(url);
+        } else {
+          document = await fetch_jsonld_or_jwt(url);
+        }
+
+        // Determine caching strategy based on document type:
+        //  - Status list credentials: TTL cache so revocation checks stay
+        //    reasonably fresh while surviving short remote outages
+        //  - Other VCs: TTL cache
+        //  - Static resources (contexts, schemas, …): permanent cache
+        if (isStatusListCredential(document) || isVerifiableCredential(document)) {
           cache.set(url, document);
         } else {
-          // Use permanent cache for contexts, schemas, etc.
           contexts.set(url, document);
         }
+      } catch (fetchError) {
+        // Remote unavailable – try the stale entry as a graceful fallback
+        const stale = cache.getStale(url);
+        if (stale) {
+          console.warn(`Fetch failed for ${url}, serving stale cached document:`, fetchError);
+          document = stale;
+        } else {
+          throw fetchError;
+        }
       }
-      
     }
 
     return {
@@ -90,23 +130,36 @@ const documentLoader: (url: string) => Promise<any> =
 
 function isStatusListCredential(document: any): boolean {
   if (!document) return false;
-  const payload = typeof document === 'string' && document.startsWith('ey') && document.split('.').length === 3 ? JSON.parse(atob(document.split('.')[1])) : document;
-  
+  const payload =
+    typeof document === "string" &&
+    document.startsWith("ey") &&
+    document.split(".").length === 3
+      ? JSON.parse(atob(document.split(".")[1]))
+      : document;
+
   const types = payload?.type || [];
-  return Array.isArray(types) && (
-    types.includes("BitstringStatusListCredential") ||
-    types.includes("StatusList2021Credential") ||
-    types.includes("RevocationList2020Credential")
+  return (
+    Array.isArray(types) &&
+    (types.includes("BitstringStatusListCredential") ||
+      types.includes("StatusList2021Credential") ||
+      types.includes("RevocationList2020Credential"))
   );
 }
 
 function isVerifiableCredential(document: any): boolean {
   if (!document) return false;
-  const payload = typeof document === 'string' && document.startsWith('ey') && document.split('.').length === 3 ? JSON.parse(atob(document.split('.')[1])) : document;
-  
-  return payload?.type && 
-         Array.isArray(payload.type) && 
-         payload.type.includes("VerifiableCredential");
+  const payload =
+    typeof document === "string" &&
+    document.startsWith("ey") &&
+    document.split(".").length === 3
+      ? JSON.parse(atob(document.split(".")[1]))
+      : document;
+
+  return (
+    payload?.type &&
+    Array.isArray(payload.type) &&
+    payload.type.includes("VerifiableCredential")
+  );
 }
 
 export { documentLoader };
