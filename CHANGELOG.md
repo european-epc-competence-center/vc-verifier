@@ -1,6 +1,19 @@
 VC Verifier Changelog
 =================
 
+## 3.4.8 (2026-04-29)
+
+### Changed
+- **Dockerfile improvement (API)**: Rewrote `api/Dockerfile` to match the production-grade pattern used in `key-service`
+  - Upgraded base image from `node:lts-alpine` to `node:24-alpine` (Node.js 24)
+  - Introduced a **multi-stage build** with separate `deps`, `builder`, and `runner` stages
+  - `deps` stage installs only production dependencies via `npm ci --only=production`
+  - `builder` stage installs all dependencies and compiles TypeScript via `npm run build-tsc`
+  - Final **runner** stage uses `gcr.io/distroless/nodejs24-debian12:nonroot` — a minimal, non-root, distroless image for a significantly reduced attack surface
+  - All copied files are `--chown=nonroot:nonroot` to enforce least-privilege file ownership
+  - Added `HEALTHCHECK` using the existing `/health` endpoint
+  - Added `ENV NODE_ENV=production` and explicit `ENV PORT=3000`
+
 ## 3.4.7 (2026-03-18)
 
 ### Fixed
