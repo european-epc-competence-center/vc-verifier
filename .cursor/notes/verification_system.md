@@ -127,11 +127,12 @@ The JWT is extracted from the `id` field (data URL prefix `data:application/vc+j
 2. Get status check function for contained credentials
 3. Determine if DataIntegrityProof or legacy suite
 4. **If DataIntegrityProof**:
-   - Use `jsonld-signatures.verify()` with `AuthenticationProofPurpose`
-   - Includes status checking
+   - Verify each contained credential individually via `verifyPresentationCredentials()` (which calls `verifyCredential()` per credential with the credential's own suite)
+   - Verify the presentation proof via `jsigs.verify()` with `AuthenticationProofPurpose({ challenge, domain })`
+   - Combine results: `verified = presentationVerified && allCredentialsVerified`
 5. **If legacy suite**:
    - Use `@digitalbazaar/vc.verify()`
-   - Verifies presentation AND all contained credentials
+   - Verifies presentation AND all contained credentials, including status checks
 6. Return comprehensive result with:
    - Presentation verification result
    - Individual credential verification results
