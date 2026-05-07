@@ -12,6 +12,7 @@ interface VerificationResult {
   verified: boolean;
   results?: any[];
   statusResult?: StatusResult;
+  credentialId?: string | URL;
   error?: Error;
   errors?: any[];
 }
@@ -325,12 +326,18 @@ export class Verifier {
       ? presentation.verifiableCredential
       : [presentation.verifiableCredential];
 
-    return Promise.all(
+    const credentialResults = await Promise.all(
       credentials.map((credential: VerifiableCredential) => {
         const suite = getSuites(credential.proof);
         return this.verifyCredential(credential, suite);
       })
     );
+
+    for (const [i, credentialResult] of credentialResults.entries()) {
+      credentialResult.credentialId = credentials[i].id;
+    }
+
+    return credentialResults;
   }
 
   private static isDataIntegrityProof(proof: Proof | Proof[]): boolean {
