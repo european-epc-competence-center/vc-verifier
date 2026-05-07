@@ -1,3 +1,4 @@
+import fs from "fs";
 import request from "supertest";
 
 import server from "../src/index";
@@ -24,7 +25,13 @@ describe("Verifier API Test for EnvelopedCredentials", () => {
         const res = await request(server).post("/api/verifier").send([envelopedCredential]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
-        expect(res.body[0].verified).toBe(true);
+        expect(res.body[0].verified).toBe(false);
+        expect(res.body[0]).toHaveProperty('results');
+        expect(res.body[0].results[0]).toHaveProperty('verified');
+        expect(res.body[0].results[0].verified).toBe(true);
+        expect(res.body[0]).toHaveProperty('statusResult');
+        expect(res.body[0].statusResult).toHaveProperty('verified');
+        expect(res.body[0].statusResult.verified).toBe(false);
     });
 
 });
