@@ -12,6 +12,7 @@ interface VerificationResult {
   verified: boolean;
   results?: any[];
   statusResult?: StatusResult;
+  credentialId?: string | URL;
   error?: Error;
   errors?: any[];
 }
@@ -280,14 +281,28 @@ export class Verifier {
     let result;
 
     if (this.isDataIntegrityProof(presentation.proof)) {
-      result = await jsigs.verify(presentation, {
+      // jsigs.verify only verifies the presentation proof itself.
+      // We must also verify each contained credential individually.
+      const credentialResults = await this.verifyPresentationCredentials(
+        presentation
+      );
+
+      const presentationResult = await jsigs.verify(presentation, {
         suite,
-        purpose: new AuthenticationProofPurpose(),
+        purpose: new AuthenticationProofPurpose({ challenge, domain }),
         documentLoader,
-        challenge,
-        domain,
-        checkStatus,
       });
+
+      const allCredentialsVerified = credentialResults.every(
+        (r: any) => r.verified
+      );
+
+      result = {
+        presentationResult,
+        verified: presentationResult.verified && allCredentialsVerified,
+        credentialResults,
+        error: presentationResult.error,
+      };
     } else {
       result = await verify({
         presentation,
@@ -300,6 +315,29 @@ export class Verifier {
     }
 
     return this.normalizeResult(result);
+  }
+
+  private static async verifyPresentationCredentials(
+    presentation: VerifiablePresentation
+  ): Promise<any[]> {
+    if (!presentation.verifiableCredential) return [];
+
+    const credentials = Array.isArray(presentation.verifiableCredential)
+      ? presentation.verifiableCredential
+      : [presentation.verifiableCredential];
+
+    const credentialResults = await Promise.all(
+      credentials.map((credential: VerifiableCredential) => {
+        const suite = getSuites(credential.proof);
+        return this.verifyCredential(credential, suite);
+      })
+    );
+
+    for (const [i, credentialResult] of credentialResults.entries()) {
+      credentialResult.credentialId = credentials[i].id;
+    }
+
+    return credentialResults;
   }
 
   private static isDataIntegrityProof(proof: Proof | Proof[]): boolean {
