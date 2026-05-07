@@ -1,6 +1,11 @@
 VC Verifier Changelog
 =================
 
+## 3.4.9 (2026-05-07)
+
+- pass challenge and domain correctly into jsigs lib
+- verify credentials in jsigs presentation manually as not done by library
+
 ## 3.4.8 (2026-04-29)
 
 ### Changed
