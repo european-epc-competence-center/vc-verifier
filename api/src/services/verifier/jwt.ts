@@ -16,6 +16,13 @@ export interface JWTResult {
   };
   verified: boolean;
   verificationMethod?: any;
+  error?: {
+    name: string;
+    message: string;
+    code?: string;
+    claim?: string;
+    reason?: string;
+  };
   purposeResult?: {
     valid: boolean;
   };
@@ -28,6 +35,31 @@ export interface JWTDecoded {
 }
 
 export class JWTService {
+  private static toErrorDetails(error: unknown): JWTResult['error'] {
+    const fallback = {
+      name: 'VerificationError',
+      message: 'JWT verification failed'
+    };
+
+    if (!error || typeof error !== 'object') {
+      return fallback;
+    }
+
+    const typedError = error as Error & {
+      code?: string;
+      claim?: string;
+      reason?: string;
+    };
+
+    return {
+      name: typedError.name || fallback.name,
+      message: typedError.message || fallback.message,
+      code: typedError.code,
+      claim: typedError.claim,
+      reason: typedError.reason
+    };
+  }
+
   static isJWT(input: string): boolean {
     if (typeof input !== 'string') return false;
     return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(input.trim());
@@ -66,15 +98,16 @@ export class JWTService {
       return this.createFailureResult(jwt, decoded);
     }
 
-    const verified = await this.performVerification(jwt, verificationMethod, alg);
+    const verificationResult = await this.performVerification(jwt, verificationMethod, alg);
     
     return {
-      verified,
+      verified: verificationResult.verified,
       results: [{
         proof: { jwt },
-        verified,
+        verified: verificationResult.verified,
         verificationMethod,
-        purposeResult: { valid: verified },
+        error: verificationResult.error,
+        purposeResult: { valid: verificationResult.verified },
         decoded
       }]
     };
@@ -110,8 +143,12 @@ export class JWTService {
     }
   }
 
-  private static async performVerification(jwt: string, verificationMethod: any, alg: string): Promise<boolean> {
-    if (verificationMethod.type === 'JsonWebKey' && verificationMethod.publicKeyJwk) {
+  private static async performVerification(
+    jwt: string,
+    verificationMethod: any,
+    alg: string
+  ): Promise<{ verified: boolean; error?: JWTResult['error'] }> {
+    if (verificationMethod.type.startsWith('JsonWebKey') && verificationMethod.publicKeyJwk) {
       return this.verifyWithJWK(jwt, verificationMethod.publicKeyJwk, alg);
     }
     
@@ -123,20 +160,28 @@ export class JWTService {
       return this.verifyWithMultikey(jwt, verificationMethod, alg);
     }
     
-    return false;
+    return { verified: false, error: { name: 'VerificationError', message: `Unsupported verification method: ${verificationMethod.type}` } };
   }
 
-  private static async verifyWithMultikey(jwt: string, verificationMethod: any, alg: string): Promise<boolean> {
+  private static async verifyWithMultikey(
+    jwt: string,
+    verificationMethod: any,
+    alg: string
+  ): Promise<{ verified: boolean; error?: JWTResult['error'] }> {
     try {
       const keyPair = await EcdsaMultikey.from(verificationMethod);
       const publicKeyJwk = await EcdsaMultikey.toJwk({ keyPair, secretKey: false });
       return this.verifyWithJWK(jwt, publicKeyJwk, alg);
     } catch (error) {
-      return false;
+      return { verified: false, error: this.toErrorDetails(error) };
     }
   }
 
-  private static async verifyWithJWK(jwt: string, publicKeyJwk: any, alg: string): Promise<boolean> {
+  private static async verifyWithJWK(
+    jwt: string,
+    publicKeyJwk: any,
+    alg: string
+  ): Promise<{ verified: boolean; error?: JWTResult['error'] }> {
     try {
       const jwk = { ...publicKeyJwk };
       if (!jwk.alg && alg) {
@@ -146,13 +191,16 @@ export class JWTService {
       const publicKey = await jose.importJWK(jwk);
       await jose.jwtVerify(jwt, publicKey, { algorithms: [alg] });
       
-      return true;
+      return { verified: true };
     } catch (error) {
-      return false;
+      return { verified: false, error: this.toErrorDetails(error) };
     }
   }
 
-  private static verifyEd25519(jwt: string, verificationMethod: any): boolean {
+  private static verifyEd25519(
+    jwt: string,
+    verificationMethod: any
+  ): { verified: boolean; error?: JWTResult['error'] } {
     try {
       const [headerB64, payloadB64, signatureB64] = jwt.split('.');
       const signingInput = `${headerB64}.${payloadB64}`;
@@ -161,14 +209,14 @@ export class JWTService {
       const { keyBytes, keyType } = extractPublicKeyBytes(verificationMethod);
       
       if (keyType !== 'Ed25519') {
-        return false;
+        return { verified: false };
       }
 
       const isValid = ed25519.verify(signatureBytes, signingInputBytes, keyBytes);
       
-      return isValid;
+      return { verified: isValid };
     } catch (error) {
-      return false;
+      return { verified: false, error: this.toErrorDetails(error) };
     }
   }
 

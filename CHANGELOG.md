@@ -1,6 +1,12 @@
 VC Verifier Changelog
 =================
 
+## 3.5.0 (2026-05-11)
+
+### Changed
+- Include structured JWT signature/claim verification errors in each JWT `results` entry (for example expired token details like `ERR_JWT_EXPIRED`) to align response behavior with linked data proof error reporting.
+- support JsonWebKey + JsonWebKey2020 in JWT verification
+
 ## 3.4.9 (2026-05-07)
 
 - pass challenge and domain correctly into jsigs lib

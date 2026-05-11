@@ -199,6 +199,10 @@ switch (proof.type) {
 5. Check credential status (if present)
 6. Return standardized result
 
+**JWT error reporting**:
+- JWT verification failures now include a structured `error` object inside each JWT `results` item.
+- This mirrors linked-data-style error visibility and includes key fields (`name`, `message`, and when available `code`, `claim`, `reason`) from JOSE errors such as expired tokens (`ERR_JWT_EXPIRED`).
+
 ### Ed25519 JWT Verification
 
 **Manual verification** (not using JOSE):
