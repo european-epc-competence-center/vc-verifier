@@ -26,12 +26,12 @@ const documentLoader: (url: string) => Promise<any> =
             return method.id === url || method.id === verificationMethod;
           })[0];
 
-        if (!verificationMethodDoc)
-          throw new jsonldSignatures.VerificationError(
-            new Error(
-              `${verificationMethod} is an unknown verification method for ${did}`
-            )
+        if (!verificationMethodDoc) {
+          console.error(`${verificationMethod} is an unknown verification method for ${did}`);
+          throw new Error(
+            `${verificationMethod} is an unknown verification method for ${did}`
           );
+        }
 
         return {
           contextUrl: null,

@@ -1,6 +1,12 @@
 VC Verifier Changelog
 =================
 
+## [Unreleased]
+
+### Fixed
+- Fixed document loader throwing `TypeError` when an unknown DID verification method is requested (`jsonld-signatures` v11 no longer exports `VerificationError`)
+- Propagate document-loader and other JWT verification failures into the API response (`results[0].error` and top-level `error`)
+
 ## 3.5.0 (2026-05-11)
 
 ### Changed

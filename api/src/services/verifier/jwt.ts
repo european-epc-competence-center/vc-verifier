@@ -79,23 +79,35 @@ export class JWTService {
     const decoded = this.decodeJWT(jwt);
 
     if ('error' in decoded) {
-      return this.createFailureResult(jwt, decoded);
+      return this.createFailureResult(jwt, decoded, undefined, {
+        name: 'VerificationError',
+        message: decoded.error
+      });
     }
 
     const { issuer, kid, alg } = this.extractJWTParams(decoded);
     
     if (!kid) {
-      return this.createFailureResult(jwt, decoded);
+      return this.createFailureResult(jwt, decoded, undefined, {
+        name: 'VerificationError',
+        message: 'Missing kid in JWT header'
+      });
     }
 
     // A did:key kid is self-contained and doesn't require an issuer
     if (!issuer && !this.isSelfContainedDID(kid)) {
-      return this.createFailureResult(jwt, decoded);
+      return this.createFailureResult(jwt, decoded, undefined, {
+        name: 'VerificationError',
+        message: 'Missing issuer in JWT payload'
+      });
     }
 
-    const verificationMethod = await this.loadVerificationMethod(issuer, kid);
+    const { verificationMethod, error: loadError } = await this.loadVerificationMethod(issuer, kid);
     if (!verificationMethod) {
-      return this.createFailureResult(jwt, decoded);
+      return this.createFailureResult(jwt, decoded, undefined, loadError ?? {
+        name: 'VerificationError',
+        message: 'Failed to load verification method'
+      });
     }
 
     const verificationResult = await this.performVerification(jwt, verificationMethod, alg);
@@ -124,7 +136,10 @@ export class JWTService {
     return kid.startsWith('did:key:');
   }
 
-  private static async loadVerificationMethod(issuer: string | undefined, kid: string) {
+  private static async loadVerificationMethod(issuer: string | undefined, kid: string): Promise<{
+    verificationMethod?: any;
+    error?: JWTResult['error'];
+  }> {
     try {
       let verificationMethodUrl: string;
       if (kid.includes('#')) {
@@ -137,9 +152,9 @@ export class JWTService {
         verificationMethodUrl = `${issuer}#${kid}`;
       }
       const res = await documentLoader(verificationMethodUrl);
-      return res.document;
+      return { verificationMethod: res.document };
     } catch (error) {
-      return null;
+      return { error: this.toErrorDetails(error) };
     }
   }
 
@@ -228,13 +243,19 @@ export class JWTService {
     return alg === 'Ed25519' || alg === 'EdDSA';
   }
 
-  private static createFailureResult(jwt: string, decoded: JWTDecoded | { error: string }, verificationMethod?: any): JWTDetectionResult {
+  private static createFailureResult(
+    jwt: string,
+    decoded: JWTDecoded | { error: string },
+    verificationMethod?: any,
+    error?: JWTResult['error']
+  ): JWTDetectionResult {
     return {
       verified: false,
       results: [{
         proof: { jwt },
         verified: false,
         verificationMethod,
+        error,
         purposeResult: { valid: false },
         decoded
       }]

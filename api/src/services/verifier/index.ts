@@ -140,7 +140,11 @@ export class Verifier {
 
     const jwtResult = await JWTService.verifyJWT(input);
     
-    if (!jwtResult.verified || jwtResult.results.length === 0) {
+    if (!jwtResult.verified) {
+      return this.promoteJWTError(jwtResult);
+    }
+
+    if (jwtResult.results.length === 0) {
       return jwtResult;
     }
 
@@ -343,6 +347,21 @@ export class Verifier {
   private static isDataIntegrityProof(proof: Proof | Proof[]): boolean {
     const proofType = Array.isArray(proof) ? proof[0].type : proof.type;
     return proofType === PROOF_TYPES.DATA_INTEGRITY;
+  }
+
+  private static promoteJWTError(jwtResult: any): VerificationResult {
+    const resultError = jwtResult.results?.[0]?.error;
+    if (!resultError) {
+      return jwtResult;
+    }
+
+    return {
+      ...jwtResult,
+      error: {
+        name: 'VerificationError',
+        errors: [resultError]
+      }
+    };
   }
 
   private static normalizeResult(result: any): VerificationResult {

@@ -397,6 +397,8 @@ const gs1ValidatorRequest = {
 - Load credentials by URL
 - Cache appropriately
 
+**Errors**: Document loaders should throw plain `Error` with a descriptive message. `jsonld-signatures` wraps failures in its internal `VerificationError` at `verify()` time; that class is not exported and must not be thrown from custom loaders. JWT verification propagates loader errors via `JWTService.loadVerificationMethod` → `results[0].error` → top-level `error` in `Verifier.promoteJWTError`.
+
 ### Caching Strategy
 
 **Two-tier approach**:
