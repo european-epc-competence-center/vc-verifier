@@ -1,7 +1,7 @@
 VC Verifier Changelog
 =================
 
-## [Unreleased]
+## 3.5.1 (2026-05-21)
 
 ### Fixed
 - Fixed document loader throwing `TypeError` when an unknown DID verification method is requested (`jsonld-signatures` v11 no longer exports `VerificationError`)
