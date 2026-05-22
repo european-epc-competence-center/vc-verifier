@@ -96,7 +96,8 @@ vc-verifier/
 ### API
 - `PORT` - API server port (default: 3000)
 - `VC_REGISTRY` - Credential registry URL
-- `DOCUMENT_CACHE_TTL_HOURS` - Cache TTL for dynamic documents (default: 1)
+- `DOCUMENT_CACHE_TTL_HOURS` - Fresh cache TTL for dynamic documents (default: 1 h)
+- `DOCUMENT_CACHE_STALE_TTL_HOURS` - Stale fallback TTL when remote unavailable (default: 24 h)
 
 ### Frontend
 - `VUE_APP_VERIFIER_API` - Backend API URL
