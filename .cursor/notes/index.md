@@ -90,6 +90,8 @@ vc-verifier/
 - API: Jest tests in `api/__tests__/` — 11/13 passing (2 temporarily skipped, see [development_workflow.md](./development_workflow.md))
 - Frontend: Unit tests with Jest, E2E with Cypress
 - Run tests before committing
+- **Never skip/deactivate tests** — dead code. If functionality changed so a test no longer covers expected behaviour, remove it. Otherwise fix the code or update the test credential so the test passes properly.
+- Several tests depend on `ssi.eecc.de` (credentials and status lists). These tests pass when the server is up, but fail when it has outages. This is a known infrastructure dependency — do not remove these tests; they are valid.
 
 ## Environment Variables
 
