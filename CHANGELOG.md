@@ -1,6 +1,10 @@
 VC Verifier Changelog
 =================
 
+## WIP
+
+- fix jwt presentation verification
+
 ## 3.5.1 (2026-05-21)
 
 ### Fixed

@@ -85,7 +85,7 @@ export class JWTService {
       });
     }
 
-    const { issuer, kid, alg } = this.extractJWTParams(decoded);
+    const { issuer, holder, kid, alg } = this.extractJWTParams(decoded);
     
     if (!kid) {
       return this.createFailureResult(jwt, decoded, undefined, {
@@ -95,7 +95,7 @@ export class JWTService {
     }
 
     // A did:key kid is self-contained and doesn't require an issuer
-    if (!issuer && !this.isSelfContainedDID(kid)) {
+    if ((!issuer && !holder) && !this.isSelfContainedDID(kid)) {
       return this.createFailureResult(jwt, decoded, undefined, {
         name: 'VerificationError',
         message: 'Missing issuer in JWT payload'
@@ -127,9 +127,10 @@ export class JWTService {
 
   private static extractJWTParams(decoded: JWTDecoded) {
     const issuer = decoded.payload.issuer?.id || decoded.payload.issuer || decoded.payload.iss;
+    const holder = decoded.payload.holder?.id || decoded.payload.holder || decoded.payload.holder;
     const kid = decoded.header.kid;
     const alg = decoded.header.alg;
-    return { issuer, kid, alg };
+    return { issuer, holder, kid, alg };
   }
 
   private static isSelfContainedDID(kid: string): boolean {
