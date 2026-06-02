@@ -118,17 +118,21 @@ function stripEnvelopedJwtDataUrl(id: string): string {
 }
 
 /**
- * Decodes a presentation JWT string or unwraps a JWT VP payload (`vp` claim).
+ * Decodes a verifiable JWT string and unwraps embedded `vc` / `vp` claim objects.
  */
-export function decodePresentationInput(presentation: any): any {
-  let body = presentation;
+export function decodeVerifiableInput(verifiable: any): any {
+  let body = verifiable;
 
-  if (typeof presentation === 'string' && JWTService.isJWT(presentation)) {
-    const decoded = JWTService.decodeJWT(presentation);
+  if (typeof verifiable === 'string' && JWTService.isJWT(verifiable)) {
+    const decoded = JWTService.decodeJWT(verifiable);
     if ('error' in decoded) {
-      throw new Error(`Failed to decode presentation JWT: ${decoded.error}`);
+      throw new Error(`Failed to decode verifiable JWT: ${decoded.error}`);
     }
     body = decoded.payload;
+  }
+
+  if (body?.vc && typeof body.vc === 'object') {
+    body = body.vc;
   }
 
   if (body?.vp && typeof body.vp === 'object') {
@@ -188,5 +192,5 @@ export function normalizePresentationCredentials(presentation: any): any {
  * Full normalization for JWT or JSON-LD presentations before verification.
  */
 export function normalizePresentationInput(presentation: any): any {
-  return normalizePresentationCredentials(decodePresentationInput(presentation));
+  return normalizePresentationCredentials(decodeVerifiableInput(presentation));
 }

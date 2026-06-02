@@ -50,8 +50,9 @@ import { documentLoader } from "../documentLoader/index.js";
 import { JWTService } from "./jwt.js";
 import { checkBitstringStatus } from "./status.js";
 import {
+  decodeVerifiableInput,
   unwrapEnvelopedCredential,
-  normalizePresentationInput,
+  unwrapPresentationVerifiableCredentials,
 } from "./envelope.js";
 import { getSuites } from "./suites.js";
 
@@ -158,14 +159,15 @@ export class Verifier {
     }
 
     const payload = firstResult.decoded.payload;
-    const presentationBody = normalizePresentationInput(payload);
-    const types = Array.isArray(presentationBody.type)
-      ? presentationBody.type
-      : typeof presentationBody.type === 'string'
-        ? [presentationBody.type]
+    const decodedBody = decodeVerifiableInput(payload);
+    const types = Array.isArray(decodedBody.type)
+      ? decodedBody.type
+      : typeof decodedBody.type === 'string'
+        ? [decodedBody.type]
         : [];
 
     if (types.includes(CREDENTIAL_TYPES.VERIFIABLE_PRESENTATION)) {
+      const presentationBody = unwrapPresentationVerifiableCredentials(decodedBody);
       const presentation = {
         ...presentationBody,
         type: types,
@@ -185,8 +187,8 @@ export class Verifier {
     }
 
     // Check status for JWT credentials if they have credentialStatus
-    if (types.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL) && presentationBody.credentialStatus) {
-      return this.verifyJWTCredentialStatus(presentationBody, jwtResult);
+    if (types.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL) && decodedBody.credentialStatus) {
+      return this.verifyJWTCredentialStatus(decodedBody, jwtResult);
     }
 
     return jwtResult;
@@ -304,7 +306,9 @@ export class Verifier {
     suite: unknown[],
     options: VerificationOptions
   ): Promise<VerificationResult> {
-    presentation = normalizePresentationInput(presentation) as VerifiablePresentation;
+    presentation = unwrapPresentationVerifiableCredentials(
+      decodeVerifiableInput(presentation)
+    ) as VerifiablePresentation;
 
     let { challenge, domain } = options;
 

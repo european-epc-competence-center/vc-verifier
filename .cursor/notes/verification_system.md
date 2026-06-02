@@ -98,7 +98,7 @@ Two forms supported:
 - **Wrapped**: `{ verifiableCredential: { type: "EnvelopedVerifiableCredential", id: "..." } }`
 - **In presentations**: each entry in `verifiableCredential[]` may be enveloped — use `unwrapPresentationVerifiableCredentials()` before verification
 
-The JWT is extracted from the `id` field (`data:application/vc+jwt,` and `data:application/vc-ld+jwt,` prefixes are stripped). **JWT presentations** often list each VC as a compact JWT string in `verifiableCredential`; `normalizePresentationInput()` in `envelope.ts` decodes the VP (and `vp` claim), unwraps envelopes, and expands nested JWTs before GS1 rules or `Verifier.verify()` access `credentialSubject`.
+The JWT is extracted from the `id` field (`data:application/vc+jwt,` and `data:application/vc-ld+jwt,` prefixes are stripped). **JWT presentations** often list each VC as a compact JWT string in `verifiableCredential`; `normalizePresentationInput()` in `envelope.ts` decodes the VP (and `vp` claim), unwraps envelopes, and expands nested JWTs for GS1 rule processing, while `Verifier.verify()` keeps contained JWTs as JWT strings during signature verification so proof material is not lost.
 
 ## JSON-LD Verification (Linked Data Proofs)
 

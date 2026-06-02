@@ -1,6 +1,7 @@
 import {
   unwrapEnvelopedCredential,
   unwrapPresentationVerifiableCredentials,
+  decodeVerifiableInput,
   normalizePresentationInput,
 } from "../src/services/verifier/envelope.js";
 
@@ -48,5 +49,19 @@ describe("envelope helpers", () => {
     expect(normalized.verifiableCredential[0].credentialSubject.extendsCredential).toBe(
       "https://example.com/license"
     );
+  });
+
+  test("unwraps vc claim payload from decoded verifiable JWT body", () => {
+    const jwtPayloadWithVcClaim = {
+      iss: "did:example:issuer",
+      vc: {
+        type: ["VerifiableCredential", "ExampleCredential"],
+        credentialSubject: { id: "did:example:holder" },
+      },
+    };
+
+    const decoded = decodeVerifiableInput(jwtPayloadWithVcClaim);
+    expect(decoded.type).toContain("VerifiableCredential");
+    expect(decoded.credentialSubject.id).toBe("did:example:holder");
   });
 });
