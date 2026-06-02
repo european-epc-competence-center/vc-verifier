@@ -1,9 +1,12 @@
 VC Verifier Changelog
 =================
 
-## WIP
+## [Unreleased]
 
-- fix jwt presentation verification
+### Fixed
+- JWT presentation verification: decode VP JWT payloads (including `vp` claim nesting), unwrap `EnvelopedVerifiableCredential` entries, and expand nested JWT strings in `verifiableCredential` before GS1 rules read `credentialSubject.extendsCredential`
+- JSON-LD presentations with enveloped or nested JWT credentials use the same normalization path
+- `Verifier.verify()` on a presentation JWT now verifies each contained credential, not only the outer VP signature
 
 ## 3.5.1 (2026-05-21)
 

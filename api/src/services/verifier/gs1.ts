@@ -15,6 +15,7 @@ import { documentLoader } from "../documentLoader/index.js";
 import { Verifier } from "./index.js";
 import { JWTService } from "./jwt.js";
 import { getJsonSchema, downloadAndCacheSchemas } from "./schemas.js";
+import { normalizePresentationInput } from "./envelope.js";
 
 await downloadAndCacheSchemas();
 
@@ -100,11 +101,14 @@ export async function checkGS1Credential(
 }
 
 export async function verifyGS1Credentials(
-  verifiablePresentation: GS1VerifiablePresentation
+  verifiablePresentation: GS1VerifiablePresentation | gs1VerifiableJwt
 ): Promise<gs1RulesResultContainer> {
+  const normalizedPresentation = normalizePresentationInput(
+    verifiablePresentation
+  ) as GS1VerifiablePresentation;
   return await checkGS1CredentialPresentationValidation(
       gs1ValidatorRequest,
-      verifiablePresentation
+      normalizedPresentation
     );
 }
 
@@ -247,7 +251,9 @@ export class GS1Verifier {
     }
     
     if (types.includes("VerifiablePresentation")) {
-      return await verifyGS1Credentials(credentialPayload);
+      const presentationInput =
+        typeof originalVerifiable === 'string' ? originalVerifiable : credentialPayload;
+      return await verifyGS1Credentials(presentationInput);
     }
     
     throw new Error("Provided verifiable object is of unknown type!");
@@ -255,11 +261,10 @@ export class GS1Verifier {
 
   private static extractCredentialPayload(verifiable: any): any {
     if (typeof verifiable === "string" && JWTService.isJWT(verifiable)) {
-      const decoded = JWTService.decodeJWT(verifiable);
-      if ('error' in decoded) {
-        throw new Error(`Failed to decode JWT: ${decoded.error}`);
-      }
-      return decoded.payload;
+      return normalizePresentationInput(verifiable);
+    }
+    if (verifiable?.vp || verifiable?.verifiableCredential) {
+      return normalizePresentationInput(verifiable);
     }
     return verifiable;
   }

@@ -96,8 +96,9 @@ Verifier.verify(input)
 Two forms supported:
 - **Direct**: `{ type: "EnvelopedVerifiableCredential", id: "data:application/vc+jwt,<jwt>" }`
 - **Wrapped**: `{ verifiableCredential: { type: "EnvelopedVerifiableCredential", id: "..." } }`
+- **In presentations**: each entry in `verifiableCredential[]` may be enveloped — use `unwrapPresentationVerifiableCredentials()` before verification
 
-The JWT is extracted from the `id` field (data URL prefix `data:application/vc+jwt,` is stripped).
+The JWT is extracted from the `id` field (`data:application/vc+jwt,` and `data:application/vc-ld+jwt,` prefixes are stripped). **JWT presentations** often list each VC as a compact JWT string in `verifiableCredential`; `normalizePresentationInput()` in `envelope.ts` decodes the VP (and `vp` claim), unwraps envelopes, and expands nested JWTs before GS1 rules or `Verifier.verify()` access `credentialSubject`.
 
 ## JSON-LD Verification (Linked Data Proofs)
 
