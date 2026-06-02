@@ -11,6 +11,7 @@ import jsigs from "jsonld-signatures";
 interface VerificationResult {
   verified: boolean;
   results?: any[];
+  credentialResults?: any[];
   statusResult?: StatusResult;
   credentialId?: string | URL;
   error?: Error;
@@ -48,7 +49,11 @@ const STATUS_TYPES = {
 import { documentLoader } from "../documentLoader/index.js";
 import { JWTService } from "./jwt.js";
 import { checkBitstringStatus } from "./status.js";
-import { unwrapEnvelopedCredential } from "./envelope.js";
+import {
+  decodeVerifiableInput,
+  unwrapEnvelopedCredential,
+  unwrapPresentationVerifiableCredentials,
+} from "./envelope.js";
 import { getSuites } from "./suites.js";
 
 const {
@@ -154,10 +159,36 @@ export class Verifier {
     }
 
     const payload = firstResult.decoded.payload;
-    
+    const decodedBody = decodeVerifiableInput(payload);
+    const types = Array.isArray(decodedBody.type)
+      ? decodedBody.type
+      : typeof decodedBody.type === 'string'
+        ? [decodedBody.type]
+        : [];
+
+    if (types.includes(CREDENTIAL_TYPES.VERIFIABLE_PRESENTATION)) {
+      const presentationBody = unwrapPresentationVerifiableCredentials(decodedBody);
+      const presentation = {
+        ...presentationBody,
+        type: types,
+      } as VerifiablePresentation;
+
+      const credentialResults = await this.verifyPresentationCredentials(
+        presentation,
+        options
+      );
+      const allCredentialsVerified = credentialResults.every((r: any) => r.verified);
+
+      return {
+        ...jwtResult,
+        verified: jwtResult.verified && allCredentialsVerified,
+        credentialResults,
+      };
+    }
+
     // Check status for JWT credentials if they have credentialStatus
-    if (payload.type?.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL) && payload.credentialStatus) {
-      return this.verifyJWTCredentialStatus(payload, jwtResult);
+    if (types.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL) && decodedBody.credentialStatus) {
+      return this.verifyJWTCredentialStatus(decodedBody, jwtResult);
     }
 
     return jwtResult;
@@ -220,7 +251,11 @@ export class Verifier {
     }
 
     if (verifiable.type.includes(CREDENTIAL_TYPES.VERIFIABLE_PRESENTATION)) {
-      return this.verifyPresentation(verifiable as VerifiablePresentation, suite, options);
+      return this.verifyPresentation(
+        verifiable as VerifiablePresentation,
+        suite,
+        options
+      );
     }
 
     throw new Error("Provided verifiable object is of unknown type!");
@@ -271,6 +306,10 @@ export class Verifier {
     suite: unknown[],
     options: VerificationOptions
   ): Promise<VerificationResult> {
+    presentation = unwrapPresentationVerifiableCredentials(
+      decodeVerifiableInput(presentation)
+    ) as VerifiablePresentation;
+
     let { challenge, domain } = options;
 
     // Try to use challenge in proof if not provided (for cases where no exchange protocol is used)
@@ -288,7 +327,8 @@ export class Verifier {
       // jsigs.verify only verifies the presentation proof itself.
       // We must also verify each contained credential individually.
       const credentialResults = await this.verifyPresentationCredentials(
-        presentation
+        presentation,
+        options
       );
 
       const presentationResult = await jsigs.verify(presentation, {
@@ -322,7 +362,8 @@ export class Verifier {
   }
 
   private static async verifyPresentationCredentials(
-    presentation: VerifiablePresentation
+    presentation: VerifiablePresentation,
+    options: VerificationOptions
   ): Promise<any[]> {
     if (!presentation.verifiableCredential) return [];
 
@@ -332,8 +373,7 @@ export class Verifier {
 
     const credentialResults = await Promise.all(
       credentials.map((credential: VerifiableCredential) => {
-        const suite = getSuites(credential.proof);
-        return this.verifyCredential(credential, suite);
+        return this.verify(credential as Verifiable, options.challenge, options.domain);
       })
     );
 
