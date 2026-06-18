@@ -528,6 +528,7 @@ const gs1ValidatorRequest = {
 - Support for challenge/nonce in presentation proofs
 - Prevents replay attacks
 - Domain/audience validation
+- JWT presentation holder binding is handled in `JWTService` by mapping `nonce`/`aud` onto `AuthenticationProofPurpose`; linked-data presentations use `jsigs.verify()` directly
 
 ## Testing Strategy
 
