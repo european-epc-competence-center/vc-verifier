@@ -4,7 +4,7 @@ VC Verifier Changelog
 ## [Unreleased]
 
 ### Fixed
-- JWT presentation holder binding now lives in `JWTService` (`holderBindingFromPayload`, `validatePresentationHolderBinding`), delegating to `AuthenticationProofPurpose`; linked-data presentations continue to rely on `jsigs.verify()`
+- JWT presentation holder binding put in place by delegating to `AuthenticationProofPurpose`; linked-data presentations continue to rely on `jsigs.verify()`
 
 ## 3.5.2 (2026-06-02)]
 
