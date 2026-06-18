@@ -6,25 +6,26 @@ import * as EcdsaMultikey from '@digitalbazaar/ecdsa-multikey';
 import jsigs from 'jsonld-signatures';
 import { documentLoader } from '../documentLoader/index.js';
 import { extractPublicKeyBytes, stringToBytes, base64ToBytes, type KNOWN_KEY_TYPE } from '../../utils/crypto.js';
+import {
+  checkPayloadHolderMatches,
+  resolveHolderFromVerificationMethod,
+} from './holder.js';
 
 const {
   purposes: { AuthenticationProofPurpose },
 } = jsigs;
 
-export interface JWTHolderBindingExpectation {
-  challenge?: string;
-  domain?: string;
-}
-
-/** Holder-binding fields on a JWT verifiable presentation payload. */
+/** JWT presentation holder-binding fields (nonce/aud/holder claims). */
 export interface JWTHolderBinding {
   nonce?: string;
   aud?: string | string[];
+  holder?: string | { id?: string };
 }
 
 export interface JWTHolderBindingValidation {
   valid: boolean;
   nonce?: string;
+  holder?: string;
   error?: Error;
 }
 
@@ -92,10 +93,16 @@ export class JWTService {
     payload: Record<string, unknown>
   ): JWTHolderBinding {
     const nonce = payload.nonce;
+    const holder = payload.holder;
 
     return {
       nonce: typeof nonce === 'string' ? nonce : undefined,
       aud: payload.aud as string | string[] | undefined,
+      holder:
+        typeof holder === 'string' ||
+        (holder && typeof holder === 'object')
+          ? (holder as string | { id?: string })
+          : undefined,
     };
   }
 
@@ -104,12 +111,13 @@ export class JWTService {
    * mapping `nonce`/`aud` onto the library's `challenge`/`domain` checks.
    */
   static async validatePresentationHolderBinding(
-    expectation: JWTHolderBindingExpectation,
-    binding: JWTHolderBinding,
+    expected: JWTHolderBinding,
+    actual: JWTHolderBinding,
     verificationMethod: { id: string; controller?: string | { id: string } },
-    loader: (url: string) => Promise<{ document: unknown }> = documentLoader
+    loader: (url: string) => Promise<{ document: unknown }> = documentLoader,
+    holderBinding = true
   ): Promise<JWTHolderBindingValidation> {
-    const nonce = expectation.challenge ?? binding.nonce;
+    const nonce = expected.nonce ?? actual.nonce;
 
     if (typeof nonce !== 'string') {
       return {
@@ -121,13 +129,13 @@ export class JWTService {
     try {
       const purpose = new AuthenticationProofPurpose({
         challenge: nonce,
-        domain: expectation.domain,
+        domain: expected.aud,
       });
 
       const purposeResult = await purpose.validate(
         {
-          challenge: binding.nonce,
-          domain: binding.aud,
+          challenge: actual.nonce,
+          domain: actual.aud,
         },
         { verificationMethod, documentLoader: loader }
       );
@@ -140,7 +148,25 @@ export class JWTService {
         };
       }
 
-      return { valid: true, nonce };
+      const holderId = resolveHolderFromVerificationMethod(verificationMethod);
+
+      if (holderBinding) {
+        const payloadHolderCheck = checkPayloadHolderMatches(
+          holderId,
+          actual.holder
+        );
+
+        if (!payloadHolderCheck.valid) {
+          return {
+            valid: false,
+            nonce,
+            holder: holderId,
+            error: new Error(payloadHolderCheck.error!.message),
+          };
+        }
+      }
+
+      return { valid: true, nonce, holder: holderId };
     } catch (error) {
       return {
         valid: false,

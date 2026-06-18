@@ -204,13 +204,18 @@ switch (proof.type) {
 - JWT verification failures now include a structured `error` object inside each JWT `results` item.
 - This mirrors linked-data-style error visibility and includes key fields (`name`, `message`, and when available `code`, `claim`, `reason`) from JOSE errors such as expired tokens (`ERR_JWT_EXPIRED`).
 
-**JWT VP holder binding (`nonce` / `aud`)**:
-- `JWTService.holderBindingFromPayload()` currently reads only the JWT payload; see `api/src/services/verifier/jwt.ts`.
+**JWT VP holder binding (`nonce` / `aud` / `holder`)**:
+- `JWTService.holderBindingFromPayload()` reads `nonce` and `aud` from the JWT payload; see `api/src/services/verifier/jwt.ts`.
+- `validatePresentationHolderBinding()` maps `nonce`/`aud` onto `AuthenticationProofPurpose` (challenge/domain). Holder is derived from the presentation signing key (`verificationMethod.controller`, or id prefix before `#`); an explicit `holder` claim is checked against that value when present. Both expected and actual OID4VP fields use the unified `JWTHolderBinding` interface (`nonce`, `aud`, `holder`).
 - **Payload is the norm**: OpenID4VP, JWT VC Presentation Profile, and VC-JWT v1.1 examples all place `nonce` and `aud` in the claims set.
 - **Header is spec-permitted for `aud`**: VC-JWT v1.1 §4.2.1 allows registered claims as JOSE header parameters; RFC7519 registers `aud` as a replicable header param (primarily for JWE); VC-JOSE-COSE v2 §3.1.3 accepts registered members in header *or* payload.
 - **`nonce` in header is possible but uncommon**: IANA registers `nonce` as a JWS/JWE header param (RFC8555/ACME), but VC-JWT v1.1 VP mapping requires `payload.nonce`; OpenID4VP examples use payload claims only.
 - If both header and payload carry the same claim, RFC7519 §5.3 says values SHOULD match; prefer payload when they differ (de-facto convention).
 
+**Presentation holder-to-credential binding**:
+- `verifyPresentationCredentials()` verifies contained credentials independently (like `@digitalbazaar/vc`); holder-to-subject binding is checked once at presentation level via `validateCredentialHolderBinding()` in `holder.ts`
+- JWT presentations additionally derive the holder from the signing key and validate an explicit `holder` claim when present (see above).
+- Optional query param `holderBinding` (default `true`) on verify endpoints skips holder-subject and JWT holder-claim checks when set to `false`; challenge/domain checks still apply.
 ### Ed25519 JWT Verification
 
 **Manual verification** (not using JOSE):

@@ -197,7 +197,8 @@ export class GS1Verifier {
   static async verify(
     verifiable: Verifiable | VerifiableCredential | GS1VerifiableCredential | gs1VerifiableJwt | string,
     challenge?: string,
-    domain?: string
+    domain?: string,
+    holderBinding = true
   ): Promise<GS1VerificationResponse> { 
     try {
       // Normalize the credential type if needed (for GS1 types)
@@ -206,7 +207,12 @@ export class GS1Verifier {
         : verifiable;
       
       // Perform standard credential/presentation verification
-      const credentialVerificationResult = await Verifier.verify(normalizedVerifiable as any, challenge, domain);
+      const credentialVerificationResult = await Verifier.verify(
+        normalizedVerifiable as any,
+        challenge,
+        domain,
+        holderBinding
+      );
       
       // Extract credential payload for type checking
       const credentialPayload = this.extractCredentialPayload(verifiable);

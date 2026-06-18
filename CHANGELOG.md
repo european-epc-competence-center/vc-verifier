@@ -3,6 +3,16 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+## 3.6.1 (2026-06-18)]
+
+### Added
+- `holderBinding` query parameter on `POST /api/verifier` and `POST /api/verifier/gs1` to toggle presentation holder-to-subject and JWT holder-claim checks; defaults to `true` when omitted
+- JWT presentation verification derives the holder from the signing key (`verificationMethod.controller`, or the verification method id prefix before `#`); an explicit `holder` JWT claim is validated against that derived value when present
+- Presentation holder-binding failures now set `presentationResult.verified` and `purposeResult.valid` to `false` (JWT VP binding and credential-subject checks; linked-data presentation proof binding remains handled by `jsonld-signatures`)
+
+### Changed
+- Linked-data presentation verification documents that `jsonld-signatures` validates challenge/domain and authentication-key authorization, but not holder-to-subject binding (now enforced in `verifyPresentationCredentials()`)
+
 ## 3.6.0 (2026-06-18)]
 
 ### Added

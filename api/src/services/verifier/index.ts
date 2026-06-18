@@ -26,6 +26,7 @@ interface StatusResult {
 interface VerificationOptions {
   challenge?: string;
   domain?: string;
+  holderBinding?: boolean;
 }
 
 const CREDENTIAL_TYPES = {
@@ -54,6 +55,7 @@ import {
   unwrapEnvelopedCredential,
   unwrapPresentationVerifiableCredentials,
 } from "./envelope.js";
+import { applyCredentialHolderBinding } from "./holder.js";
 import { getSuites } from "./suites.js";
 
 const {
@@ -121,9 +123,14 @@ export class Verifier {
   static async verify(
     input: Verifiable | verifiableJwt | string,
     challenge?: string,
-    domain?: string
+    domain?: string,
+    holderBinding = true
   ): Promise<VerificationResult> {
-    const options: VerificationOptions = { challenge, domain };
+    const options: VerificationOptions = {
+      challenge,
+      domain,
+      holderBinding,
+    };
 
     // Unwrap enveloped credential if present
     const unwrappedInput = unwrapEnvelopedCredential(input);
@@ -168,30 +175,20 @@ export class Verifier {
 
     if (types.includes(CREDENTIAL_TYPES.VERIFIABLE_PRESENTATION)) {
       const presentationBody = unwrapPresentationVerifiableCredentials(decodedBody);
+      const holderBinding = JWTService.holderBindingFromPayload(payload);
+      const bindingResult = await JWTService.validatePresentationHolderBinding(
+        { nonce: options.challenge, aud: options.domain },
+        holderBinding,
+        firstResult.verificationMethod,
+        documentLoader,
+        options.holderBinding !== false
+      );
+
       const presentation = {
         ...presentationBody,
         type: types,
+        ...(bindingResult.holder ? { holder: bindingResult.holder } : {}),
       } as VerifiablePresentation;
-
-      const holderBinding = JWTService.holderBindingFromPayload(payload);
-      const bindingResult = await JWTService.validatePresentationHolderBinding(
-        options,
-        holderBinding,
-        firstResult.verificationMethod,
-        documentLoader
-      );
-
-      let presentationVerified = jwtResult.verified && bindingResult.valid;
-      const purposeError = bindingResult.error;
-
-      const presentationResult = {
-        verified: presentationVerified,
-        results: jwtResult.results.map((result) => ({
-          ...result,
-          purposeResult: { valid: presentationVerified },
-        })),
-        error: purposeError,
-      };
 
       const credentialResults = await this.verifyPresentationCredentials(
         presentation,
@@ -201,6 +198,22 @@ export class Verifier {
         }
       );
       const allCredentialsVerified = credentialResults.every((r: any) => r.verified);
+
+      let presentationResult = {
+        verified: jwtResult.verified && bindingResult.valid,
+        results: jwtResult.results.map((result) => ({
+          ...result,
+          verified: jwtResult.verified,
+          purposeResult: { valid: bindingResult.valid },
+        })),
+        error: bindingResult.error,
+      };
+
+      presentationResult = applyCredentialHolderBinding(
+        presentationResult,
+        presentation,
+        options.holderBinding !== false
+      );
 
       return this.normalizeResult({
         presentationResult,
@@ -348,18 +361,24 @@ export class Verifier {
     let result;
 
     if (this.isDataIntegrityProof(presentation.proof)) {
-      // jsigs.verify + AuthenticationProofPurpose validates challenge, domain,
-      // and holder authentication for Data Integrity presentations.
+      // jsigs.verify + AuthenticationProofPurpose already validates challenge,
+      // domain, and authentication-key authorization for the presentation proof.
       const credentialResults = await this.verifyPresentationCredentials(
         presentation,
         options
       );
 
-      const presentationResult = await jsigs.verify(presentation, {
+      let presentationResult = await jsigs.verify(presentation, {
         suite,
         purpose: new AuthenticationProofPurpose({ challenge, domain }),
         documentLoader,
       });
+
+      presentationResult = applyCredentialHolderBinding(
+        presentationResult,
+        presentation,
+        options.holderBinding !== false
+      );
 
       const allCredentialsVerified = credentialResults.every(
         (r: any) => r.verified
@@ -380,6 +399,23 @@ export class Verifier {
         domain,
         checkStatus,
       });
+
+      const allCredentialsVerified = (result.credentialResults ?? []).every(
+        (r: any) => r.verified
+      );
+
+      const presentationResult = applyCredentialHolderBinding(
+        result.presentationResult,
+        presentation,
+        options.holderBinding !== false
+      );
+
+      result = {
+        ...result,
+        presentationResult,
+        verified: presentationResult.verified && allCredentialsVerified,
+        error: presentationResult.error ?? result.error,
+      };
     }
 
     return this.normalizeResult(result);
@@ -397,12 +433,16 @@ export class Verifier {
 
     const credentialResults = await Promise.all(
       credentials.map((credential: VerifiableCredential) => {
-        return this.verify(credential as Verifiable, options.challenge, options.domain);
+        return this.verify(
+          credential as Verifiable,
+          options.challenge,
+          options.domain
+        );
       })
     );
 
-    for (const [i, credentialResult] of credentialResults.entries()) {
-      credentialResult.credentialId = credentials[i].id;
+    for (const [index, credentialResult] of credentialResults.entries()) {
+      credentialResult.credentialId = credentials[index].id;
     }
 
     return credentialResults;
