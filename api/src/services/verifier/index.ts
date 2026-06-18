@@ -173,17 +173,41 @@ export class Verifier {
         type: types,
       } as VerifiablePresentation;
 
+      const holderBinding = JWTService.holderBindingFromPayload(payload);
+      const bindingResult = await JWTService.validatePresentationHolderBinding(
+        options,
+        holderBinding,
+        firstResult.verificationMethod,
+        documentLoader
+      );
+
+      let presentationVerified = jwtResult.verified && bindingResult.valid;
+      const purposeError = bindingResult.error;
+
+      const presentationResult = {
+        verified: presentationVerified,
+        results: jwtResult.results.map((result) => ({
+          ...result,
+          purposeResult: { valid: presentationVerified },
+        })),
+        error: purposeError,
+      };
+
       const credentialResults = await this.verifyPresentationCredentials(
         presentation,
-        options
+        {
+          ...options,
+          challenge: bindingResult.nonce ?? options.challenge,
+        }
       );
       const allCredentialsVerified = credentialResults.every((r: any) => r.verified);
 
-      return {
-        ...jwtResult,
-        verified: jwtResult.verified && allCredentialsVerified,
+      return this.normalizeResult({
+        presentationResult,
+        verified: presentationResult.verified && allCredentialsVerified,
         credentialResults,
-      };
+        error: presentationResult.error,
+      });
     }
 
     // Check status for JWT credentials if they have credentialStatus
@@ -324,8 +348,8 @@ export class Verifier {
     let result;
 
     if (this.isDataIntegrityProof(presentation.proof)) {
-      // jsigs.verify only verifies the presentation proof itself.
-      // We must also verify each contained credential individually.
+      // jsigs.verify + AuthenticationProofPurpose validates challenge, domain,
+      // and holder authentication for Data Integrity presentations.
       const credentialResults = await this.verifyPresentationCredentials(
         presentation,
         options

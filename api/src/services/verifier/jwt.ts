@@ -2,8 +2,31 @@ import * as jose from 'jose';
 import { ed25519 } from '@noble/curves/ed25519.js';
 // @ts-ignore
 import * as EcdsaMultikey from '@digitalbazaar/ecdsa-multikey';
+// @ts-ignore
+import jsigs from 'jsonld-signatures';
 import { documentLoader } from '../documentLoader/index.js';
 import { extractPublicKeyBytes, stringToBytes, base64ToBytes, type KNOWN_KEY_TYPE } from '../../utils/crypto.js';
+
+const {
+  purposes: { AuthenticationProofPurpose },
+} = jsigs;
+
+export interface JWTHolderBindingExpectation {
+  challenge?: string;
+  domain?: string;
+}
+
+/** Holder-binding fields on a JWT verifiable presentation payload. */
+export interface JWTHolderBinding {
+  nonce?: string;
+  aud?: string | string[];
+}
+
+export interface JWTHolderBindingValidation {
+  valid: boolean;
+  nonce?: string;
+  error?: Error;
+}
 
 export interface JWTDetectionResult {
   verified: boolean;
@@ -63,6 +86,68 @@ export class JWTService {
   static isJWT(input: string): boolean {
     if (typeof input !== 'string') return false;
     return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(input.trim());
+  }
+
+  static holderBindingFromPayload(
+    payload: Record<string, unknown>
+  ): JWTHolderBinding {
+    const nonce = payload.nonce;
+
+    return {
+      nonce: typeof nonce === 'string' ? nonce : undefined,
+      aud: payload.aud as string | string[] | undefined,
+    };
+  }
+
+  /**
+   * Validates JWT presentation holder binding via `AuthenticationProofPurpose`,
+   * mapping `nonce`/`aud` onto the library's `challenge`/`domain` checks.
+   */
+  static async validatePresentationHolderBinding(
+    expectation: JWTHolderBindingExpectation,
+    binding: JWTHolderBinding,
+    verificationMethod: { id: string; controller?: string | { id: string } },
+    loader: (url: string) => Promise<{ document: unknown }> = documentLoader
+  ): Promise<JWTHolderBindingValidation> {
+    const nonce = expectation.challenge ?? binding.nonce;
+
+    if (typeof nonce !== 'string') {
+      return {
+        valid: false,
+        error: new Error('JWT presentation is missing required nonce claim.'),
+      };
+    }
+
+    try {
+      const purpose = new AuthenticationProofPurpose({
+        challenge: nonce,
+        domain: expectation.domain,
+      });
+
+      const purposeResult = await purpose.validate(
+        {
+          challenge: binding.nonce,
+          domain: binding.aud,
+        },
+        { verificationMethod, documentLoader: loader }
+      );
+
+      if (!purposeResult.valid) {
+        return {
+          valid: false,
+          nonce,
+          error: purposeResult.error,
+        };
+      }
+
+      return { valid: true, nonce };
+    } catch (error) {
+      return {
+        valid: false,
+        nonce,
+        error: error instanceof Error ? error : new Error(String(error)),
+      };
+    }
   }
 
   static decodeJWT(jwt: string): JWTDecoded | { error: string } {
