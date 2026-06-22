@@ -97,6 +97,7 @@ vc-verifier/
 - `PORT` - API server port (default: 3000)
 - `VC_REGISTRY` - Credential registry URL
 - `DOCUMENT_CACHE_TTL_HOURS` - Cache TTL for dynamic documents (default: 1)
+- `GS1_GLOBAL_DID` - Trusted issuer DID for `GS1PrefixLicenseCredential` root of trust (default: `did:web:id.gs1.org`; required for non-production GS1 chains)
 
 ### Frontend
 - `VUE_APP_VERIFIER_API` - Backend API URL
