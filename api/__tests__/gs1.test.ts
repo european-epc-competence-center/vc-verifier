@@ -1,11 +1,94 @@
+import { jest } from '@jest/globals';
+
+// Production GS1 Global issuer for the id.gs1.org demo credential below
+process.env.GS1_GLOBAL_DID = "did:web:id.gs1.org";
+
+const did_gs1_org: any = {
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    "https://w3id.org/security/suites/ed25519-2020/v1",
+    "https://w3id.org/security/suites/x25519-2020/v1"
+  ],
+  "id": "did:web:id.gs1.org",
+  "verificationMethod": [
+    {
+      "id": "did:web:id.gs1.org#z6MkmyW9bMwkNv2imXTkdU36HEBKAgdk3zDcKCarXJPHgNfM",
+      "type": "Ed25519VerificationKey2020",
+      "controller": "did:web:id.gs1.org",
+      "publicKeyMultibase": "z6MkmyW9bMwkNv2imXTkdU36HEBKAgdk3zDcKCarXJPHgNfM"
+    },
+    {
+      "id": "did:web:id.gs1.org#z6MkkzYByKSsaWusRbYNZGAMvdd5utsPqsGKvrc7T9jyvUrN",
+      "type": "Ed25519VerificationKey2020",
+      "controller": "did:web:id.gs1.org",
+      "publicKeyMultibase": "z6MkkzYByKSsaWusRbYNZGAMvdd5utsPqsGKvrc7T9jyvUrN"
+    },
+    {
+      "id": "did:web:id.gs1.org#fw_hRvwdtJ-LgJk5mSBcdXYfZigY0Ysvz1hOA--1thI",
+      "type": "JsonWebKey",
+      "controller": "did:web:id.gs1.org",
+      "publicKeyJwk": {
+        "kid": "fw_hRvwdtJ-LgJk5mSBcdXYfZigY0Ysvz1hOA--1thI",
+        "kty": "EC",
+        "crv": "P-256",
+        "alg": "ES256",
+        "x": "-rzHcnJx5JGTg4Wb9dOr7A9dAERgYhC-kuJHgm1eojI",
+        "y": "1ZFWfyD9Cr5-jD3H7gA17GpTpLWpbSRq_U0L28P6ndI"
+      }
+    }
+  ],
+  "authentication": [
+    "did:web:id.gs1.org#z6MkmyW9bMwkNv2imXTkdU36HEBKAgdk3zDcKCarXJPHgNfM",
+    "did:web:id.gs1.org#z6MkkzYByKSsaWusRbYNZGAMvdd5utsPqsGKvrc7T9jyvUrN",
+    "did:web:id.gs1.org#fw_hRvwdtJ-LgJk5mSBcdXYfZigY0Ysvz1hOA--1thI"
+  ],
+  "assertionMethod": [
+    "did:web:id.gs1.org#z6MkmyW9bMwkNv2imXTkdU36HEBKAgdk3zDcKCarXJPHgNfM",
+    "did:web:id.gs1.org#z6MkkzYByKSsaWusRbYNZGAMvdd5utsPqsGKvrc7T9jyvUrN",
+    "did:web:id.gs1.org#fw_hRvwdtJ-LgJk5mSBcdXYfZigY0Ysvz1hOA--1thI"
+  ]
+};
+
+function resolveDIDFragment(didDocument: any, fragment: string) {
+  const verificationMethod = didDocument.verificationMethod.find(
+    (method: any) => method.id === `${didDocument.id}#${fragment}` || method.id.endsWith(`#${fragment}`)
+  );
+
+  if (verificationMethod) {
+    return verificationMethod;
+  }
+
+  return didDocument;
+}
+
+const { documentLoader: realDocumentLoader } = (await import("../src/services/documentLoader/index")) as any;
+
+await jest.unstable_mockModule("../src/services/documentLoader/index", () => ({
+  documentLoader: jest.fn().mockImplementation(async (url: any) => {
+    if (url.startsWith("did:web:id.gs1.org")) {
+      const [didUrl, fragment] = url.split("#");
+
+      if (fragment) {
+        return {
+          contextUrl: null,
+          documentUrl: url,
+          document: resolveDIDFragment(did_gs1_org, fragment)
+        };
+      }
+
+      return {
+        contextUrl: null,
+        documentUrl: url,
+        document: did_gs1_org
+      };
+    }
+
+    return realDocumentLoader(url);
+  })
+}));
+
+// Import modules after mocking
 import request from "supertest";
-
-import server from "../src/index";
-
-afterAll((done) => {
-  server.close();
-  done();
-});
 
 const licenceKeyCredential: any = {
   "@context": [
@@ -251,6 +334,20 @@ const orgDataCredentialPresentation: any = {
 };
 
 describe("Verifier API Test for GS1 Credentials", () => {
+  let server: any;
+
+  beforeAll(async () => {
+    const { default: serverModule } = await import("../src/index");
+    server = serverModule;
+  });
+
+  afterAll((done) => {
+    if (server) {
+      server.close();
+    }
+    done();
+  });
+
   test("Verify GS1 licence prefix credentials", async () => {
     const res = await request(server)
       .post("/api/verifier/gs1")

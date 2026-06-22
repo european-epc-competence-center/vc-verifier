@@ -90,13 +90,28 @@ function extractCredentialInfo(credential: GS1VerifiableCredential | gs1Verifiab
   return { credentialId, credentialName };
 }
 
+function credentialForGs1Rules(
+  credential: GS1VerifiableCredential | gs1VerifiableJwt | string
+): GS1VerifiableCredential | gs1VerifiableJwt | string {
+  if (typeof credential !== 'string' || !JWTService.isJWT(credential)) {
+    return credential;
+  }
+
+  const decoded = JWTService.decodeJWT(credential);
+  if ('error' in decoded) {
+    return credential;
+  }
+
+  return decoded.payload as GS1VerifiableCredential;
+}
+
 export async function checkGS1Credential(
   verifiableCredential: GS1VerifiableCredential | gs1VerifiableJwt | string,
   challenge?: string,
   domain?: string
 ): Promise<gs1RulesResult> {
   return await checkGS1CredentialWithoutPresentation(
-    gs1ValidatorRequest, verifiableCredential
+    gs1ValidatorRequest, credentialForGs1Rules(verifiableCredential)
   );
 }
 
@@ -224,7 +239,7 @@ export class GS1Verifier {
       return this.buildUnifiedResponse(credentialVerificationResult, gs1Result);
 
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         verified: false,
         gs1Result: {

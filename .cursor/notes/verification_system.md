@@ -358,7 +358,9 @@ const gs1ValidatorRequest = {
 
 **Type compatibility** (v2.6.2+): GS1 types allow `type: string | string[] | undefined`, internal types require `type: string[]`. `normalizeVerifiable()` in `gs1.ts` converts GS1 types before passing to `Verifier.verify()`.
 
-**GS1 JWT Workaround** (fixed in v3.4.3): `@eecc/vc-verifier-rules` uses `atob()` which fails on base64url characters. `checkGS1Credential()` pre-decodes the JWT payload via `JWTService.decodeJWT()` and passes the plain JSON object instead of the raw JWT string.
+**GS1 JWT Workaround**: `@eecc/vc-verifier-rules` uses `atob()` which fails on base64url JWTs. `credentialForGs1Rules()` in `gs1.ts` decodes via `JWTService.decodeJWT()` before `checkGS1CredentialWithoutPresentation()`. Chained credentials loaded via `loadExternalCredential` stay as JWT strings so `Verifier.verify()` can check signatures.
+
+**Test env**: `api/jest.setup.ts` sets `GS1_GLOBAL_DID` to the company-wallet dev issuer; `gs1.test.ts` overrides to `did:web:id.gs1.org` for production demo credentials.
 
 ### External Credential Verification
 

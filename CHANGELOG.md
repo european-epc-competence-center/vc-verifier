@@ -1,6 +1,12 @@
 VC Verifier Changelog
 =================
 
+## [Unreleased]
+
+### Fixed
+- Decode base64url JWT credentials before passing them to `@eecc/vc-verifier-rules` in `checkGS1Credential()` (fixes `atob` / GS1-010 failures for ProductDataCredential JWTs)
+- GS1 integration tests: centralize `GS1_GLOBAL_DID` in `api/jest.setup.ts`; mock `did:web:id.gs1.org` in `gs1.test.ts`
+
 ## 3.6.2 (2026-06-22)]
 
 - bump vc-verifier-rules version

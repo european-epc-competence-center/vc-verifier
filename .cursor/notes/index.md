@@ -87,7 +87,7 @@ vc-verifier/
 - Shared types defined in `api/src/types.d.ts`
 
 ### Testing
-- API: Jest tests in `api/__tests__/` — 11/13 passing (2 temporarily skipped, see [development_workflow.md](./development_workflow.md))
+- API: Jest tests in `api/__tests__/` — 39/41 passing (2 skipped DataIntegrityProof / RevocationList2020, see [development_workflow.md](./development_workflow.md))
 - Frontend: Unit tests with Jest, E2E with Cypress
 - Run tests before committing
 

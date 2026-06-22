@@ -1,8 +1,5 @@
 import { jest } from '@jest/globals'
 
-// Set environment variable for GS1 Global DID used in tests
-process.env.GS1_GLOBAL_DID = "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global";
-
 // GS1 Prefix License Credential (JSON-LD with ES256 signature)
 const gs1PrefixLicenseJsonLD = {
   "type": [
