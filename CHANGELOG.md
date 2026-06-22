@@ -1,7 +1,10 @@
 VC Verifier Changelog
 =================
 
-## [Unreleased]
+## 3.6.2 (2026-06-22)]
+
+- bump vc-verifier-rules version
+- fix GS1 single prefix license validation with root of trust
 
 ## 3.6.1 (2026-06-18)]
 
