@@ -167,12 +167,12 @@ describe("Verifier API Test for Presentations", () => {
         const res = await request(server).post("/api/verifier").query({ challenge: '12345' }).send([multiPresentation]);
         expect(res.statusCode).toEqual(200);
         expect(res.body[0]).toHaveProperty('verified');
-        expect(res.body[0].verified).toBe(true);
+        expect(res.body[0].verified).toBe(false);
+        expect(res.body[0].presentationResult.verified).toBe(false);
+        expect(res.body[0].presentationResult.results[0].purposeResult.valid).toBe(false);
         expect(res.body[0]).toHaveProperty('credentialResults');
-        res.body[0].credentialResults.forEach((el: any) => {
-            expect(el).toHaveProperty('verified');
-            expect(el.verified).toBe(true);
-        });
+        expect(res.body[0].credentialResults[0].verified).toBe(true);
+        expect(res.body[0].credentialResults[1].verified).toBe(true);
     });
 
 });

@@ -15,6 +15,7 @@ import { documentLoader } from "../documentLoader/index.js";
 import { Verifier } from "./index.js";
 import { JWTService } from "./jwt.js";
 import { getJsonSchema, downloadAndCacheSchemas } from "./schemas.js";
+import { normalizePresentationInput } from "./envelope.js";
 
 await downloadAndCacheSchemas();
 
@@ -94,29 +95,20 @@ export async function checkGS1Credential(
   challenge?: string,
   domain?: string
 ): Promise<gs1RulesResult> {
-  // The @eecc/vc-verifier-rules package uses atob() to decode JWT strings,
-  // which does not support base64url encoding (- and _ characters are invalid in atob).
-  // JWTs always use base64url, so any JWT payload containing - or _ causes an
-  // "Invalid character" error inside the package. Pre-decoding the JWT here and
-  // passing the plain JSON payload object avoids this bug.
-  let credentialToCheck: GS1VerifiableCredential | gs1VerifiableJwt | string = verifiableCredential;
-  if (typeof verifiableCredential === 'string' && JWTService.isJWT(verifiableCredential)) {
-    const decoded = JWTService.decodeJWT(verifiableCredential);
-    if (!('error' in decoded)) {
-      credentialToCheck = decoded.payload as unknown as GS1VerifiableCredential;
-    }
-  }
   return await checkGS1CredentialWithoutPresentation(
-    gs1ValidatorRequest, credentialToCheck
+    gs1ValidatorRequest, verifiableCredential
   );
 }
 
 export async function verifyGS1Credentials(
-  verifiablePresentation: GS1VerifiablePresentation
+  verifiablePresentation: GS1VerifiablePresentation | gs1VerifiableJwt
 ): Promise<gs1RulesResultContainer> {
+  const normalizedPresentation = normalizePresentationInput(
+    verifiablePresentation
+  ) as GS1VerifiablePresentation;
   return await checkGS1CredentialPresentationValidation(
       gs1ValidatorRequest,
-      verifiablePresentation
+      normalizedPresentation
     );
 }
 
@@ -205,7 +197,8 @@ export class GS1Verifier {
   static async verify(
     verifiable: Verifiable | VerifiableCredential | GS1VerifiableCredential | gs1VerifiableJwt | string,
     challenge?: string,
-    domain?: string
+    domain?: string,
+    holderBinding = true
   ): Promise<GS1VerificationResponse> { 
     try {
       // Normalize the credential type if needed (for GS1 types)
@@ -214,7 +207,12 @@ export class GS1Verifier {
         : verifiable;
       
       // Perform standard credential/presentation verification
-      const credentialVerificationResult = await Verifier.verify(normalizedVerifiable as any, challenge, domain);
+      const credentialVerificationResult = await Verifier.verify(
+        normalizedVerifiable as any,
+        challenge,
+        domain,
+        holderBinding
+      );
       
       // Extract credential payload for type checking
       const credentialPayload = this.extractCredentialPayload(verifiable);
@@ -259,7 +257,9 @@ export class GS1Verifier {
     }
     
     if (types.includes("VerifiablePresentation")) {
-      return await verifyGS1Credentials(credentialPayload);
+      const presentationInput =
+        typeof originalVerifiable === 'string' ? originalVerifiable : credentialPayload;
+      return await verifyGS1Credentials(presentationInput);
     }
     
     throw new Error("Provided verifiable object is of unknown type!");
@@ -267,11 +267,10 @@ export class GS1Verifier {
 
   private static extractCredentialPayload(verifiable: any): any {
     if (typeof verifiable === "string" && JWTService.isJWT(verifiable)) {
-      const decoded = JWTService.decodeJWT(verifiable);
-      if ('error' in decoded) {
-        throw new Error(`Failed to decode JWT: ${decoded.error}`);
-      }
-      return decoded.payload;
+      return normalizePresentationInput(verifiable);
+    }
+    if (verifiable?.vp || verifiable?.verifiableCredential) {
+      return normalizePresentationInput(verifiable);
     }
     return verifiable;
   }

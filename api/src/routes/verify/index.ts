@@ -8,6 +8,26 @@ const VC_REGISTRY = process.env.VC_REGISTRY
   ? process.env.VC_REGISTRY
   : "https://ssi.eecc.de/api/registry/vcs/";
 
+function parseBooleanQueryParam(
+  value: unknown,
+  defaultValue: boolean,
+  paramName: string
+): boolean {
+  if (value === undefined) {
+    return defaultValue;
+  }
+
+  if (value === "true" || value === true) {
+    return true;
+  }
+
+  if (value === "false" || value === false) {
+    return false;
+  }
+
+  throw new Error(`The ${paramName} must be provided as a boolean string.`);
+}
+
 export class VerifyRoutes {
   fetchAndVerify = async (
     req: Request,
@@ -48,6 +68,11 @@ export class VerifyRoutes {
       // Support W3C and JWT namespaces
       const challenge = req.query.challenge || req.query.nonce;
       const domain = req.query.domain || req.query.audience || req.query.aud;
+      const holderBinding = parseBooleanQueryParam(
+        req.query.holderBinding,
+        true,
+        "holderBinding"
+      );
 
       if (challenge && typeof challenge != "string")
         throw new Error("The challenge/nonce must be provided as a string!");
@@ -57,7 +82,12 @@ export class VerifyRoutes {
 
       let tasks = Promise.all(
         req.body.map(function (verifiable: Verifiable | verifiableJwt | string) {
-          return Verifier.verify(verifiable, challenge, domain);
+          return Verifier.verify(
+            verifiable,
+            challenge,
+            domain,
+            holderBinding
+          );
         })
       );
 
@@ -114,6 +144,11 @@ export class VerifyRoutes {
   ): Promise<any> => {
     const challenge = req.query.challenge || req.query.nonce;
     const domain = req.query.domain || req.query.audience || req.query.aud;
+    const holderBinding = parseBooleanQueryParam(
+      req.query.holderBinding,
+      true,
+      "holderBinding"
+    );
     try {
       if (challenge && typeof challenge != "string")
         throw new Error("The challenge/nonce must be provided as a string!");
@@ -123,7 +158,12 @@ export class VerifyRoutes {
 
       let tasks = Promise.all(
         req.body.map(function (verifiable: Verifiable | verifiableJwt | string) {
-          return GS1Verifier.verify(verifiable, challenge, domain);
+          return GS1Verifier.verify(
+            verifiable,
+            challenge,
+            domain,
+            holderBinding
+          );
         })
       );
 

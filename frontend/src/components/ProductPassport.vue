@@ -94,7 +94,7 @@ import { useToast } from "vue-toastification";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { productPassportPDF } from '../pdf.js';
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+pdfMake.vfs = pdfFonts;
 export default {
     name: 'ProductPassport',
     props: {

@@ -6,7 +6,12 @@
  * 2. Wrapped: An object with a "verifiableCredential" field containing the above structure
  */
 
-const DATA_URL_PREFIX = 'data:application/vc+jwt,';
+import { JWTService } from './jwt.js';
+
+const ENVELOPED_JWT_DATA_URL_PREFIXES = [
+  'data:application/vc+jwt,',
+  'data:application/vc-ld+jwt,',
+] as const;
 
 /**
  * Checks if the given input is an enveloped credential (direct or wrapped)
@@ -50,6 +55,7 @@ function hasEnvelopedType(obj: any): boolean {
  */
 export function unwrapEnvelopedCredential(input: any): any {
   if (!input || typeof input !== 'object') {
+    // JWT presentations often list each VC as a compact JWT string
     return input;
   }
 
@@ -71,6 +77,27 @@ export function unwrapEnvelopedCredential(input: any): any {
 }
 
 /**
+ * Unwraps enveloped credentials inside a presentation's verifiableCredential array.
+ */
+export function unwrapPresentationVerifiableCredentials(presentation: any): any {
+  if (!presentation || typeof presentation !== 'object' || !presentation.verifiableCredential) {
+    return presentation;
+  }
+
+  const isArray = Array.isArray(presentation.verifiableCredential);
+  const credentials = isArray
+    ? presentation.verifiableCredential
+    : [presentation.verifiableCredential];
+
+  const unwrapped = credentials.map((credential: any) => unwrapEnvelopedCredential(credential));
+
+  return {
+    ...presentation,
+    verifiableCredential: isArray ? unwrapped : unwrapped[0],
+  };
+}
+
+/**
  * Extracts the JWT from an EnvelopedVerifiableCredential object
  */
 function extractJWT(envelope: any): string {
@@ -78,12 +105,92 @@ function extractJWT(envelope: any): string {
     throw new Error('EnvelopedVerifiableCredential missing id field with JWT');
   }
 
-  const jwt = envelope.id;
-  
-  // Strip data URL prefix if present
-  if (jwt.startsWith(DATA_URL_PREFIX)) {
-    return jwt.substring(DATA_URL_PREFIX.length);
+  return stripEnvelopedJwtDataUrl(envelope.id);
+}
+
+function stripEnvelopedJwtDataUrl(id: string): string {
+  for (const prefix of ENVELOPED_JWT_DATA_URL_PREFIXES) {
+    if (id.startsWith(prefix)) {
+      return id.substring(prefix.length);
+    }
+  }
+  return id;
+}
+
+/**
+ * Decodes a verifiable JWT string and unwraps embedded `vc` / `vp` claim objects.
+ */
+export function decodeVerifiableInput(verifiable: any): any {
+  let body = verifiable;
+
+  if (typeof verifiable === 'string' && JWTService.isJWT(verifiable)) {
+    const decoded = JWTService.decodeJWT(verifiable);
+    if ('error' in decoded) {
+      throw new Error(`Failed to decode verifiable JWT: ${decoded.error}`);
+    }
+    body = decoded.payload;
   }
 
-  return jwt;
+  if (body?.vc && typeof body.vc === 'object') {
+    body = body.vc;
+  }
+
+  if (body?.vp && typeof body.vp === 'object') {
+    body = body.vp;
+  }
+
+  return body;
+}
+
+/**
+ * Decodes one presentation entry: compact JWT, enveloped JWT, or JSON-LD VC.
+ */
+export function decodeVerifiableCredentialEntry(credential: any): any {
+  if (typeof credential === 'string' && JWTService.isJWT(credential)) {
+    const decoded = JWTService.decodeJWT(credential);
+    if ('error' in decoded) {
+      throw new Error(`Failed to decode credential JWT: ${decoded.error}`);
+    }
+    return decoded.payload;
+  }
+
+  const unwrapped = unwrapEnvelopedCredential(credential);
+  if (typeof unwrapped === 'string' && JWTService.isJWT(unwrapped)) {
+    const decoded = JWTService.decodeJWT(unwrapped);
+    if ('error' in decoded) {
+      throw new Error(`Failed to decode credential JWT: ${decoded.error}`);
+    }
+    return decoded.payload;
+  }
+
+  return unwrapped;
+}
+
+/**
+ * Unwraps enveloped VCs and decodes nested JWT credentials in a presentation body.
+ */
+export function normalizePresentationCredentials(presentation: any): any {
+  const withUnwrappedEnvelopes = unwrapPresentationVerifiableCredentials(presentation);
+  if (!withUnwrappedEnvelopes?.verifiableCredential) {
+    return withUnwrappedEnvelopes;
+  }
+
+  const isArray = Array.isArray(withUnwrappedEnvelopes.verifiableCredential);
+  const credentials = isArray
+    ? withUnwrappedEnvelopes.verifiableCredential
+    : [withUnwrappedEnvelopes.verifiableCredential];
+
+  const decoded = credentials.map(decodeVerifiableCredentialEntry);
+
+  return {
+    ...withUnwrappedEnvelopes,
+    verifiableCredential: isArray ? decoded : decoded[0],
+  };
+}
+
+/**
+ * Full normalization for JWT or JSON-LD presentations before verification.
+ */
+export function normalizePresentationInput(presentation: any): any {
+  return normalizePresentationCredentials(decodeVerifiableInput(presentation));
 }

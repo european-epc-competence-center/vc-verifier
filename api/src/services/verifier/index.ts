@@ -1,25 +1,9 @@
 // @ts-ignore
 import { verifyCredential, verify } from "@digitalbazaar/vc";
 // @ts-ignore
-import { Ed25519Signature2018 } from "@digitalbazaar/ed25519-signature-2018";
-// @ts-ignore
-import { Ed25519Signature2020 } from "@digitalbazaar/ed25519-signature-2020";
-// @ts-ignore
-import { ES256Signature2020 } from "@eecc/es256-signature-2020";
-// @ts-ignore
 import { checkStatus as checkStatus2020 } from "@digitalbazaar/vc-revocation-list";
 // @ts-ignore
 import { checkStatus as checkStatus2021 } from "@digitalbazaar/vc-status-list";
-// @ts-ignore
-import * as ecdsaSd2023Cryptosuite from "@digitalbazaar/ecdsa-sd-2023-cryptosuite";
-// @ts-ignore
-import {cryptosuite as eddsaRdfc2022CryptoSuite} from "@digitalbazaar/eddsa-rdfc-2022-cryptosuite";
-// @ts-ignore
-import {cryptosuite as ecdsaRdfc2019CryptoSuite} from "@digitalbazaar/ecdsa-rdfc-2019-cryptosuite";
-// @ts-ignore
-import {cryptosuite as rsaRdfc2025CryptoSuite} from "@eecc/rsa-rdfc-2025-cryptosuite";
-// @ts-ignore
-import { DataIntegrityProof } from "@digitalbazaar/data-integrity";
 // @ts-ignore
 import jsigs from "jsonld-signatures";
 
@@ -27,7 +11,9 @@ import jsigs from "jsonld-signatures";
 interface VerificationResult {
   verified: boolean;
   results?: any[];
+  credentialResults?: any[];
   statusResult?: StatusResult;
+  credentialId?: string | URL;
   error?: Error;
   errors?: any[];
 }
@@ -40,6 +26,7 @@ interface StatusResult {
 interface VerificationOptions {
   challenge?: string;
   domain?: string;
+  holderBinding?: boolean;
 }
 
 const CREDENTIAL_TYPES = {
@@ -61,69 +48,19 @@ const STATUS_TYPES = {
 } as const;
 
 import { documentLoader } from "../documentLoader/index.js";
-
 import { JWTService } from "./jwt.js";
-
 import { checkBitstringStatus } from "./status.js";
+import {
+  decodeVerifiableInput,
+  unwrapEnvelopedCredential,
+  unwrapPresentationVerifiableCredentials,
+} from "./envelope.js";
+import { applyCredentialHolderBinding } from "./holder.js";
+import { getSuites } from "./suites.js";
 
-import { unwrapEnvelopedCredential } from "./envelope.js";
-
-const { createVerifyCryptosuite } = ecdsaSd2023Cryptosuite;
 const {
   purposes: { AssertionProofPurpose, AuthenticationProofPurpose },
 } = jsigs;
-
-function getDataIntegritySuite(cryptosuite?: string): unknown {
-  if (!cryptosuite) {
-    throw new Error('Cryptosuite is required for data integrity proof');
-  }
-
-  switch (cryptosuite) {
-    case 'eddsa-rdfc-2022':
-      return eddsaRdfc2022CryptoSuite;
-    case 'ecdsa-rdfc-2019':
-      return ecdsaRdfc2019CryptoSuite;
-    case 'rsa-rdfc-2025':
-      return rsaRdfc2025CryptoSuite;
-    case 'ecdsa-sd-2023':
-      return createVerifyCryptosuite();
-    default:
-      throw new Error(`Cryptosuite ${cryptosuite} not implemented`);
-  }
-}
-
-function getSuite(proof: Proof): unknown {
-  switch (proof?.type) {
-    case PROOF_TYPES.ED25519_2018:
-      return new Ed25519Signature2018();
-
-    case PROOF_TYPES.ED25519_2020:
-      return new Ed25519Signature2020();
-
-    case PROOF_TYPES.ES256_2020:
-      return new ES256Signature2020();
-
-    case PROOF_TYPES.DATA_INTEGRITY:
-      return new DataIntegrityProof({
-        cryptosuite: getDataIntegritySuite(proof.cryptosuite)
-      });
-
-    default:
-      throw new Error(`Proof type ${proof?.type} not implemented`);
-  }
-}
-
-function getSuites(proof: Proof | Proof[]): unknown[] {
-  const suites: unknown[] = [];
-
-  if (Array.isArray(proof)) {
-    proof.forEach((singleProof: Proof) => suites.push(getSuite(singleProof)));
-  } else {
-    suites.push(getSuite(proof));
-  }
-
-  return suites;
-}
 
 function getPresentationStatus(
   presentation: VerifiablePresentation
@@ -186,9 +123,14 @@ export class Verifier {
   static async verify(
     input: Verifiable | verifiableJwt | string,
     challenge?: string,
-    domain?: string
+    domain?: string,
+    holderBinding = true
   ): Promise<VerificationResult> {
-    const options: VerificationOptions = { challenge, domain };
+    const options: VerificationOptions = {
+      challenge,
+      domain,
+      holderBinding,
+    };
 
     // Unwrap enveloped credential if present
     const unwrappedInput = unwrapEnvelopedCredential(input);
@@ -210,7 +152,11 @@ export class Verifier {
 
     const jwtResult = await JWTService.verifyJWT(input);
     
-    if (!jwtResult.verified || jwtResult.results.length === 0) {
+    if (!jwtResult.verified) {
+      return this.promoteJWTError(jwtResult);
+    }
+
+    if (jwtResult.results.length === 0) {
       return jwtResult;
     }
 
@@ -220,10 +166,66 @@ export class Verifier {
     }
 
     const payload = firstResult.decoded.payload;
-    
+    const decodedBody = decodeVerifiableInput(payload);
+    const types = Array.isArray(decodedBody.type)
+      ? decodedBody.type
+      : typeof decodedBody.type === 'string'
+        ? [decodedBody.type]
+        : [];
+
+    if (types.includes(CREDENTIAL_TYPES.VERIFIABLE_PRESENTATION)) {
+      const presentationBody = unwrapPresentationVerifiableCredentials(decodedBody);
+      const holderBinding = JWTService.holderBindingFromPayload(payload);
+      const bindingResult = await JWTService.validatePresentationHolderBinding(
+        { nonce: options.challenge, aud: options.domain },
+        holderBinding,
+        firstResult.verificationMethod,
+        documentLoader,
+        options.holderBinding !== false
+      );
+
+      const presentation = {
+        ...presentationBody,
+        type: types,
+        ...(bindingResult.holder ? { holder: bindingResult.holder } : {}),
+      } as VerifiablePresentation;
+
+      const credentialResults = await this.verifyPresentationCredentials(
+        presentation,
+        {
+          ...options,
+          challenge: bindingResult.nonce ?? options.challenge,
+        }
+      );
+      const allCredentialsVerified = credentialResults.every((r: any) => r.verified);
+
+      let presentationResult = {
+        verified: jwtResult.verified && bindingResult.valid,
+        results: jwtResult.results.map((result) => ({
+          ...result,
+          verified: jwtResult.verified,
+          purposeResult: { valid: bindingResult.valid },
+        })),
+        error: bindingResult.error,
+      };
+
+      presentationResult = applyCredentialHolderBinding(
+        presentationResult,
+        presentation,
+        options.holderBinding !== false
+      );
+
+      return this.normalizeResult({
+        presentationResult,
+        verified: presentationResult.verified && allCredentialsVerified,
+        credentialResults,
+        error: presentationResult.error,
+      });
+    }
+
     // Check status for JWT credentials if they have credentialStatus
-    if (payload.type?.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL) && payload.credentialStatus) {
-      return this.verifyJWTCredentialStatus(payload, jwtResult);
+    if (types.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL) && decodedBody.credentialStatus) {
+      return this.verifyJWTCredentialStatus(decodedBody, jwtResult);
     }
 
     return jwtResult;
@@ -243,7 +245,6 @@ export class Verifier {
       const statusResult = await checkStatus({
         credential: payload,
         documentLoader,
-        suite: null, // No suite needed for JWT status checking
         verifyStatusListCredential: true,
         verifyMatchingIssuers: false,
       });
@@ -287,7 +288,11 @@ export class Verifier {
     }
 
     if (verifiable.type.includes(CREDENTIAL_TYPES.VERIFIABLE_PRESENTATION)) {
-      return this.verifyPresentation(verifiable as VerifiablePresentation, suite, options);
+      return this.verifyPresentation(
+        verifiable as VerifiablePresentation,
+        suite,
+        options
+      );
     }
 
     throw new Error("Provided verifiable object is of unknown type!");
@@ -314,7 +319,6 @@ export class Verifier {
         result.statusResult = await checkStatus({
           credential,
           documentLoader,
-          suite,
           verifyStatusListCredential: true,
           verifyMatchingIssuers: false,
         });
@@ -339,6 +343,10 @@ export class Verifier {
     suite: unknown[],
     options: VerificationOptions
   ): Promise<VerificationResult> {
+    presentation = unwrapPresentationVerifiableCredentials(
+      decodeVerifiableInput(presentation)
+    ) as VerifiablePresentation;
+
     let { challenge, domain } = options;
 
     // Try to use challenge in proof if not provided (for cases where no exchange protocol is used)
@@ -353,14 +361,35 @@ export class Verifier {
     let result;
 
     if (this.isDataIntegrityProof(presentation.proof)) {
-      result = await jsigs.verify(presentation, {
+      // jsigs.verify + AuthenticationProofPurpose already validates challenge,
+      // domain, and authentication-key authorization for the presentation proof.
+      const credentialResults = await this.verifyPresentationCredentials(
+        presentation,
+        options
+      );
+
+      let presentationResult = await jsigs.verify(presentation, {
         suite,
-        purpose: new AuthenticationProofPurpose(),
+        purpose: new AuthenticationProofPurpose({ challenge, domain }),
         documentLoader,
-        challenge,
-        domain,
-        checkStatus,
       });
+
+      presentationResult = applyCredentialHolderBinding(
+        presentationResult,
+        presentation,
+        options.holderBinding !== false
+      );
+
+      const allCredentialsVerified = credentialResults.every(
+        (r: any) => r.verified
+      );
+
+      result = {
+        presentationResult,
+        verified: presentationResult.verified && allCredentialsVerified,
+        credentialResults,
+        error: presentationResult.error,
+      };
     } else {
       result = await verify({
         presentation,
@@ -370,14 +399,73 @@ export class Verifier {
         domain,
         checkStatus,
       });
+
+      const allCredentialsVerified = (result.credentialResults ?? []).every(
+        (r: any) => r.verified
+      );
+
+      const presentationResult = applyCredentialHolderBinding(
+        result.presentationResult,
+        presentation,
+        options.holderBinding !== false
+      );
+
+      result = {
+        ...result,
+        presentationResult,
+        verified: presentationResult.verified && allCredentialsVerified,
+        error: presentationResult.error ?? result.error,
+      };
     }
 
     return this.normalizeResult(result);
   }
 
+  private static async verifyPresentationCredentials(
+    presentation: VerifiablePresentation,
+    options: VerificationOptions
+  ): Promise<any[]> {
+    if (!presentation.verifiableCredential) return [];
+
+    const credentials = Array.isArray(presentation.verifiableCredential)
+      ? presentation.verifiableCredential
+      : [presentation.verifiableCredential];
+
+    const credentialResults = await Promise.all(
+      credentials.map((credential: VerifiableCredential) => {
+        return this.verify(
+          credential as Verifiable,
+          options.challenge,
+          options.domain
+        );
+      })
+    );
+
+    for (const [index, credentialResult] of credentialResults.entries()) {
+      credentialResult.credentialId = credentials[index].id;
+    }
+
+    return credentialResults;
+  }
+
   private static isDataIntegrityProof(proof: Proof | Proof[]): boolean {
     const proofType = Array.isArray(proof) ? proof[0].type : proof.type;
     return proofType === PROOF_TYPES.DATA_INTEGRITY;
+  }
+
+  private static promoteJWTError(jwtResult: any): VerificationResult {
+    const resultError = jwtResult.results?.[0]?.error;
+    if (!resultError) {
+      return jwtResult;
+    }
+
+    return {
+      ...jwtResult,
+      error: {
+        name: 'VerificationError',
+        errors: [resultError]
+      }
+    };
   }
 
   private static normalizeResult(result: any): VerificationResult {

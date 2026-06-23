@@ -96,8 +96,9 @@ Verifier.verify(input)
 Two forms supported:
 - **Direct**: `{ type: "EnvelopedVerifiableCredential", id: "data:application/vc+jwt,<jwt>" }`
 - **Wrapped**: `{ verifiableCredential: { type: "EnvelopedVerifiableCredential", id: "..." } }`
+- **In presentations**: each entry in `verifiableCredential[]` may be enveloped — use `unwrapPresentationVerifiableCredentials()` before verification
 
-The JWT is extracted from the `id` field (data URL prefix `data:application/vc+jwt,` is stripped).
+The JWT is extracted from the `id` field (`data:application/vc+jwt,` and `data:application/vc-ld+jwt,` prefixes are stripped). **JWT presentations** often list each VC as a compact JWT string in `verifiableCredential`; `normalizePresentationInput()` in `envelope.ts` decodes the VP (and `vp` claim), unwraps envelopes, and expands nested JWTs for GS1 rule processing, while `Verifier.verify()` keeps contained JWTs as JWT strings during signature verification so proof material is not lost.
 
 ## JSON-LD Verification (Linked Data Proofs)
 
@@ -127,11 +128,13 @@ The JWT is extracted from the `id` field (data URL prefix `data:application/vc+j
 2. Get status check function for contained credentials
 3. Determine if DataIntegrityProof or legacy suite
 4. **If DataIntegrityProof**:
-   - Use `jsonld-signatures.verify()` with `AuthenticationProofPurpose`
-   - Includes status checking
+   - Verify each contained credential individually via `verifyPresentationCredentials()` (which calls `verifyCredential()` per credential with the credential's own suite)
+   - Enrich each credential result with `credentialId` (matching `@digitalbazaar/vc` behavior)
+   - Verify the presentation proof via `jsigs.verify()` with `AuthenticationProofPurpose({ challenge, domain })`
+   - Combine results: `verified = presentationVerified && allCredentialsVerified`
 5. **If legacy suite**:
    - Use `@digitalbazaar/vc.verify()`
-   - Verifies presentation AND all contained credentials
+   - Verifies presentation AND all contained credentials, including status checks
 6. Return comprehensive result with:
    - Presentation verification result
    - Individual credential verification results
@@ -197,6 +200,22 @@ switch (proof.type) {
 5. Check credential status (if present)
 6. Return standardized result
 
+**JWT error reporting**:
+- JWT verification failures now include a structured `error` object inside each JWT `results` item.
+- This mirrors linked-data-style error visibility and includes key fields (`name`, `message`, and when available `code`, `claim`, `reason`) from JOSE errors such as expired tokens (`ERR_JWT_EXPIRED`).
+
+**JWT VP holder binding (`nonce` / `aud` / `holder`)**:
+- `JWTService.holderBindingFromPayload()` reads `nonce` and `aud` from the JWT payload; see `api/src/services/verifier/jwt.ts`.
+- `validatePresentationHolderBinding()` maps `nonce`/`aud` onto `AuthenticationProofPurpose` (challenge/domain). Holder is derived from the presentation signing key (`verificationMethod.controller`, or id prefix before `#`); an explicit `holder` claim is checked against that value when present. Both expected and actual OID4VP fields use the unified `JWTHolderBinding` interface (`nonce`, `aud`, `holder`).
+- **Payload is the norm**: OpenID4VP, JWT VC Presentation Profile, and VC-JWT v1.1 examples all place `nonce` and `aud` in the claims set.
+- **Header is spec-permitted for `aud`**: VC-JWT v1.1 §4.2.1 allows registered claims as JOSE header parameters; RFC7519 registers `aud` as a replicable header param (primarily for JWE); VC-JOSE-COSE v2 §3.1.3 accepts registered members in header *or* payload.
+- **`nonce` in header is possible but uncommon**: IANA registers `nonce` as a JWS/JWE header param (RFC8555/ACME), but VC-JWT v1.1 VP mapping requires `payload.nonce`; OpenID4VP examples use payload claims only.
+- If both header and payload carry the same claim, RFC7519 §5.3 says values SHOULD match; prefer payload when they differ (de-facto convention).
+
+**Presentation holder-to-credential binding**:
+- `verifyPresentationCredentials()` verifies contained credentials independently (like `@digitalbazaar/vc`); holder-to-subject binding is checked once at presentation level via `validateCredentialHolderBinding()` in `holder.ts`
+- JWT presentations additionally derive the holder from the signing key and validate an explicit `holder` claim when present (see above).
+- Optional query param `holderBinding` (default `true`) on verify endpoints skips holder-subject and JWT holder-claim checks when set to `false`; challenge/domain checks still apply.
 ### Ed25519 JWT Verification
 
 **Manual verification** (not using JOSE):
@@ -220,6 +239,18 @@ switch (proof.type) {
 3. Verify with `jose.jwtVerify()`
 
 **did:key self-contained JWTs**: `kid` starting with `did:key:` needs no issuer; verification method URL is `did:key:...#<keyId>`.
+
+### did:key Driver Key Type Registration
+
+**File**: `services/documentLoader/custom/key.ts`
+
+**Important**: `@digitalbazaar/did-method-key`'s `driver()` starts with an **empty** `_allowedKeyTypes` map. Every key type must be explicitly registered via `driver.use()`. Failing to register a type causes `Unsupported "multibaseMultikeyHeader"` errors.
+
+**Currently registered**:
+- `z6Mk` (Ed25519) — via `@digitalbazaar/ed25519-multikey`
+- `zDna` (P-256/ES256) — via `@digitalbazaar/ecdsa-multikey`
+
+When adding new `did:key` key type support, always add a corresponding `driver.use()` registration here.
 
 ## Status Checking
 
@@ -379,6 +410,8 @@ const gs1ValidatorRequest = {
 - Load credentials by URL
 - Cache appropriately
 
+**Errors**: Document loaders should throw plain `Error` with a descriptive message. `jsonld-signatures` wraps failures in its internal `VerificationError` at `verify()` time; that class is not exported and must not be thrown from custom loaders. JWT verification propagates loader errors via `JWTService.loadVerificationMethod` → `results[0].error` → top-level `error` in `Verifier.promoteJWTError`.
+
 ### Caching Strategy
 
 **Two-tier approach**:
@@ -507,6 +540,7 @@ const gs1ValidatorRequest = {
 - Support for challenge/nonce in presentation proofs
 - Prevents replay attacks
 - Domain/audience validation
+- JWT presentation holder binding is handled in `JWTService` by mapping `nonce`/`aud` onto `AuthenticationProofPurpose`; linked-data presentations use `jsigs.verify()` directly
 
 ## Testing Strategy
 

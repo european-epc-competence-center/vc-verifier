@@ -1,12 +1,83 @@
 VC Verifier Changelog
 =================
 
-## WIP
+## 3.6.2 (2026-06-22)]
+
+- bump vc-verifier-rules version
+- fix GS1 single prefix license validation with root of trust
+
+## 3.6.1 (2026-06-18)]
+
+### Added
+- `holderBinding` query parameter on `POST /api/verifier` and `POST /api/verifier/gs1` to toggle presentation holder-to-subject and JWT holder-claim checks; defaults to `true` when omitted
+- JWT presentation verification derives the holder from the signing key (`verificationMethod.controller`, or the verification method id prefix before `#`); an explicit `holder` JWT claim is validated against that derived value when present
+- Presentation holder-binding failures now set `presentationResult.verified` and `purposeResult.valid` to `false` (JWT VP binding and credential-subject checks; linked-data presentation proof binding remains handled by `jsonld-signatures`)
+
+### Changed
+- Linked-data presentation verification documents that `jsonld-signatures` validates challenge/domain and authentication-key authorization, but not holder-to-subject binding (now enforced in `verifyPresentationCredentials()`)
+
+## 3.6.0 (2026-06-18)]
+
+### Added
+
+- JWT presentation holder binding put in place by delegating to `AuthenticationProofPurpose`; linked-data presentations continue to rely on `jsigs.verify()`
+
+## 3.5.2 (2026-06-02)]
+
+### Fixed
+- JWT presentation verification: decode VP JWT payloads (including `vp` claim nesting), unwrap `EnvelopedVerifiableCredential` entries, and expand nested JWT strings in `verifiableCredential` before GS1 rules read `credentialSubject.extendsCredential`
+- JSON-LD presentations with enveloped or nested JWT credentials use the same normalization path
+- `Verifier.verify()` on a presentation JWT now verifies each contained credential, not only the outer VP signature
+- Verifiable JWT payload decoding is now generic (`vc` and `vp` claim unwrapping), so JWT VC handling does not depend on presentation-specific decoding logic
+
+## 3.5.1 (2026-05-21)
+
+### Fixed
+- Fixed document loader throwing `TypeError` when an unknown DID verification method is requested (`jsonld-signatures` v11 no longer exports `VerificationError`)
+- Propagate document-loader and other JWT verification failures into the API response (`results[0].error` and top-level `error`)
+
+## 3.5.0 (2026-05-11)
+
+### Changed
+- Include structured JWT signature/claim verification errors in each JWT `results` entry (for example expired token details like `ERR_JWT_EXPIRED`) to align response behavior with linked data proof error reporting.
+- support JsonWebKey + JsonWebKey2020 in JWT verification
+
+## 3.4.9 (2026-05-07)
+
+- pass challenge and domain correctly into jsigs lib
+- verify credentials in jsigs presentation manually as not done by library
+
+## 3.4.8 (2026-04-29)
+
+### Changed
+- **Dockerfile improvement (API)**: Rewrote `api/Dockerfile` to match the production-grade pattern used in `key-service`
+  - Upgraded base image from `node:lts-alpine` to `node:24-alpine` (Node.js 24)
+  - Introduced a **multi-stage build** with separate `deps`, `builder`, and `runner` stages
+  - `deps` stage installs only production dependencies via `npm ci --only=production`
+  - `builder` stage installs all dependencies and compiles TypeScript via `npm run build-tsc`
+  - Final **runner** stage uses `gcr.io/distroless/nodejs24-debian12:nonroot` — a minimal, non-root, distroless image for a significantly reduced attack surface
+  - All copied files are `--chown=nonroot:nonroot` to enforce least-privilege file ownership
+  - Added `HEALTHCHECK` using the existing `/health` endpoint
+  - Added `ENV NODE_ENV=production` and explicit `ENV PORT=3000`
+
+## 3.4.7 (2026-03-18)
+
+### Fixed
+- Fix JWT credential status verification failing when the referenced status list credential uses a JSON-LD proof: extract suite building to `suites.ts` and derive the suite from the status list credential's own proof inside `checkBitstringStatus` instead of inheriting it from the caller
+
+### Added
+- Test for `ProductDataCredential` (base64url JWT) with full GS1 chain and status verification using a mocked document loader
+- Update @eecc/vc-verifier-rules to 2.7.0
+
+## 3.4.4 (2026-03-16)
 
 - Remove stale tests for `RevocationList2020Status` and `ecdsa-sd-2023` selective disclosure that were deactivated due to library incompatibilities (`@digitalbazaar/vc-revocation-list` v7, `ecdsa-sd-2023-cryptosuite` v3); remove associated dead credential fixtures and commented-out domain/challenge presentation tests
 - Fix shared `didResolver` instance: instantiate `did-resolver` once at module level so its `cache: true` is effective across all DID lookups within a process, avoiding redundant network fetches
 - Fix `atob()` base64url incompatibility in `documentLoader` for JWT-based status list and credential detection; add `decodeJWTPayload` helper that converts base64url to standard base64 before decoding
 - Update README: add GS1 trust ecosystem verification section, OpenID4VP presentation request section with screenshot, repository structure and local setup instructions
+- Undo fix in 3.4.3: planning to fix this in `@eecc/vc-verifier-rules`
+- Fix `did:key` Ed25519 presentation proof verification: register Ed25519 (`z6Mk`) key type in `did-method-key` driver alongside P-256 (`zDna`) — the driver requires explicit registration of all key types, so adding P-256 support broke Ed25519 `did:key` resolution
+- Fix PDF export crash: `pdfmake` v0.3.x changed `vfs_fonts` export format — fonts are now exported directly instead of nested under `pdfMake.vfs`, fixed in `Credential.vue` and `ProductPassport.vue`
 
 ## 3.4.3 (2026-03-10)
 

@@ -110,6 +110,7 @@ verifyRouter.get("/vc/:vcid", fetchAndVerify);
  * @param {array<Verifiable>} request.body.required - Array of verifiables either of type SignedPresentation or SignedCredential - application/json
  * @param {string} challenge.query - The presentation challenge/nonce to verify against. Will be set to the challenge in the presentation if not present.
  * @param {string} domain.query - The presentation domain/audience to verify against. No check will be made if not present.
+ * @param {boolean} holderBinding.query - When `true` (default), require presentation holder to match credential subjects (DID) and JWT holder claims to match the signing key. Set to `false` to skip these checks.
  * @return {array<VerifierResponse>} 200 - success response - application/json
  * @return {object} 400 - bad request response - application/json
  * 
@@ -518,6 +519,7 @@ verifyRouter.get("/id/:subjectId", verifySubjectsVCs);
  * @param {Verifiable} request.body.required - Array of verifiables either of type SignedPresentation or SignedCredential - application/json
  * @param {string} challenge.query - The presentation challenge/nonce to verify against. Will be set to the challenge in the presentation if not present.
  * @param {string} domain.query - The presentation domain/audience to verify against. No check will be made if not present.
+ * @param {boolean} holderBinding.query - When `true` (default), require presentation holder to match credential subjects (DID) and JWT holder claims to match the signing key. Set to `false` to skip these checks.
  * @return {array<VerifierResponse>} 200 - success response - application/json
  * @return {object} 400 - bad request response - application/json
  * 
