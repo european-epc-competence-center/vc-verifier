@@ -19,6 +19,10 @@ const documentLoader: (url: string) => Promise<any> =
       // fetch document
       const didDocument: any = (await getResolver().resolve(url)).didDocument;
 
+      if (!didDocument) {
+        throw new Error(`Could not resolve DID document for: ${did}`);
+      }
+
       // if a verifcation method of the DID document is queried (not yet implemented in the official resolver)
       if (verificationMethod && didDocument) {
         const verificationMethodDoc: any | undefined =
