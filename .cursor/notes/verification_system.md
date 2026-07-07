@@ -347,7 +347,7 @@ const gs1ValidatorRequest = {
 }
 ```
 
-**Root of trust (GS1PrefixLicenseCredential issuer)** — `@eecc/vc-verifier-rules` reads `process.env.GS1_GLOBAL_DID` (default: `did:web:id.gs1.org`). Error `GS1-140` means the resolved prefix license credential issuer does not match this value. Set `GS1_GLOBAL_DID` on the API process (e.g. docker-compose `api.environment`) for dev/test issuers such as `did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global`. Not configurable via `gs1ValidatorRequest`.
+**Root of trust (GS1PrefixLicenseCredential issuer)** — `@eecc/vc-verifier-rules` reads `process.env.GS1_GLOBAL_DID` (default: `did:web:id.gs1.org`). Error `GS1-140` means the resolved prefix license credential issuer does not match this value. Set `GS1_GLOBAL_DID` on the **API process** (k8s deployment env / docker-compose `api.environment`). Value must match the prefix license `issuer` exactly (e.g. company-wallet dev uses `did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_go`, not `gs1_global`). Not configurable via `gs1ValidatorRequest`.
 
 **What GS1 rules validation does**:
 - JSON Schema validation against locally bundled GS1 schemas (5 types: key, company-prefix, prefix, product-data, organization-data)

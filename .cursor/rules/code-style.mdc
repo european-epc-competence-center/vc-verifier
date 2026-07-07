@@ -1,0 +1,22 @@
+---
+alwaysApply: true
+---
+# Code Style Rules
+
+## Always Check Code Style Rules on Code Changes
+
+Whenever you make code changes, **review and follow** these style rules to ensure consistency, readability, and maintainability across the codebase.
+
+### General Rules
+
+This is a production code repository. Whenever editing code make sure that any code changes improve code quality, clean code, deduplication (DRY) and maintainability. Make sure all changes are covered by tests. Lint and run all tests in all affected sub projects and fix all errors (also preexisting). Make sure to properly modularize the code into manageable sub modules. No code file should be larger than 2k lines, less than 1k lines are preferable. If a large module is encountered, carefully think about how to best modularize in order to increase deduplication and maintainability and decrease coupling.
+
+
+- **Use the framework instead of building custom code**  
+  This project uses Vue and Vuetify. Avoid writing custom CSS when a Vuetify-based solution is available.  
+  Always prefer using existing components, utilities, and patterns provided by the framework.  
+
+  Before implementing custom logic or styling:
+  - Check the `package.json` for javascrip npm based or `pom.xml` for java maven based projects to see if a suitable library is already installed.
+  - Reuse existing components and patterns that are already established in the codebase.
+  - Maintain visual and behavioral consistency by aligning with the conventions already in use.
