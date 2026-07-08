@@ -21,6 +21,9 @@ const documentLoader: (url: string) => Promise<any> =
 
       // if a verifcation method of the DID document is queried (not yet implemented in the official resolver)
       if (verificationMethod && didDocument) {
+        if (!didDocument.verificationMethod) {
+          throw new Error(`${did} does not have any verification methods`);
+        }
         const verificationMethodDoc: any | undefined =
           didDocument.verificationMethod.filter(function (method: any) {
             return method.id === url || method.id === verificationMethod;
