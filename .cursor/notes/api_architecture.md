@@ -268,6 +268,8 @@ Implements BitstringStatusList checking (newer status format).
 - Swagger UI at `/api/verifier/swagger`
 - OpenAPI docs at `/api/docs`
 - JSDoc comments in router files generate schema
+- GS1 endpoint response documented via `GS1VerificationResponse` → `gs1Result` (`GS1RulesResult` | `GS1RulesResultContainer` from `@eecc/vc-verifier-rules`)
+- `express-jsdoc-swagger` scans compiled `./dist/**/*.js` via `filesPattern` in `swagger.ts` (JSDoc lives in router `.ts` files and is preserved in the build output)
 
 **Features**:
 - Full request/response examples

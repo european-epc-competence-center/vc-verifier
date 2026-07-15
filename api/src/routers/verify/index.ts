@@ -7,64 +7,119 @@ const { fetchAndVerify, verify, verifySubjectsVCs, verifyGS1 } = verifyRoutes;
 export const verifyRouter = Router();
 
 /**
+ * @tags Verify - Cryptographic verification of W3C Verifiable Credentials and Presentations (JSON-LD and VC-JWT)
+ */
+
+/**
+ * A Verifiable Credential or Presentation encoded as a compact JWT string
+ * @typedef {string} JwtVerifiable
+ */
+
+/**
+ * Plain-text error response body
+ * @typedef {string} ErrorResponse
+ */
+
+/**
  * API model of a credentialSubject
- * @summary The minimal form of a credential subject
+ * @summary The subject of a credential claim
  * @typedef {object} CredentialSubject
- * @property {string} id.required - The identifier of the identity which the credential refers to
+ * @property {string} id.required - Identifier of the identity the credential refers to (typically a DID)
  */
 
 /**
  * API model of a signed credential
- * @summary Refers to W3C Credential
+ * @summary W3C Verifiable Credential (JSON-LD)
  * @typedef {object} SignedCredential
- * @property {array<string>} context.required - The JSON-LD context URIs of the credential
- * @property {string} id - The id of the the credential as an IRI
- * @property {array<string>} type.required - The types of the credential
- * @property {string} issuer.required - The DID of the issuer of the credential
- * @property {string} issuanceDate.required - The issuance date of the credential in ISO format 2022-09-26T09:01:07.437Z
- * @property {string} expirationDate - The expiration date of the credential in ISO format 2022-09-26T09:01:07.437Z
- * @property {CredentialSubject} credentialSubject.required - The actual claim of the credential
- * @property {object} proof.required - The cryptographic signature of the issuer over the credential
+ * @property {array<string>} context.required - JSON-LD `@context` URIs
+ * @property {string} id - Credential IRI
+ * @property {array<string>} type.required - Credential types (must include `VerifiableCredential`)
+ * @property {string} issuer.required - Issuer DID or object with `id`
+ * @property {string} issuanceDate.required - Issuance timestamp (ISO 8601, e.g. `2022-09-26T09:01:07.437Z`)
+ * @property {string} expirationDate - Optional expiration timestamp (ISO 8601)
+ * @property {CredentialSubject} credentialSubject.required - Claims about the subject
+ * @property {object} proof.required - Linked-data proof or Data Integrity proof over the credential
  */
 
 /**
  * API model of a signed presentation
- * @summary Refers to W3C Presentation
+ * @summary W3C Verifiable Presentation (JSON-LD)
  * @typedef {object} SignedPresentation
- * @property {array<string>} context.required - The JSON-LD context URIs of the presentation
- * @property {array<string>} type.required - The types of the presentation. Should be 'VerifiablePresentation'
- * @property {string} holder - The DID of the holder of the credentials, i.e. the presenter
- * @property {array<SignedCredential>} verifiableCredential - Array of included credentials
- * @property {object} proof.required - The cryptographic signature of the holder over the presentation
+ * @property {array<string>} context.required - JSON-LD `@context` URIs
+ * @property {array<string>} type.required - Must include `VerifiablePresentation`
+ * @property {string} holder - Presenter DID (or object with `id`)
+ * @property {array<SignedCredential>} verifiableCredential - Credentials included in the presentation
+ * @property {object} proof.required - Authentication proof over the presentation (holder signature)
  */
 
 /**
- * API model of a verifiable. Can be either a SignedCredentials or SignedPresentation
+ * API model of a verifiable — either a credential or a presentation (JSON-LD)
+ * @summary W3C Verifiable Credential or Verifiable Presentation
  * @typedef {object} Verifiable
- * @summary Refers to W3C verifiable credentials and presentation
- * @typedef {object} Verifiable
- * @property {array<string>} context.required - The JSON-LD context URIs of the presentation
- * @property {array<string>} type.required - The types of the verifiable
- * @property {object} proof.required - The cryptographic signature
+ * @property {array<string>} context.required - JSON-LD `@context` URIs
+ * @property {array<string>} type.required - Types of the verifiable
+ * @property {object} proof.required - Cryptographic proof (credentials: assertion; presentations: authentication)
  */
 
 /**
  * Verifier response object
- * @summary The respsonse object of the verifier containing the original credential and the verification result
+ * @summary Verification outcome for a credential or presentation
  * @typedef {object} VerifierResponse
- * @property {array<object>} results - Array of results including both successes and errors for credentials
- * @property {array<object>} credentialResults - Results of the credentials contained in the presentation
- * @property {array<object>} presentationResult - Result of the presentation
- * @property {boolean} verified.required - Boolean if the whole verification was successful
+ * @property {boolean} verified.required - `true` when all applicable proofs and status checks passed
+ * @property {array<object>} results - Proof-level results for standalone credentials
+ * @property {array<object>} credentialResults - Per-credential results when verifying a presentation
+ * @property {object} presentationResult - Presentation proof result (presentations only)
+ */
+
+/**
+ * GS1 validation rule error from `@eecc/vc-verifier-rules`
+ * @summary Single GS1 business-rule violation
+ * @typedef {object} GS1CredentialValidationRule
+ * @property {string} code.required - Machine-readable rule code (e.g. `GS1-200`, `VC-100`, `VC-110`)
+ * @property {string} rule.required - Human-readable description of the failed rule
+ */
+
+/**
+ * GS1 rules validation result for a single credential (and optional resolved chain credential)
+ * @summary Result from `@eecc/vc-verifier-rules` for one credential
+ * @typedef {object} GS1RulesResult
+ * @property {string} credentialId.required - Id of the validated credential
+ * @property {string} credentialName.required - GS1 credential type name (e.g. `GS1PrefixLicenseCredential`, `ProductDataCredential`)
+ * @property {boolean} verified.required - `true` when all GS1 JSON Schema and business rules passed for this credential
+ * @property {array<GS1CredentialValidationRule>} errors.required - Failed rules; empty array when `verified` is `true`
+ * @property {SignedCredential} credential - Decoded credential payload, when available
+ * @property {GS1RulesResult} resolvedCredential - Nested result for an externally resolved credential in the GS1 licence chain (e.g. prefix licence backing an extended licence)
+ */
+
+/**
+ * GS1 rules validation result for a presentation
+ * @summary Aggregated GS1 validation for all credentials in a presentation
+ * @typedef {object} GS1RulesResultContainer
+ * @property {boolean} verified.required - `true` only when every entry in `result` passed GS1 validation
+ * @property {array<GS1RulesResult>} result.required - One `GS1RulesResult` per credential in the presentation; resolved chain credentials may appear as additional entries
+ */
+
+/**
+ * Combined W3C cryptographic and GS1 business-rule verification response
+ * @summary Response item from `POST /api/verifier/gs1`
+ * @typedef {object} GS1VerificationResponse
+ * @property {boolean} verified.required - `true` when both W3C verification (`results` / `statusResult`) and GS1 rules (`gs1Result`) passed
+ * @property {GS1RulesResult|GS1RulesResultContainer} gs1Result.required - GS1 rules outcome: a single credential returns `GS1RulesResult`; a presentation returns `GS1RulesResultContainer`
+ * @property {array<object>} results - W3C proof verification results (same structure as `POST /api/verifier`)
+ * @property {object} statusResult - Revocation/suspension status check result
+ * @property {string} errorMessage - Top-level processing error when verification could not complete
  */
 
 /**
  * GET /api/verifier/vc/{vcid}
- * @summary Verifies a single VC given its id
+ * @summary Fetch and verify a credential by URL
+ * @description Fetches a Verifiable Credential from the URL in `vcid`, then verifies issuer signature, DID resolution, and credential status (revocation/suspension). The path parameter must be the full credential URL; URL-encode it when it contains reserved characters.
  * @tags Verify
- * @param {string} vcid.path.required The identifier of the verifiable credential
- * @return {VerifierResponse} 200 - success response - application/json
- * @return {object} 404 - not found response - application/json
+ * @operationId fetchAndVerifyCredential
+ * @param {string} vcid.path.required - Full URL of the Verifiable Credential to fetch and verify
+ * @return {VerifierResponse} 200 - Verification result - application/json
+ * @return {ErrorResponse} 404 - Credential not found at the given URL - text/plain
+ * @return {ErrorResponse} 400 - Verification failed or request invalid - text/plain
  * @example response - 200 - credentials verified
   {
     "verified": true,
@@ -105,14 +160,19 @@ verifyRouter.get("/vc/:vcid", fetchAndVerify);
 
 /**
  * POST /api/verifier
- * @summary Verifies an array of verifiables
+ * @summary Verify one or more credentials or presentations
+ * @description Primary verification endpoint. Send a JSON array of verifiables as JSON-LD objects or compact JWT strings. For presentations, verifies the holder proof and each enclosed credential. Query aliases: `nonce` → `challenge`, `audience` / `aud` → `domain`.
  * @tags Verify
- * @param {array<Verifiable>} request.body.required - Array of verifiables either of type SignedPresentation or SignedCredential - application/json
- * @param {string} challenge.query - The presentation challenge/nonce to verify against. Will be set to the challenge in the presentation if not present.
- * @param {string} domain.query - The presentation domain/audience to verify against. No check will be made if not present.
- * @param {boolean} holderBinding.query - When `true` (default), require presentation holder to match credential subjects (DID) and JWT holder claims to match the signing key. Set to `false` to skip these checks.
- * @return {array<VerifierResponse>} 200 - success response - application/json
- * @return {object} 400 - bad request response - application/json
+ * @operationId verifyVerifiables
+ * @param {array<Verifiable|JwtVerifiable>} request.body.required - Credentials, presentations, or JWT strings to verify - application/json
+ * @param {string} challenge.query - Presentation challenge/nonce; injected into the proof when absent
+ * @param {string} nonce.query - Alias for `challenge` (JWT/OIDC convention)
+ * @param {string} domain.query - Expected presentation domain/audience; skipped when omitted
+ * @param {string} audience.query - Alias for `domain`
+ * @param {string} aud.query - Alias for `domain` (JWT convention)
+ * @param {boolean} holderBinding.query - When `true` (default), require presentation holder to match credential subjects and JWT holder claims to match the signing key
+ * @return {array<VerifierResponse>} 200 - One result per input verifiable - application/json
+ * @return {ErrorResponse} 400 - Invalid request body or query parameters - text/plain
  * 
  * @example request - Credential request
 [
@@ -466,11 +526,14 @@ verifyRouter.post("/", verify);
 
 /**
  * GET /api/verifier/id/{subjectId}
- * @summary Verifies a all queryable vcs of a subjectId
+ * @summary Fetch and verify all registry credentials for a subject
+ * @description Queries the credential registry configured via `VC_REGISTRY` for credentials whose subject matches `subjectId`, fetches each credential, and verifies it. Returns one `VerifierResponse` per credential found.
  * @tags Verify
- * @param {string} subjectId.path.required The identifier of the verifiable credential
- * @return {array<VerifierResponse>} 200 - success response - application/json
- * @return {object} 404 - not found response - application/json
+ * @operationId verifySubjectCredentials
+ * @param {string} subjectId.path.required - Subject identifier (DID or value of `credentialSubject.id`)
+ * @return {array<VerifierResponse>} 200 - Verification result for each credential - application/json
+ * @return {ErrorResponse} 404 - No credentials found for the subject - text/plain
+ * @return {ErrorResponse} 400 - Verification failed - text/plain
  * 
  * @example response - 200 - credentials verified
 [
@@ -514,14 +577,60 @@ verifyRouter.get("/id/:subjectId", verifySubjectsVCs);
 
 /**
  * POST /api/verifier/gs1
- * @summary Verifies an gs1 verifiable
+ * @summary Verify GS1 Verifiable Credentials and Presentations
+ * @description Same request shape and query parameters as `POST /api/verifier`, with additional GS1 VC business-rule validation via `@eecc/vc-verifier-rules`. Validates JSON Schema, licence chains (prefix → extended credentials), digital links, and GS1-specific subject fields. The `gs1Result` field mirrors `gs1RulesResult` / `gs1RulesResultContainer` from vc-verifier-rules.
  * @tags Verify
- * @param {Verifiable} request.body.required - Array of verifiables either of type SignedPresentation or SignedCredential - application/json
- * @param {string} challenge.query - The presentation challenge/nonce to verify against. Will be set to the challenge in the presentation if not present.
- * @param {string} domain.query - The presentation domain/audience to verify against. No check will be made if not present.
- * @param {boolean} holderBinding.query - When `true` (default), require presentation holder to match credential subjects (DID) and JWT holder claims to match the signing key. Set to `false` to skip these checks.
- * @return {array<VerifierResponse>} 200 - success response - application/json
- * @return {object} 400 - bad request response - application/json
+ * @operationId verifyGS1Verifiables
+ * @param {array<Verifiable|JwtVerifiable>} request.body.required - GS1 credentials, presentations, or JWT strings to verify - application/json
+ * @param {string} challenge.query - Presentation challenge/nonce; injected into the proof when absent
+ * @param {string} nonce.query - Alias for `challenge`
+ * @param {string} domain.query - Expected presentation domain/audience; skipped when omitted
+ * @param {string} audience.query - Alias for `domain`
+ * @param {string} aud.query - Alias for `domain`
+ * @param {boolean} holderBinding.query - When `true` (default), require presentation holder to match credential subjects and JWT holder claims to match the signing key
+ * @return {array<GS1VerificationResponse>} 200 - One combined W3C + GS1 result per input verifiable - application/json
+ * @return {ErrorResponse} 400 - Invalid request or GS1 rule validation error - text/plain
+ * @example response - 200 - GS1 credential passed
+  {
+    "verified": true,
+    "gs1Result": {
+      "credentialId": "https://ssi.eecc.de/api/registry/vc/8ee256f6-9374-4dd4-afc3-8916f4a29573",
+      "credentialName": "GS1PrefixLicenceCredential",
+      "verified": true,
+      "errors": []
+    },
+    "results": [{ "verified": true, "purposeResult": { "valid": true } }]
+  }
+ * @example response - 200 - GS1 credential failed business rules
+  {
+    "verified": false,
+    "gs1Result": {
+      "credentialId": "https://example.com/vc/123",
+      "credentialName": "GS1PrefixLicenseCredential",
+      "verified": false,
+      "errors": [
+        { "code": "GS1-140", "rule": "The issuer of prefix license credential does not match the expected value." }
+      ]
+    },
+    "results": [{ "verified": true, "purposeResult": { "valid": true } }]
+  }
+ * @example response - 200 - GS1 presentation with per-credential results
+  {
+    "verified": true,
+    "gs1Result": {
+      "verified": true,
+      "result": [
+        {
+          "credentialId": "https://example.com/vc/product",
+          "credentialName": "ProductDataCredential",
+          "verified": true,
+          "errors": []
+        }
+      ]
+    },
+    "credentialResults": [{ "verified": true, "credentialId": "https://example.com/vc/product" }],
+    "presentationResult": { "verified": true }
+  }
  * 
  * @example request - Credential request
 [

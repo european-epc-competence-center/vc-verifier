@@ -3,16 +3,22 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+## 3.6.3 (2026-07-15)
+
 ### Fixed
+- Swagger UI on deployed environments showing "No operations defined in spec!" — `filesPattern` now scans compiled `./dist/**/*.js` instead of missing `./**/*.ts` source files in Docker
 - Decode base64url JWT credentials before passing them to `@eecc/vc-verifier-rules` in `checkGS1Credential()` (fixes `atob` / GS1-010 failures for ProductDataCredential JWTs)
 - GS1 integration tests: centralize `GS1_GLOBAL_DID` in `api/jest.setup.ts`; mock `did:web:id.gs1.org` in `gs1.test.ts`
 
-## 3.6.2 (2026-06-22)]
+### Changed
+- Enriched Swagger/OpenAPI documentation: API overview, tag descriptions, endpoint summaries, query-parameter aliases (`nonce`, `audience`, `aud`), GS1 result schemas (`GS1RulesResult`, `GS1RulesResultContainer`), and corrected request body types
+
+## 3.6.2 (2026-06-22)
 
 - bump vc-verifier-rules version
 - fix GS1 single prefix license validation with root of trust
 
-## 3.6.1 (2026-06-18)]
+## 3.6.1 (2026-06-18)
 
 ### Added
 - `holderBinding` query parameter on `POST /api/verifier` and `POST /api/verifier/gs1` to toggle presentation holder-to-subject and JWT holder-claim checks; defaults to `true` when omitted
@@ -22,13 +28,13 @@ VC Verifier Changelog
 ### Changed
 - Linked-data presentation verification documents that `jsonld-signatures` validates challenge/domain and authentication-key authorization, but not holder-to-subject binding (now enforced in `verifyPresentationCredentials()`)
 
-## 3.6.0 (2026-06-18)]
+## 3.6.0 (2026-06-18)
 
 ### Added
 
 - JWT presentation holder binding put in place by delegating to `AuthenticationProofPurpose`; linked-data presentations continue to rely on `jsigs.verify()`
 
-## 3.5.2 (2026-06-02)]
+## 3.5.2 (2026-06-02)
 
 ### Fixed
 - JWT presentation verification: decode VP JWT payloads (including `vp` claim nesting), unwrap `EnvelopedVerifiableCredential` entries, and expand nested JWT strings in `verifiableCredential` before GS1 rules read `credentialSubject.extendsCredential`

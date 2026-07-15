@@ -7,10 +7,15 @@ const { health, ready } = healthRoutes;
 export const healthRouter = Router();
 
 /**
+ * @tags Health - Kubernetes liveness and readiness probes (internal operations, not for credential verification)
+ */
+
+/**
  * GET /health
- * @summary Health check endpoint for Kubernetes liveness probe
- * @description Returns the health status of the service. Always returns 200 OK if the process is running.
+ * @summary Liveness probe
+ * @description Returns `200 OK` while the Node.js process is running. Used by Kubernetes liveness probes; does not check external dependencies.
  * @tags Health
+ * @operationId healthCheck
  * @return {object} 200 - Health status object
  * @return {object} 500 - Internal server error
  * @example response - 200 - Success response
@@ -26,9 +31,10 @@ healthRouter.get('/health', health);
 
 /**
  * GET /ready
- * @summary Readiness check endpoint for Kubernetes readiness probe
- * @description Returns the readiness status of the service. Returns 200 OK only when fully initialized.
+ * @summary Readiness probe
+ * @description Returns `200 OK` once the service has finished startup initialization (~1 s after boot). Returns `503` while still initializing. Used by Kubernetes readiness probes before routing traffic.
  * @tags Health
+ * @operationId readinessCheck
  * @return {object} 200 - Service is ready
  * @return {object} 503 - Service is not ready
  * @example response - 200 - Ready response
