@@ -3,6 +3,9 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+### Fixed
+- VCDM 1.1 JWT status lists: unwrap nested `vc` claims when checking Bitstring status, and retry `Accept` headers (`vc+jwt` / `json`) when multi-value Accept is rejected (HTTP 415)
+
 ## 3.6.3 (2026-07-15)
 
 ### Fixed

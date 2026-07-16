@@ -91,10 +91,34 @@ const documentLoader: (url: string) => Promise<any> =
     };
   });
 
+/** Unwrap JWT payload and nested VCDM 1.1 `vc` claim for type checks. */
+function getDocumentPayload(document: any): any {
+  if (!document) return null;
+
+  let payload = document;
+  if (
+    typeof document === "string" &&
+    document.startsWith("ey") &&
+    document.split(".").length === 3
+  ) {
+    try {
+      const segment = document.split(".")[1];
+      const padded = segment + "=".repeat((4 - (segment.length % 4)) % 4);
+      payload = JSON.parse(
+        Buffer.from(padded.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8")
+      );
+    } catch {
+      return null;
+    }
+  }
+
+  return payload?.vc && typeof payload.vc === "object" ? payload.vc : payload;
+}
+
 function isStatusListCredential(document: any): boolean {
-  if (!document) return false;
-  const payload = typeof document === 'string' && document.startsWith('ey') && document.split('.').length === 3 ? JSON.parse(atob(document.split('.')[1])) : document;
-  
+  const payload = getDocumentPayload(document);
+  if (!payload) return false;
+
   const types = payload?.type || [];
   return Array.isArray(types) && (
     types.includes("BitstringStatusListCredential") ||
@@ -104,11 +128,11 @@ function isStatusListCredential(document: any): boolean {
 }
 
 function isVerifiableCredential(document: any): boolean {
-  if (!document) return false;
-  const payload = typeof document === 'string' && document.startsWith('ey') && document.split('.').length === 3 ? JSON.parse(atob(document.split('.')[1])) : document;
-  
-  return payload?.type && 
-         Array.isArray(payload.type) && 
+  const payload = getDocumentPayload(document);
+  if (!payload) return false;
+
+  return payload?.type &&
+         Array.isArray(payload.type) &&
          payload.type.includes("VerifiableCredential");
 }
 

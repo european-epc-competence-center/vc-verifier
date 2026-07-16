@@ -144,26 +144,19 @@ export function decodeVerifiableInput(verifiable: any): any {
 
 /**
  * Decodes one presentation entry: compact JWT, enveloped JWT, or JSON-LD VC.
+ * Unwraps VC Data Model 1.1 nested `vc` claims.
  */
 export function decodeVerifiableCredentialEntry(credential: any): any {
   if (typeof credential === 'string' && JWTService.isJWT(credential)) {
-    const decoded = JWTService.decodeJWT(credential);
-    if ('error' in decoded) {
-      throw new Error(`Failed to decode credential JWT: ${decoded.error}`);
-    }
-    return decoded.payload;
+    return decodeVerifiableInput(credential);
   }
 
   const unwrapped = unwrapEnvelopedCredential(credential);
   if (typeof unwrapped === 'string' && JWTService.isJWT(unwrapped)) {
-    const decoded = JWTService.decodeJWT(unwrapped);
-    if ('error' in decoded) {
-      throw new Error(`Failed to decode credential JWT: ${decoded.error}`);
-    }
-    return decoded.payload;
+    return decodeVerifiableInput(unwrapped);
   }
 
-  return unwrapped;
+  return decodeVerifiableInput(unwrapped);
 }
 
 /**

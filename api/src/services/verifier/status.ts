@@ -3,8 +3,30 @@ import { Bitstring } from "@digitalbazaar/bitstring";
 // @ts-ignore
 import { verifyCredential as vcVerifyCredential } from "@digitalbazaar/vc";
 import { JWTService } from './jwt.js';
-import { unwrapEnvelopedCredential } from './envelope.js';
+import { decodeVerifiableInput, unwrapEnvelopedCredential } from './envelope.js';
 import { getSuites } from './suites.js';
+
+/** Unwrap compact JWTs / VCDM 1.1 nested `vc` claims to the credential body. */
+function resolveCredentialBody(credential: any): any {
+  return decodeVerifiableInput(credential);
+}
+
+function resolveIssuer(credential: any): string | undefined {
+  const body = resolveCredentialBody(credential);
+  if (typeof body?.issuer === 'object') return body.issuer?.id;
+  if (typeof body?.issuer === 'string') return body.issuer;
+
+  if (typeof credential === 'string') {
+    const decoded = JWTService.decodeJWT(credential);
+    if (!('error' in decoded) && typeof decoded.payload?.iss === 'string') {
+      return decoded.payload.iss;
+    }
+  } else if (typeof credential?.iss === 'string') {
+    return credential.iss;
+  }
+
+  return undefined;
+}
 
 export class BitstringStatusList {
     private bitstring: any;
@@ -118,7 +140,7 @@ async function _checkBitstringStatuses({
 }
 
 function _getBitstringStatuses({ credential }: { credential: any }): any[] {
-  const { credentialStatus } = credential;
+  const { credentialStatus } = resolveCredentialBody(credential);
   
   if (Array.isArray(credentialStatus)) {
     return credentialStatus.filter(cs => cs.type === 'BitstringStatusListEntry');
@@ -194,17 +216,8 @@ async function _checkSingleBitstringStatus({
   }
 
   const { statusPurpose: credentialStatusPurpose } = credentialStatus;
-  
-  let slCredentialStatusPurpose;
-  if (typeof slCredential === 'string') {
-    const decoded = JWTService.decodeJWT(slCredential);
-    if ('error' in decoded) {
-      throw new Error(`Failed to decode status list JWT: ${decoded.error}`);
-    }
-    slCredentialStatusPurpose = decoded.payload?.credentialSubject?.statusPurpose;
-  } else {
-    slCredentialStatusPurpose = slCredential.credentialSubject?.statusPurpose;
-  }
+  const slCredentialBody = resolveCredentialBody(slCredential);
+  const slCredentialStatusPurpose = slCredentialBody?.credentialSubject?.statusPurpose;
 
   if (slCredentialStatusPurpose !== credentialStatusPurpose) {
     throw new Error(
@@ -255,37 +268,8 @@ async function _checkSingleBitstringStatus({
   }
 
   if (verifyMatchingIssuers) {
-    let credentialIssuer;
-    let statusListCredentialIssuer;
-
-    if (typeof credential === 'string') {
-      const decoded = JWTService.decodeJWT(credential);
-      if ('error' in decoded) {
-        throw new Error(`Failed to decode credential JWT: ${decoded.error}`);
-      }
-      credentialIssuer = typeof decoded.payload?.issuer === 'object' 
-        ? decoded.payload.issuer.id 
-        : decoded.payload?.issuer || decoded.payload?.iss;
-    } else {
-      credentialIssuer = typeof credential.issuer === 'object' 
-        ? credential.issuer.id 
-        : credential.issuer;
-    }
-
-    // Get issuer from the status list credential
-    if (typeof slCredential === 'string') {
-      const decoded = JWTService.decodeJWT(slCredential);
-      if ('error' in decoded) {
-        throw new Error(`Failed to decode status list JWT: ${decoded.error}`);
-      }
-      statusListCredentialIssuer = typeof decoded.payload?.issuer === 'object' 
-        ? decoded.payload.issuer.id 
-        : decoded.payload?.issuer || decoded.payload?.iss;
-    } else {
-      statusListCredentialIssuer = typeof slCredential.issuer === 'object' 
-        ? slCredential.issuer.id 
-        : slCredential.issuer;
-    }
+    const credentialIssuer = resolveIssuer(credential);
+    const statusListCredentialIssuer = resolveIssuer(slCredential);
 
     if (!(credentialIssuer && statusListCredentialIssuer) ||
         (credentialIssuer !== statusListCredentialIssuer)) {
@@ -296,16 +280,7 @@ async function _checkSingleBitstringStatus({
     }
   }
 
-  let credentialTypes;
-  if (typeof slCredential === 'string') {
-    const decoded = JWTService.decodeJWT(slCredential);
-    if ('error' in decoded) {
-      throw new Error(`Failed to decode status list JWT: ${decoded.error}`);
-    }
-    credentialTypes = decoded.payload?.type || [];
-  } else {
-    credentialTypes = slCredential.type || [];
-  }
+  const credentialTypes = slCredentialBody?.type || [];
 
   if (!credentialTypes.includes('BitstringStatusListCredential')) {
     throw new Error(
@@ -313,16 +288,7 @@ async function _checkSingleBitstringStatus({
     );
   }
 
-  let credentialSubject;
-  if (typeof slCredential === 'string') {
-    const decoded = JWTService.decodeJWT(slCredential);
-    if ('error' in decoded) {
-      throw new Error(`Failed to decode status list JWT: ${decoded.error}`);
-    }
-    credentialSubject = decoded.payload?.credentialSubject;
-  } else {
-    credentialSubject = slCredential.credentialSubject;
-  }
+  const credentialSubject = slCredentialBody?.credentialSubject;
 
   if (!credentialSubject || credentialSubject.type !== 'BitstringStatusList') {
     throw new Error('Status list type must be "BitstringStatusList".');

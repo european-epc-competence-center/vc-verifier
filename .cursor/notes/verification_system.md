@@ -271,6 +271,7 @@ When adding new `did:key` key type support, always add a corresponding `driver.u
 - Custom implementation: `checkBitstringStatus()` in `status.ts`
 - Format: Newer bitstring format
 - Supports `multibase` base64 prefix (`u` prefix) for `encodedList` values in status VCs
+- VCDM 1.1 JWT status lists/credentials: unwrap nested `vc` via `decodeVerifiableInput()`
 
 ### Status Check Flow
 
@@ -306,6 +307,9 @@ await checkStatus({
 **Important**: Status credentials are **never cached** in documentLoader
 - Ensures fresh revocation/suspension checks
 - Prevents stale status information
+- Type detection unwraps JWT `vc` claims so VCDM 1.1 status list JWTs are recognized
+
+**HTTP fetch (`services/fetch`)**: On non-OK response, retry Accept: multi-value → `application/vc+jwt` → `application/json` → none (Construct-X rejects multi-value Accept with 415)
 
 ## GS1 Integration
 
