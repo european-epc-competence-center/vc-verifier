@@ -3,6 +3,10 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+## 3.6.4 (2026-08-24)
+
+- bump `@eecc/vc-verifier-rules` to 2.8.0
+
 ## 3.6.3 (2026-07-15)
 
 ### Fixed
