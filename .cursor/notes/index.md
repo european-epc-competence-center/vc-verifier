@@ -33,6 +33,8 @@ vc-verifier/
 
 - **[verification_system.md](./verification_system.md)** - Deep dive into how credential verification works: cryptographic suites, status checking, JWT handling, and GS1 integration
 
+- **[did_webvh_integration.md](./did_webvh_integration.md)** - Plan for integrating `didwebvh-ts` v3 `getResolver()` to support `did:webvh` DIDs
+
 - **[development_workflow.md](./development_workflow.md)** - Build processes, testing setup, Docker containerization, and deployment patterns
 
 ## Key Technologies
