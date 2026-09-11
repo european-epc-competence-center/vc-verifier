@@ -43,7 +43,7 @@
     "@eecc/vc-verifier-rules": "^2.8.0",
     "@noble/curves": "^2.0.0",
     "cors": "^2.8.5",
-    "did-resolver": "^4.1.0",
+    "did-resolver": "5.0.1",
     "didwebvh-ts": "file:vendor/didwebvh-ts-3.0.0-3a9f65f.tgz",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
@@ -75,6 +75,9 @@
     "typescript": "^5.9.3"
   },
   "overrides": {
-    "jsonld": "$jsonld"
+    "jsonld": "$jsonld",
+    "web-did-resolver": {
+      "did-resolver": "$did-resolver"
+    }
   }
 }
