@@ -1,14 +1,19 @@
 import { Resolver } from 'did-resolver';
+import { getResolver as getWebvhResolver } from 'didwebvh-ts';
 import * as key from './custom/key.js';
 import * as web from 'web-did-resolver';
 
-export function getResolver() {
-    return new Resolver({
+const resolver = new Resolver(
+    {
         ...key.getResolver(),
-        ...web.getResolver()
-        //...you can flatten multiple resolver methods into the Resolver
+        ...web.getResolver(),
+        ...getWebvhResolver()
     },
     {
-        cache: true
-    })
+        cache: false
+    }
+);
+
+export function getResolver() {
+    return resolver;
 }
