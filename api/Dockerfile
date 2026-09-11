@@ -7,6 +7,7 @@ FROM base AS deps
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
+COPY vendor/ ./vendor/
 RUN npm ci --only=production && npm cache clean --force
 
 # Rebuild the source code only when needed
@@ -15,6 +16,7 @@ WORKDIR /app
 
 # Install ALL dependencies (including dev dependencies) for building
 COPY package.json package-lock.json* ./
+COPY vendor/ ./vendor/
 RUN npm ci
 
 COPY . .

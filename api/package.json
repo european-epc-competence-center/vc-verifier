@@ -44,6 +44,7 @@
     "@noble/curves": "^2.0.0",
     "cors": "^2.8.5",
     "did-resolver": "^4.1.0",
+    "didwebvh-ts": "file:vendor/didwebvh-ts-3.0.0-3a9f65f.tgz",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "express-jsdoc-swagger": "^1.8.0",
