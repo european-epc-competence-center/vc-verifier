@@ -1,8 +1,8 @@
 # Plan: did:webvh verification with didwebvh-ts 3.0.0
 
-**Status:** Implement when 3.0.0 is published on npm. This is a plan, not an implemented feature.
+**Status:** Ready to implement against a locally built, pinned upstream snapshot. Keep the webvh feature branch unmerged until the published npm package passes release validation. This document is a plan; no feature implementation is implied.
 
-**Basis:** Reviewed on 2026-09-10 against verifier commit `c4e712d` (API 3.6.4) and upstream [`80b3901`](https://github.com/decentralized-identity/didwebvh-ts/tree/80b3901cf5168967d82b3f5a6d231f7d25496c71). npm reported 2.8.0 as latest during that review. Check the actual release for changes before starting.
+**Basis:** Reviewed on 2026-09-10 against verifier commit `c4e712d` (API 3.6.4) and upstream [`80b3901`](https://github.com/decentralized-identity/didwebvh-ts/tree/80b3901cf5168967d82b3f5a6d231f7d25496c71). On 2026-09-11, direct upstream and npm checks reported HEAD [`3a9f65f`](https://github.com/decentralized-identity/didwebvh-ts/tree/3a9f65fd838cf750422add545c3d3a314dc61dd1), a source package version of 3.0.0, and npm latest 2.8.0. The newer manifest uses pnpm 11.13.0, TypeScript, and Vitest. The detailed code investigation below refers to `80b3901`; review the intervening changes before selecting the implementation snapshot. A source version of 3.0.0 does not identify the eventual npm release contents.
 
 ## Scope
 
@@ -12,16 +12,50 @@ Add `did:webvh` to the verifier's existing DID resolution and credential verific
 
 For the first release, verify against the **latest active DID state**. Historical credential verification, persistent DID caching, and browser-side wallet validation are separate follow-ups. Reject explicit webvh history selectors rather than silently ignoring them or selecting old keys from a credential's claimed signing time.
 
-## 1. Install and register the published library
+## Development dependency and branch workflow
+
+Use a branch such as `codex/did-webvh-integration`. Develop against one reviewed, immutable upstream commit; do not track a moving branch or depend on a sibling checkout in the committed verifier manifests. Keep each implementation commit buildable and include its focused regression tests. Resolver registration on this branch is not a production-readiness signal.
+
+### Build and package the snapshot
+
+1. Capture the verifier baseline before changing dependencies (commit 1 below).
+2. Clone upstream separately, review changes since `80b3901`, and check out the chosen full commit SHA. `3a9f65fd838cf750422add545c3d3a314dc61dd1` is the candidate observed on 2026-09-11, not an instruction to follow future HEAD automatically.
+3. Use upstream's declared package-manager version and committed lockfile. For that candidate, run the following in its checkout using a compatible Node runtime:
+
+   ```bash
+   pnpm install --frozen-lockfile
+   pnpm test
+   pnpm run build
+   npm pack
+   ```
+
+   Build explicitly: the current `prepublishOnly` hook does not run during `npm pack`. Check the resulting archive includes the exported JavaScript entry points and TypeScript declarations. These are planned commands, not a claim that this candidate has passed them.
+4. Copy the archive into `api/vendor/`, naming it `didwebvh-ts-3.0.0-3a9f65f.tgz` for this candidate. Install from the verifier's `api` directory:
+
+   ```bash
+   npm install --save-exact ./vendor/didwebvh-ts-3.0.0-3a9f65f.tgz
+   ```
+
+   The saved dependency should be a relative `file:vendor/...tgz` reference. Commit the archive, `package.json`, and `package-lock.json` together. Use a new filename for each new snapshot or rebuilt artifact; never silently replace an archive referenced by the lockfile.
+5. Add a short `api/vendor/README.md` with the source URL/full SHA, any local patches (prefer none), Node and package-manager versions, build commands, archive checksum, and test results. The archive makes installation reproducible; the provenance records how it was built. The verifier lockfile controls its installed dependency tree, which may differ from upstream's development tree.
+6. Temporarily add `COPY vendor/ ./vendor/` before `npm ci` in both the `deps` and `builder` stages of `api/Dockerfile`. Ensure the archive is included in the Docker build context. Prove a fresh checkout can run `npm ci` and build the image without the upstream checkout or pnpm installed in the verifier environment.
+
+Keep npm and the current compiler/Jest tooling in the verifier. Use `npm link` only for optional upstream debugging; the committed branch and integration tests must consume the packed artifact. No private registry or upstream fork publication is needed for this workflow.
+
+**Installation caveat:** the earlier source investigation encountered a broken `json-canonicalize@2.0.1` package; 2.0.0 matched upstream's then-current lockfile and worked. Recheck the selected snapshot's clean build and the verifier's clean installation. Add a narrow, documented workaround only if the problem reproduces; reassess it at release. The old observation does not establish that the new snapshot or published package has the same problem.
+
+### Two validation gates
+
+- **Development gate:** the pinned archive installs cleanly, works with this verifier's ESM/TypeScript setup, and passes the incremental checks below. Implementation and review can proceed before publication.
+- **Merge/release gate:** install exact registry `didwebvh-ts@3.0.0`, review changes since the snapshot, and pass clean installation, full regression tests, real wallet integration, and Node 24 production-image validation. Remove temporary snapshot packaging before merging the feature branch. If upstream publishes an incompatible release, adapt and retest rather than treating the version change as administrative.
+
+Independent loader, JWT, or authorization fixes may be proposed for earlier merge only when their commits and tests work without the snapshot dependency. Keep each behavior correction documented. Otherwise, retain the sequence on the feature branch and rebase as needed while waiting.
+
+## Resolver registration and resolution lifetime
 
 **Files:** `api/package.json`, `api/package-lock.json`, `api/src/services/documentLoader/didresolver.ts`.
 
-Before changing dependencies, run the current API build/tests and record the baseline. Then:
-
-- Install exact `didwebvh-ts@3.0.0` and commit the updated lockfile.
-- Confirm the npm package exports `getResolver()` and works with the verifier's ESM/TypeScript setup and Node 24 Docker image.
-- Prefer aligning `did-resolver` with the released dependency, currently upstream `^5.0.1`. Test the existing web and custom key resolvers before accepting that major upgrade. The prerelease registry worked with both v4 and v5 in a probe, so v5 is not proven essential just for dispatch.
-- Keep the existing compiler/test tooling unless the published package demonstrates a compatibility problem.
+Confirm the selected artifact exports `getResolver()` and works in Node 24. Keep the current top-level `did-resolver` v4 initially if compatibility checks pass. Upstream currently depends on `^5.0.1`; the earlier adapter probe worked with both v4 and v5, so a major upgrade is not assumed necessary. If alignment to v5 is required or chosen, make it a separate commit with existing web and custom key resolver regressions.
 
 Preserve the local `getResolver()` export and register webvh alongside the existing methods:
 
@@ -45,13 +79,11 @@ export function getResolver() {
 }
 ```
 
-The library includes a default Ed25519 verifier for history proofs; no custom callback or old-result-shape adapter is needed.
+The reviewed library includes a default Ed25519 verifier for history proofs; confirm this remains true in the selected snapshot. No custom callback or old-result-shape adapter is expected.
 
 **Caching:** the current code creates a resolver per call. Making it shared while keeping `cache: true` would retain results indefinitely. Start with the built-in cache disabled. Reuse the validated document within a verification when checking its key and controller authorization, so those checks do not accidentally use different states. Choose the smallest implementation that fits the existing flow; this does not require a general cache framework. The next verification must resolve afresh.
 
-**Installation note:** the source investigation encountered a broken `json-canonicalize@2.0.1` package; 2.0.0 matched upstream's lockfile and worked. Recheck clean installation of the actual release before adding any dependency override. This does not establish that the future bundled npm release has the same problem.
-
-## 2. Fix the shared DID document loader
+## Shared DID document loader
 
 **File:** `api/src/services/documentLoader/index.ts`.
 
@@ -81,7 +113,7 @@ Keep `extendContextLoader`, the `{ contextUrl, documentUrl, document }` contract
 
 Let the library validate DID/history identity binding. Do not add an unconditional document-ID equality check that would reject a legitimate webvh location move, or treat `alsoKnownAs` as permission to substitute another issuer.
 
-## 3. Support Ed25519 Multikey JWTs
+## Ed25519 Multikey JWTs and relative key IDs
 
 **File:** `api/src/services/verifier/jwt.ts`, plus dependency manifests.
 
@@ -101,7 +133,7 @@ Preserve working JWK and legacy Ed25519 branches. The new JWK-based branch shoul
 
 Also handle relative JWT key IDs in `loadVerificationMethod`: `#key-1` currently passes through as though it were an absolute URL. Resolve a relative VC key against its issuer, and a relative VP key against the presentation's signing identity. Preserve self-contained `did:key` expansion and currently supported absolute key URLs.
 
-## 4. Close the existing credential authorization gaps
+## Credential authorization
 
 **Files:** `api/src/services/verifier/index.ts`, `jwt.ts`, `status.ts`; check failure propagation in `gs1.ts`.
 
@@ -120,9 +152,9 @@ Keep these checks at **credential boundaries**. `JWTService` also handles presen
 
 Use the existing envelope/VC-JWT decoding flow, retaining the outer JWT `iss` when processing a nested `vc` body. Support existing string/object issuer forms, reject conflicting issuer claims, and verify the original signed bytes. Avoid making the status-list path recursively invoke full status verification just to check issuer authorization.
 
-Implement this step as a distinct, tested change. It intentionally rejects unauthorized credentials the current code may accept; document that correction. Do not broaden it into unrelated JWT, presentation-policy, or GS1 trust-rule changes.
+Implement these corrections in the separate tested commits below. They intentionally reject unauthorized credentials the current code may accept; document that behavior change. Do not broaden them into unrelated JWT, presentation-policy, or GS1 trust-rule changes.
 
-## 5. Prove wallet interoperability and preserve current behavior
+## Wallet interoperability and regression coverage
 
 The wallet already calls the external verifier and serves `did.jsonl`; no Java verification API change is required. The library derives the public log URL, for example:
 
@@ -133,7 +165,9 @@ did:webvh:SCID:wallet.example.com:api:registry:did:acme
 
 Test from the verifier's Node 24 container with access to the HTTPS log and any required witness file. Upstream uses native `fetch`, not this project's `node-fetch` helper, so mock/check the actual transport.
 
-Use real signed fixtures produced by the wallet's Java implementation. At least one integration test must run the fetched log through the published resolver and verify an actual credential; mocking the entire document loader would miss the interoperability question.
+Use real signed fixtures produced by the wallet's Java implementation, with provenance and no private signing keys. Bring these into the branch immediately after resolver registration. First run a fetched log through the actual snapshot resolver and verify a credential using an already-supported key format if available. If the wallet only supplies Ed25519 Multikey JWTs, commit the passing log-resolution test first and add credential verification as soon as the decoder and any necessary relative-key support land; do not manufacture a passing result or commit an expected-failing test as acceptance evidence. Missing wallet fixtures block interoperability sign-off, but not independent loader/JWT work.
+
+By the development gate's final validation, at least one test must fetch a wallet-produced log, validate it through the real resolver, and verify an actual wallet credential including issuance authorization. Repeat against the registry package at the release gate. Mocking native fetch to serve exact fixture bytes is suitable for deterministic tests; mocking the resolver or entire document loader is not sufficient. Separately smoke-test live HTTPS log/witness retrieval from the Node 24 container.
 
 Keep the regression suite focused on these outcomes:
 
@@ -160,23 +194,101 @@ npm test -- --runInBand
 
 Compare against the baseline and resolve unexplained regressions before release. Do not weaken verification checks or change trust roots to make a fixture pass. Sharing key material or `alsoKnownAs` does not automatically make a webvh alias a trusted GS1 issuer.
 
-## 6. Implementation order and release
+## Commit-by-commit implementation checklist
 
-1. Capture the baseline; install/check the published package and register the resolver.
-2. Fix loader result handling and key lookup; add Ed25519 Multikey JWT support.
-3. Add the credential authorization fixes with their regression tests.
-4. Run wallet fixture integration, the existing API suite, and a Node 24 production-image smoke test.
-5. Update release notes and deploy a pinned verifier image after staging validation.
+The technical sections above define behavior; this checklist defines commit boundaries. Add tests with the change they exercise instead of deferring all coverage to the end. Run the API build and relevant tests for each code/dependency commit, and run the full suite at the integration and release gates. Split a commit further if it becomes difficult to review; do not combine unrelated cleanup or dependency upgrades.
+
+1. **`docs: record webvh implementation baseline`**
+   - Run `npm ci`, `npm run build-tsc`, and `npm test -- --runInBand` on the unchanged API under Node 24. Record the verifier SHA, runtime versions, results, and any existing failures in this note or a linked implementation record.
+   - Check fixture availability and select/review the upstream SHA. Record missing inputs rather than claiming interoperability.
+   - Done when failures can be distinguished from later regressions and the snapshot choice is explicit.
+
+2. **`build: add pinned didwebvh development artifact`**
+   - Build/test/package upstream as above. Add the tarball, provenance, manifest/lockfile updates, and both Docker copy instructions together. Do not register the resolver yet.
+   - Verify package imports/exports and clean API installation/build; build the production image from the repository's normal build context.
+   - Done when this checkout can consume the artifact without the upstream source directory. If resolver v5 alignment is needed, insert a separate dependency/test commit here.
+
+3. **`ci: validate the API on Node 24`**
+   - The existing test workflow uses Node 22 while production uses Node 24. Add Node 24 build/test coverage, retaining Node 22 coverage initially to avoid changing support policy in this feature.
+   - Done when the workflow runs the build and tests for the production runtime as well as the existing runtime.
+
+4. **`fix: reject failed or inactive DID resolution`**
+   - Retain and validate full resolution results in the loader before returning a document/key. Preserve useful errors in serialized API responses.
+   - Test error metadata with and without a document, missing documents, deactivation, and existing method success. Add an API-level error propagation test.
+   - Done when neither JWT nor JSON-LD paths can treat failed resolution as usable key material.
+
+5. **`feat: register the webvh resolver`**
+   - Register the snapshot adapter alongside web/key, disable persistent resolver caching, and reject explicit webvh historical selectors before resolving them.
+   - Test dispatch, selector rejection, and absence of fallback on webvh failure. Existing web/key dispatch must still pass.
+   - Done when basic webvh resolution works on the branch. Full verification readiness still depends on the later commits.
+
+6. **`test: add wallet webvh interoperability fixtures`**
+   - Add the wallet-generated log, credential, and any witness fixtures with provenance. Exercise the real resolver through native fetch and check the DID/key result.
+   - Add the earliest passing actual-credential test permitted by the wallet's available key format. If it needs key lookup, decoder, or relative-key support from commits 7, 9, or 10, record the dependency and complete the test with the last required change.
+   - Done when the fetched wallet log passes the actual snapshot library, with any remaining credential-test dependency explicit.
+
+7. **`fix: resolve DID verification methods consistently`**
+   - Normalize relative/absolute method IDs and relationship references, search embedded methods, preserve contexts, and return copies. Complete any early wallet credential test blocked solely by method lookup.
+   - Test unknown and ambiguous IDs, bare-fragment compatibility, embedded keys, and unmodified source documents.
+   - Done when key and controller views agree and existing JSON-LD purpose checks still work.
+
+8. **`fix: reuse DID state within each verification`**
+   - Add the smallest request-scoped resolution reuse needed by key and controller checks. Thread it through the applicable JWT, JSON-LD, presentation, and credential-authorization paths without introducing persistent caching.
+   - Test that one verification uses one validated state for a DID, and a subsequent verification sees rotation/deactivation. Keep non-DID loader behavior unchanged.
+   - Done when purpose validation cannot accidentally use a newer state than signature-key resolution. Keep this test in place as authorization paths are added.
+
+9. **`feat: verify Ed25519 Multikey JWT signatures`**
+   - Add the direct decoder dependency and validated codec dispatch, preserving existing EC/JWK/legacy Ed25519 behavior.
+   - Test valid Ed25519 and existing EC tokens, malformed/unsupported keys, algorithm mismatch, and present `exp`/`nbf` claims. Complete the wallet JWT signature test here if its key IDs already work; otherwise complete it in commit 10.
+   - Done when the wallet key codec verifies without changing generic JWT policy. Issuance authorization is added in commits 11–12.
+
+10. **`fix: resolve relative JWT verification key IDs`**
+    - Resolve VC fragments against the signing issuer and VP fragments against the presentation's signing identity; retain absolute URLs and `did:key` expansion.
+    - Test VC and VP fragments, missing/invalid signing identity, absolute IDs, and existing holder/challenge/domain behavior. Complete any wallet credential signature test deferred for relative-key support.
+    - Done when fragments reach the intended DID loader and do not become standalone URLs.
+
+11. **`fix: enforce issuance authorization for JWT credentials`**
+    - Add a reusable issuance check at credential boundaries, including normal JWT VCs and JWT status-list VCs in the same commit so neither bypasses it.
+    - Retain outer `iss` for nested `vc` bodies, handle string/object issuers, reject conflicting claims, and verify original signed bytes. Keep generic JWT and VP behavior unchanged; avoid recursive status checking.
+    - Test wrong issuer, unauthorized assertion key, issuer conflicts, valid issuance, and status-list issuance failures using the same validated DID state.
+    - Done when signature success alone cannot set credential purpose success on either path.
+
+12. **`fix: enforce Data Integrity credential issuance purpose`**
+    - Use credential issuance validation in place of generic assertion purpose, preserving established delegation only where supported by explicit tests.
+    - Test issuer/controller binding and assertion authorization, alongside valid JSON-LD credentials and unchanged VP authentication options.
+    - Done when the wallet JSON-LD flow and existing formats pass with correct issuance checks.
+
+13. **`fix: preserve credential failures in GS1 aggregation`**
+    - Ensure an overall verification failure stays failed even when signature subresults are true or `results` is absent.
+    - Test both shapes and existing trusted-root behavior; do not change trust rules for webvh aliases.
+    - Done when the authorization failures from the preceding commits survive aggregation.
+
+14. **`test: complete webvh integration and regression coverage`**
+    - Fill only gaps in the coverage table: tampered history, SCID, required witnesses, deactivation, valid credential/presentation flows, status behavior, and freshness.
+    - Run the full API suite/build, clean Docker build, and live Node 24 HTTPS/witness smoke test. Compare against the baseline and record results and fixture provenance.
+    - Done when the development implementation passes end to end, including issuance authorization. Keep the feature branch unmerged while awaiting the registry release; periodically rebase and rerun affected checks after changes.
+
+15. **`build: replace webvh snapshot with npm 3.0.0`** — after publication
+    - In `api`, run `npm install --save-exact didwebvh-ts@3.0.0`. Confirm the lockfile resolves the registry artifact, then remove the temporary tarball, its packaging note, and the temporary Docker copy instructions. Retain the snapshot SHA/results in this implementation record.
+    - Review release changes since the snapshot, recheck any workaround, and adapt code in separate focused commits if needed. Do not assume identical contents because both versions say 3.0.0.
+    - Run clean `npm ci`, build, full regression/wallet tests, and the Node 24 production-image smoke test again. Confirm no snapshot paths or install-time dependency on the upstream checkout remains.
+    - Done when the published artifact satisfies the merge gate.
+
+16. **`docs: document webvh support and authorization corrections`**
+    - Update release notes with latest-active-state behavior, unsupported history selectors, and intentional rejection of previously accepted unauthorized credentials. Record final validation evidence.
+    - Done when the feature branch is ready for final review and merge. Deployment follows the existing release process after staging validation; use a pinned verifier image.
 
 Keep a previous tested image available for rollback. Rolling back removes webvh support, so coordinate issuer rollout accordingly; do not add an automatic fallback to did:web verification.
 
 ## References and follow-ups
 
+- [Candidate snapshot manifest](https://github.com/decentralized-identity/didwebvh-ts/blob/3a9f65fd838cf750422add545c3d3a314dc61dd1/package.json)
+- [npm lifecycle scripts](https://docs.npmjs.com/cli/v11/using-npm/scripts/)
 - [Upstream registry adapter](https://github.com/decentralized-identity/didwebvh-ts/blob/80b3901cf5168967d82b3f5a6d231f7d25496c71/src/resolver.ts)
 - [Resolution-result handling](https://github.com/decentralized-identity/didwebvh-ts/blob/80b3901cf5168967d82b3f5a6d231f7d25496c71/src/resolver-result.ts)
 - [Upstream migration guide](https://github.com/decentralized-identity/didwebvh-ts/blob/80b3901cf5168967d82b3f5a6d231f7d25496c71/docs/UPGRADE_2.x_to_3.0.md)
 - [Verifier architecture notes](./verification_system.md)
 
-The investigation confirmed resolver v4/v5 compatibility in a probe, reproduced the Ed25519 Multikey decoding failure, and ran 52 upstream tests successfully. That evidence does not replace testing the published package in this verifier.
+The original investigation confirmed resolver v4/v5 compatibility in a probe, reproduced the Ed25519 Multikey decoding failure, and ran 52 upstream tests successfully. This evidence applies to the earlier reviewed snapshot; it does not replace testing the selected development artifact or the published package in this verifier.
 
 Defer historical credential verification, persistent caching, and wallet frontend DID validation. Historical resolution alone is insufficient: key and controller authorization must use the intended version, with an explicit policy for later deactivation and untrusted signing timestamps. No detailed implementation of these follow-ups is required for this release.
