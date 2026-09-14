@@ -5,3 +5,6 @@ lib/
 coverage/
 .idea
 .env.local
+
+# didwebvh-ts 2.8.0 dumps resolved DID logs here when NODE_ENV=test
+api/test/logs/
