@@ -182,6 +182,38 @@ describe("DID document resolution", () => {
     });
   });
 
+  test("rejects a key from a document identifying another DID", async () => {
+    const otherDid = "did:example:other";
+    resolveMock.mockResolvedValue({
+      didResolutionMetadata: {},
+      didDocument: {
+        "@context": "https://www.w3.org/ns/did/v1",
+        id: otherDid,
+        verificationMethod: [
+          {
+            id: `${otherDid}#key-1`,
+            type: "JsonWebKey2020",
+            controller: otherDid,
+            publicKeyJwk: { kty: "EC" },
+          },
+        ],
+      },
+      didDocumentMetadata: {},
+    });
+
+    await expect(documentLoader(verificationMethodId)).rejects.toThrow(
+      `key-1 is an unknown verification method for ${did}`
+    );
+  });
+
+  test("dereferences a key requested through a DID URL with a query", async () => {
+    resolveMock.mockResolvedValue(successfulResolution());
+
+    const result = await documentLoader(`${did}?versionId=3#key-1`);
+
+    expect(result.document.id).toBe(verificationMethodId);
+  });
+
   test("rejects an unknown verification method", async () => {
     resolveMock.mockResolvedValue(successfulResolution());
 

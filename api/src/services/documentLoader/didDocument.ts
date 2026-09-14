@@ -81,10 +81,18 @@ function collectVerificationMethods(didDocument: any): any[] {
   return [...toArray(didDocument.verificationMethod), ...embedded];
 }
 
+/** Returns the bare DID of a DID URL, dropping parameters, path, and query. */
+function didFromUrl(didUrl: string): string {
+  return didUrl.split(/[;/?]/)[0];
+}
+
 /** Returns the one method matching a DID URL. */
 export function findVerificationMethod(url: string, didDocument: any): any {
-  const [requestedDid, fragment] = url.split("#");
-  const verificationMethodId = `${didDocument.id}#${fragment}`;
+  const [didUrl, fragment] = url.split("#");
+  // Match the requested DID, so a document identifying another DID cannot
+  // supply the key. Relative IDs inside the document resolve against its own id.
+  const requestedDid = didFromUrl(didUrl);
+  const verificationMethodId = `${requestedDid}#${fragment}`;
   const matches = collectVerificationMethods(didDocument).filter(
     (method) => method?.id === verificationMethodId
   );
