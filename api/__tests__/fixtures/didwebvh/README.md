@@ -3,7 +3,7 @@
 These are the wallet-issued ProductDataCredential samples supplied on 2026-09-14,
 with their public DID history and the JSON-LD contexts captured during successful
 live verification. See [didwebvh-provenance.json](./didwebvh-provenance.json) for source URLs,
-capture details, SHA-256 checksums, runtime, and resolver snapshot.
+capture details, SHA-256 checksums, runtimes, and the resolver versions they passed against.
 
 - `didwebvh-credential.jwt` preserves the supplied compact JWT (ES256).
 - `didwebvh-credential.json` contains the supplied JSON-LD VC (`ecdsa-rdfc-2019`), with
@@ -33,9 +33,10 @@ Run from `api`:
 npm test -- --runInBand __tests__/didwebvh.test.ts
 ```
 
-Validation on 2026-09-14: all 9 fixture tests passed under Node 24.19.0,
-the API TypeScript build passed, and the full API regression run passed all
-13 suites (68 tests passed, 2 skipped). All fixture checksums match provenance.
+Validation history is in [the provenance file](./didwebvh-provenance.json). These
+fixtures passed first against the vendored 3.0.0 snapshot and then, unchanged,
+against the published `didwebvh-ts@2.8.0` used today. All fixture checksums match
+provenance.
 
 This establishes log validation and signature interoperability for these two
 formats. It does not establish that all credential paths enforce issuer

@@ -22,6 +22,14 @@
     "resolvedVersionId": "3-QmTkxXz2XuP2v6i1fMZW7LDHz1RTYUw6rtFPaibJRc8ZJz",
     "liveHttps": "DID history, JWT and JSON-LD VC passed through the current API services on Node 24.19.0. This was a host-runtime check, not a production-container check."
   },
+  "publishedResolverValidation": {
+    "verifierCommit": "61d6f2c66ab1cd8119d0f047270f706697be6c7b",
+    "node": "22.22.1",
+    "resolver": "didwebvh-ts@2.8.0 from npm, via api/src/services/documentLoader/custom/webvh.ts",
+    "resolvedVersionId": "3-QmTkxXz2XuP2v6i1fMZW7LDHz1RTYUw6rtFPaibJRc8ZJz",
+    "result": "The unchanged fixtures passed: 9 webvh tests and the full API suite (15 suites, 82 passed, 2 skipped), plus the TypeScript build.",
+    "limits": "Offline run with mocked HTTP transports. The live HTTPS retrieval and Node 24 checks were not repeated against 2.8.0."
+  },
   "sha256": {
     "didwebvh-credential.jwt": "4e3a2ca49945eac0812dd69117739958dcd887417d29211191a2a46addcf9ddb",
     "didwebvh-credential.json": "7b23274449f431bc8bf6208ed814119959b6e800e8732e59c12ea1782adddff0",

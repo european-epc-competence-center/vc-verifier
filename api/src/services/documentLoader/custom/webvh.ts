@@ -8,8 +8,13 @@ import { resolveDID } from "didwebvh-ts";
 
 /**
  * Adapter for `didwebvh-ts` 2.8.0, which validates DID logs but ships neither a
- * `did-resolver` binding nor a verifier. Remove it once a release exports
- * `getResolver()` with a built-in verifier.
+ * `did-resolver` binding nor a verifier.
+ *
+ * Upgrade path: when a release exports `getResolver()` with a built-in verifier,
+ * register that directly in `../didresolver.ts` and delete this file with its
+ * test. The upstream binding must keep supplying `didDocumentMetadata`
+ * (`versionId`, `deactivated`) and DID-URL version selectors, which
+ * `__tests__/didwebvh.test.ts` and `__tests__/webvhResolver.test.ts` assert.
  */
 
 type ResolutionOptions = Parameters<typeof resolveDID>[1];
