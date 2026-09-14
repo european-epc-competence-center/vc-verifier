@@ -6,7 +6,7 @@ EECC VC Verifier is a full-stack application for verifying W3C Verifiable Creden
 
 **License**: AGPL-3.0  
 **Maintainer**: European EPC Competence Center GmbH (EECC)  
-**Current Version**: 3.4.3
+**Versions**: API and frontend are versioned separately (`api/package.json`, `frontend/package.json`); repo releases are tagged `vX.Y.Z` after the API version
 
 ## Repository Structure
 
@@ -14,7 +14,7 @@ EECC VC Verifier is a full-stack application for verifying W3C Verifiable Creden
 vc-verifier/
 ├── api/              # Backend verification API (TypeScript, Express)
 ├── frontend/         # Vue.js 3 frontend application
-├── CHANGELOG.md      # Root changelog (refers to subprojects)
+├── CHANGELOG.md      # The single changelog for the whole repo
 ├── docker-compose.yml # Container orchestration
 └── .cursor/          
     ├── rules/        # Cursor AI rules (changelog, notes)
@@ -33,7 +33,7 @@ vc-verifier/
 
 - **[verification_system.md](./verification_system.md)** - Deep dive into how credential verification works: cryptographic suites, status checking, JWT handling, and GS1 integration
 
-- **[development_workflow.md](./development_workflow.md)** - Build processes, testing setup, Docker containerization, and deployment patterns
+- **[development_workflow.md](./development_workflow.md)** - Build processes, testing setup, Docker containerization, deployment patterns, and the manual release process (version bump + changelog + GitHub Release for tag `vX.Y.Z`)
 
 ## Key Technologies
 
@@ -56,12 +56,12 @@ vc-verifier/
 ### Working on API Features
 1. Read [api_architecture.md](./api_architecture.md) for service layer understanding
 2. Check [verification_system.md](./verification_system.md) for verification logic
-3. Update `api/CHANGELOG.md` (note: separate changelog per subproject)
+3. Update the root `CHANGELOG.md` (`[Unreleased]` section)
 
 ### Working on Frontend Features
 1. Read [frontend_architecture.md](./frontend_architecture.md) for component structure
 2. Check [repository_structure.md](./repository_structure.md) for file locations
-3. Update `frontend/CHANGELOG.md` when making changes
+3. Update the root `CHANGELOG.md` when making changes
 
 ### Adding New Verification Features
 1. Study [verification_system.md](./verification_system.md) for existing patterns
@@ -76,10 +76,8 @@ vc-verifier/
 ## Important Patterns & Conventions
 
 ### Changelog Management
-- **Each subproject has its own CHANGELOG.md** (see `.cursor/rules/changelog-conventions.mdc`)
-- Root `CHANGELOG.md` contains consolidated history
-- Always update the relevant subproject's changelog
-- WIP section at top for unreleased changes
+- One root `CHANGELOG.md` for API and frontend (see `.cursor/rules/changelog-conventions.mdc`)
+- `[Unreleased]` section at the top for unreleased changes; it becomes the release notes body
 
 ### Code Organization
 - API uses ES2022 modules (`.js` imports in TypeScript)

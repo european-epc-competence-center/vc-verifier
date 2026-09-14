@@ -3,6 +3,8 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+## 3.7.0 (2026-09-14)
+
 ### Added
 - Support for the `did:webvh` DID method: JWT and JSON-LD credentials signed with a `did:webvh` key are verified against its validated DID log; an invalid log or a deactivated DID is rejected
 

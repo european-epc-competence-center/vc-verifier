@@ -323,41 +323,44 @@ docker-compose up -d
   5. Upload coverage
 
 **2. `build-all.yml` - Build Containers**
-- Trigger: Push to main, tags
+- Trigger: push to `main`, push of `v*` tags, PRs to `main` (build only, no push), `workflow_dispatch`
 - Steps:
   1. Checkout code
   2. Login to GitHub Container Registry
-  3. Build API image
-  4. Build frontend image
-  5. Push images with version tags
+  3. Build API image (context `./api`)
+  4. Build frontend image (context `./frontend`, build args pin `https://ssi.eecc.de`)
+  5. Push images (skipped for pull requests)
 
-**Container Tags**:
-- `latest` - Latest main branch
-- `<version>` - Semantic version tags (e.g., `3.2.1`)
-- `<commit-sha>` - Specific commit tags
+**Container Tags** (`docker/metadata-action`, `latest=auto`):
+- `main` - push to main branch
+- `<version>` and `<major>.<minor>` - from `v*` tags
+- `latest` - only moved by semver tags, not by main pushes
+- `pr-<n>` - PR builds (not pushed)
 
-### Version Management
+### Version Management & Release Process
 
-**Semantic Versioning**: MAJOR.MINOR.PATCH
+**Semantic Versioning**: MAJOR.MINOR.PATCH. Tags are `vX.Y.Z` (lightweight, on `main`).
 
-**Version Locations**:
-- `api/package.json` - API version
-- `frontend/package.json` - Frontend version
-- `frontend/src/store/index.js` - Displayed in UI
-- Root `CHANGELOG.md` - Version history
+**Version Locations** (API and frontend are versioned independently and are *not* in sync):
+- `api/package.json` + `api/src/swagger.ts` (`version:` field) - API version
+- `frontend/package.json` + `frontend/src/store/index.js` (`version:` field, shown in UI) - frontend version
+- Root `CHANGELOG.md` - version history for the whole repo
 
-**Versioning Strategy**:
-- Both subprojects use same version number
-- Synchronized releases
-- Independent development possible
+**Release is fully manual — there is no release script, and no workflow creates GitHub Releases.**
+
+1. Bump the version in the API files above (and frontend files if the frontend changed); `api/package-lock.json` changes too when dependencies were bumped
+2. Rename the `## [Unreleased]` changelog section to `## X.Y.Z (YYYY-MM-DD)` and open a fresh `[Unreleased]`
+3. Commit as `prepare release X.Y.Z` on `main`
+4. Create the GitHub Release for tag `vX.Y.Z` targeting `main` (this creates the tag); release body = the new changelog section
+5. The tag push triggers `build-all.yml`, publishing `X.Y.Z`, `X.Y`, and `latest` container images
+
+Deployments track `latest`, so `docker-compose.yml` (no explicit image tag) only picks up a release after step 4.
 
 ## Changelog Management
 
 ### Changelog Files
 
-**Root**: `/CHANGELOG.md` - Consolidated history
-**API**: `/api/CHANGELOG.md` - API-specific changes (if exists)
-**Frontend**: `/frontend/CHANGELOG.md` - Frontend-specific changes (if exists)
+**Root**: `/CHANGELOG.md` - the only changelog; there are no subproject changelogs
 
 ### Update Process
 
