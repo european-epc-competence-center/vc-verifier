@@ -1,0 +1,32 @@
+{
+  "capturedOn": "2026-09-14",
+  "wallet": "company-wallet review environment, feat-didwebvh-support",
+  "credentialSource": "User-provided wallet JWT and JSON-LD VC in this task on 2026-09-14; wallet build SHA was not supplied.",
+  "credentialId": "https://company-wallet-review-feat-didwebvh-support.prod-k8s.eecc.de/api/registry/vc/8c9915d4-0ff8-4acb-8ad6-a25beb938a6d",
+  "didLogUrl": "https://company-wallet-review-feat-didwebvh-support.prod-k8s.eecc.de/api/registry/did/eecc/did.jsonl",
+  "contextSources": {
+    "contexts/credentials-v2.json": "https://www.w3.org/ns/credentials/v2",
+    "contexts/gs1-product.json": "https://ref.gs1.org/gs1/vc/product-context"
+  },
+  "transformations": {
+    "didwebvh-credential.jwt": "Signed compact token unchanged; file has a trailing newline that tests trim.",
+    "didwebvh-credential.json": "Restored plain URLs from Markdown links in the pasted VC and formatted as JSON. Body cross-checked against the JWT payload, excluding its iat; supplied Data Integrity proof retained.",
+    "didwebvh-history.jsonl": "Exact downloaded response bytes, without rewriting the log.",
+    "contexts": "Parsed JSON-LD contexts captured through the verifier document loader during successful live verification, then formatted as JSON. These are parsed documents, not raw HTTP response bytes."
+  },
+  "validationBaseline": {
+    "verifierCommit": "0685868e0a8b26929f6cff3c2722e54143f07db8",
+    "node": "24.19.0",
+    "resolverArtifact": "didwebvh-ts-3.0.0-3a9f65f.tgz",
+    "resolverSourceCommit": "3a9f65fd838cf750422add545c3d3a314dc61dd1",
+    "resolvedVersionId": "3-QmTkxXz2XuP2v6i1fMZW7LDHz1RTYUw6rtFPaibJRc8ZJz",
+    "liveHttps": "DID history, JWT and JSON-LD VC passed through the current API services on Node 24.19.0. This was a host-runtime check, not a production-container check."
+  },
+  "sha256": {
+    "didwebvh-credential.jwt": "4e3a2ca49945eac0812dd69117739958dcd887417d29211191a2a46addcf9ddb",
+    "didwebvh-credential.json": "7b23274449f431bc8bf6208ed814119959b6e800e8732e59c12ea1782adddff0",
+    "didwebvh-history.jsonl": "ef87b3f71d812c643f1c8b566f167c9d3d1b14b0c25b2c9f1001fbae38399564",
+    "contexts/credentials-v2.json": "8a9f494a89ecc51db093e90e84713e07e84d6d9204364a9b3c7868b21751236f",
+    "contexts/gs1-product.json": "9df65efc8a2a481fe96cbe8f04ffb8999b79b12f724172dc0f5684ff9f2fb554"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global",
+  "verificationMethod": [
+    {
+      "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#secure-prefix",
+      "type": "JsonWebKey",
+      "controller": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global",
+      "publicKeyJwk": {
+        "key_ops": [
+          "verify"
+        ],
+        "ext": true,
+        "kty": "EC",
+        "x": "P2lWAfthH4udmM2h0-Mx6kPpr69o9n9CXLdFzXN0YhI",
+        "y": "mLU90jewX5K-cxtuaxGcpXRqTEQrr1-4FqZ_AQ1fcqo",
+        "crv": "P-256"
+      }
+    }
+  ],
+  "controller": [
+    "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global"
+  ],
+  "@context": [
+    "https://www.w3.org/ns/did/v1"
+  ],
+  "assertionMethod": [
+    "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#secure-prefix"
+  ],
+  "authentication": [
+    "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#secure-prefix"
+  ]
+}

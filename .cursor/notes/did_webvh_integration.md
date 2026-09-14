@@ -15,8 +15,9 @@ For normal verification, resolve the DID URL through the upstream resolver; an u
 ### Current implementation checkpoint (2026-09-14)
 
 - The pinned development artifact, resolver v5 alignment, Node 24 CI switch, resolution-result validation, and webvh resolver registration are committed.
-- Verification-method lookup (checklist step 7) is currently a working-tree/WIP change.
-- Wallet interoperability fixtures (step 6) remain outstanding and can be added when suitable wallet output is available.
+- Verification-method lookup (checklist step 7) was committed in `2c4295d`; the absolute DID-URL path matching regression identified during review remains a separate correction.
+- Wallet interoperability fixtures (step 6) now cover the supplied ES256 JWT and `ecdsa-rdfc-2019` JSON-LD VC using the actual snapshot resolver, including rejection of modified credentials, history contents, and log proofs. [Fixture provenance and coverage limits](../../api/__tests__/fixtures/didwebvh/README.md) record the successful host Node 24 HTTPS check. Production-container validation remains outstanding.
+- Both wallet samples use an absolute `#next-test-key` DID URL and a P-256 JWK, so steps 9–10 are not prerequisites for this fixture coverage. DID-state reuse and issuance-authorization work remain outstanding; passing these fixtures does not establish those guarantees.
 - A Node 22 CI matrix and verifier-specific historical-selector handling are not in scope for this integration.
 
 ## Development dependency and branch workflow

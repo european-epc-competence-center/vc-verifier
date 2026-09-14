@@ -1,0 +1,185 @@
+{
+  "capturedOn": "2026-09-14",
+  "verifierBaseCommit": "0685868e0a8b26929f6cff3c2722e54143f07db8",
+  "node": "24.19.0",
+  "source": "Public HTTP responses exercised by the existing API tests. Response bodies preserved; only content-type and link headers retained. Redirects were followed during capture. No private signing keys included.",
+  "responses": {
+    "https://id.gs1.org/.well-known/did.json": {
+      "file": "gs1-did.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "sha256": "1e1e89d04cb9f047088d80c9e1e511e71345954d22859bdcbb2c8a37fe5f7478"
+    },
+    "https://ipfs.io/ipfs/QmSsQwjhtA86KEAdUoUpwqHysTiTmoScdUes5BcjTEmHEf": {
+      "file": "ipfs-QmSsQwjhtA86KEAdUoUpwqHysTiTmoScdUes5BcjTEmHEf.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json"
+      },
+      "sha256": "3751ae9314bc976a623c109c1598d1c12b7c83d9f60b92302f0f1d6c98b108d3"
+    },
+    "https://ipfs.ssi.eecc.de/ipfs/QmSsQwjhtA86KEAdUoUpwqHysTiTmoScdUes5BcjTEmHEf": {
+      "file": "ipfs-QmSsQwjhtA86KEAdUoUpwqHysTiTmoScdUes5BcjTEmHEf.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json"
+      },
+      "sha256": "3751ae9314bc976a623c109c1598d1c12b7c83d9f60b92302f0f1d6c98b108d3"
+    },
+    "https://raw.githubusercontent.com/european-epc-competence-center/jsonld-context/refs/heads/main/context/render-method": {
+      "file": "eecc-render-method-context.json",
+      "status": 200,
+      "headers": {
+        "content-type": "text/plain; charset=utf-8"
+      },
+      "sha256": "8801904155aca30ee0c3f12b19919a5ab78543e5996f5b3169557427d2bf8d19"
+    },
+    "https://ref.gs1.org/gs1/vc/declaration-context": {
+      "file": "gs1-declaration-context.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/ld+json"
+      },
+      "sha256": "872c2ac7cb1043a87458a2e34b6300d01ba38caa663f2e9dd5c8fe8b61fc2e77"
+    },
+    "https://ref.gs1.org/gs1/vc/licence-context": {
+      "file": "gs1-licence-context.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/ld+json"
+      },
+      "sha256": "f3e607447a02bc1b78d7e6f3f58fde00ba1b4d5c8c1981dc4188c2cb9b920222"
+    },
+    "https://ref.gs1.org/gs1/vc/licence-context/": {
+      "file": "gs1-licence-context.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/ld+json"
+      },
+      "sha256": "f3e607447a02bc1b78d7e6f3f58fde00ba1b4d5c8c1981dc4188c2cb9b920222"
+    },
+    "https://ref.gs1.org/gs1/vc/license-context": {
+      "file": "gs1-license-context.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/ld+json"
+      },
+      "sha256": "92031d273013f57a3dc3975fe591ce1cab46ced1c20e3ec6559812e90a282661"
+    },
+    "https://ssi.eecc.de/.well-known/did.json": {
+      "file": "eecc-did.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/ld+json; charset=utf-8"
+      },
+      "sha256": "4c527abce1ec120f3d29e71eba27af6bbb7a67afbffda6ed95e46042350109d1"
+    },
+    "https://ssi.eecc.de/api/registry/context": {
+      "file": "eecc-context.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/ld+json; charset=utf-8"
+      },
+      "sha256": "acef2d7554b314f87ab48b7355c2c2c8b1678292d11040c031008208c34e36ef"
+    },
+    "https://ssi.eecc.de/api/registry/vc/revocation/did:web:ssi.eecc.de/1": {
+      "file": "eecc-status-list-2021-revoked.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "sha256": "51bd00bd5e8fe5aedd22e9c275afbcd900fa0ae9951e14fa6a1e7c37d73e3aad"
+    },
+    "https://ssi.eecc.de/api/registry/vc/suspension/did:web:ssi.eecc.de/1": {
+      "file": "eecc-status-list-2021-suspended.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "sha256": "c63adc4192ee40393195924ef530bdf2426d535fa5144949d1ef6da181a9d6fd"
+    },
+    "https://uncefact.github.io/project-vckit/test-and-development/did.json": {
+      "file": "vckit-did.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "sha256": "c66a447681d985790be62426f57bd690324c86ea4c7664b61ae75a68803aca74"
+    },
+    "https://vckit.untp.showthething.com/credentials/status/bitstring-status-list/3": {
+      "file": "vckit-status-unavailable.json",
+      "status": 500,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "sha256": "a3bd021c224a01db6e64668b3c1dc14f6d6d25cd248f290779a21078af16db68"
+    },
+    "https://w3id.org/security/suites/ed25519-2020/v1": {
+      "file": "ed25519-2020-context.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/ld+json"
+      },
+      "sha256": "b9e1ab971fd8bf2c7553e0c4a9438e0b9450afde1ea1ca5b2492368b9f549588"
+    },
+    "https://w3id.org/security/suites/jws-2020/v1": {
+      "file": "jws-2020-context.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "sha256": "d648e05ddc6577827ca2bfd5e931f53e9ebc6e52a57a8da81df4ec8c46ffcd1e"
+    },
+    "https://w3id.org/vc-revocation-list-2020/v1": {
+      "file": "revocation-list-2020-context.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/ld+json"
+      },
+      "sha256": "9fe1e5bd6d2f709e4628947c86455f2d97204e07ed7b7ae51d559e35e5238e9d"
+    },
+    "https://w3id.org/vc/render-method/v1": {
+      "file": "render-method-v1-context.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/ld+json"
+      },
+      "sha256": "cd956f52a88c7008db9d58cffed527862fdee8280a9688065ac387043904ce73"
+    },
+    "https://www.w3.org/2018/credentials/v1": {
+      "file": "credentials-v1-context.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/ld+json"
+      },
+      "sha256": "ab4ddd9a531758807a79a5b450510d61ae8d147eab966cc9a200c07095b0cdcc"
+    },
+    "https://www.w3.org/ns/credentials/status/v1": {
+      "file": "credential-status-v1-context.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/ld+json"
+      },
+      "sha256": "fda5add353231e6a6884a46b12e6c75464281900cb348284d9c360f62381d9f7"
+    },
+    "https://www.w3.org/ns/credentials/v2": {
+      "file": "credentials-v2-context.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/ld+json"
+      },
+      "sha256": "59955ced6697d61e03f2b2556febe5308ab16842846f5b586d7f1f7adec92734"
+    },
+    "https://fixtures.example/status/revocation-list-2020": {
+      "file": "generated-revocation-list-2020.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/ld+json"
+      },
+      "sha256": "a306a32dcda99638921ffe3ea415285d121cefc8d75faad7ca313979c86dc9e8",
+      "source": "Generated locally on 2026-09-14 with @digitalbazaar/vc and @digitalbazaar/vc-revocation-list. Signed with an ephemeral Ed25519 key whose private material was discarded; index 1 is unrevoked. See ../legacy/README.md."
+    }
+  }
+}

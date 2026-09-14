@@ -1,0 +1,32 @@
+{
+  "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia",
+  "verificationMethod": [
+    {
+      "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia#companyPrefix",
+      "type": "JsonWebKey",
+      "controller": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia",
+      "publicKeyJwk": {
+        "key_ops": [
+          "verify"
+        ],
+        "ext": true,
+        "kty": "EC",
+        "x": "hICdIQhLLPQUWhrjL3UZtKEhwHfk0qMqzB4GhXvdLMk",
+        "y": "ncgaOb7OC9aNCBlolrZi2SWlVargVjoT1aLi6m_xUPM",
+        "crv": "P-256"
+      }
+    }
+  ],
+  "controller": [
+    "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia"
+  ],
+  "@context": [
+    "https://www.w3.org/ns/did/v1"
+  ],
+  "assertionMethod": [
+    "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia#companyPrefix"
+  ],
+  "authentication": [
+    "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia#companyPrefix"
+  ]
+}

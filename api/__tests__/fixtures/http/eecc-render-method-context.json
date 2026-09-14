@@ -1,0 +1,29 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+    
+    "TemplateRenderMethod": "https://w3id.org/vc/render-method#TemplateRenderMethod",
+    "OpenAttestationEmbeddedRenderer": "https://w3id.org/vc/render-method#OpenAttestationEmbeddedRenderer",
+    
+    "renderSuite": {
+      "@id": "https://w3id.org/vc/render-method#renderSuite",
+      "@type": "http://www.w3.org/2001/XMLSchema#string"
+    },
+    
+    "renderProperty": {
+      "@id": "https://w3id.org/vc/render-method#renderProperty",
+      "@type": "http://www.w3.org/2001/XMLSchema#string",
+      "@container": "@list"
+    },
+    
+    "template": {
+      "@id": "https://w3id.org/vc/render-method#template"
+    },
+    
+    "rendererName": {
+      "@id": "https://w3id.org/vc/render-method#rendererName",
+      "@type": "http://www.w3.org/2001/XMLSchema#string"
+    }
+  }
+}

@@ -8,7 +8,7 @@
     "dev": "tsc-watch --onSuccess 'nodemon ./dist/index.js'",
     "copy-schemas": "copyfiles -u 1 \"src/services/verifier/schemas/*.json\" dist",
     "build-tsc": "npx tsc && npm run copy-schemas",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --verbose --coverage --detectOpenHandles --forceExit"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --verbose --coverage --detectOpenHandles"
   },
   "repository": {
     "type": "git",
