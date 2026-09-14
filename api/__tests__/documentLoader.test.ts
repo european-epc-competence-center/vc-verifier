@@ -74,6 +74,164 @@ describe("DID document resolution", () => {
     });
   });
 
+  test.each(["#key-1", "key-1"])(
+    "normalizes the verification method ID %s without mutating the source",
+    async (methodId) => {
+      const sourceDocument = {
+        "@context": "https://www.w3.org/ns/did/v1",
+        id: did,
+        verificationMethod: [
+          {
+            id: methodId,
+            type: "JsonWebKey2020",
+            controller: did,
+            publicKeyJwk: { kty: "EC" },
+          },
+        ],
+        assertionMethod: [methodId],
+      };
+      const originalDocument = structuredClone(sourceDocument);
+      resolveMock.mockResolvedValue({
+        didResolutionMetadata: {},
+        didDocument: sourceDocument,
+        didDocumentMetadata: {},
+      });
+
+      const result = await documentLoader(verificationMethodId);
+
+      expect(result.document.id).toBe(verificationMethodId);
+      expect(sourceDocument).toEqual(originalDocument);
+    }
+  );
+
+  test("normalizes verification relationship references in returned DID documents", async () => {
+    const sourceDocument = {
+      "@context": "https://www.w3.org/ns/did/v1",
+      id: did,
+      verificationMethod: [{ id: "#key-1", controller: did }],
+      assertionMethod: ["#key-1"],
+    };
+    resolveMock.mockResolvedValue({
+      didResolutionMetadata: {},
+      didDocument: sourceDocument,
+      didDocumentMetadata: {},
+    });
+
+    const result = await documentLoader(did);
+
+    expect(result.document.verificationMethod[0].id).toBe(
+      verificationMethodId
+    );
+    expect(result.document.assertionMethod).toEqual([verificationMethodId]);
+    expect(sourceDocument.verificationMethod[0].id).toBe("#key-1");
+    expect(sourceDocument.assertionMethod).toEqual(["#key-1"]);
+  });
+
+  test("finds a verification method embedded in a relationship", async () => {
+    resolveMock.mockResolvedValue({
+      didResolutionMetadata: {},
+      didDocument: {
+        "@context": "https://www.w3.org/ns/did/v1",
+        id: did,
+        assertionMethod: [
+          {
+            id: "#key-1",
+            type: "JsonWebKey2020",
+            controller: did,
+            publicKeyJwk: { kty: "EC" },
+          },
+        ],
+      },
+      didDocumentMetadata: {},
+    });
+
+    const result = await documentLoader(verificationMethodId);
+
+    expect(result.document).toMatchObject({
+      id: verificationMethodId,
+      controller: did,
+      "@context": "https://www.w3.org/ns/did/v1",
+    });
+  });
+
+  test("does not treat a relationship reference object as another method", async () => {
+    resolveMock.mockResolvedValue({
+      didResolutionMetadata: {},
+      didDocument: {
+        "@context": "https://www.w3.org/ns/did/v1",
+        id: did,
+        verificationMethod: [
+          {
+            id: verificationMethodId,
+            type: "JsonWebKey2020",
+            controller: did,
+            publicKeyJwk: { kty: "EC" },
+          },
+        ],
+        assertionMethod: [{ id: "#key-1" }],
+      },
+      didDocumentMetadata: {},
+    });
+
+    const result = await documentLoader(verificationMethodId);
+
+    expect(result.document).toMatchObject({
+      id: verificationMethodId,
+      type: "JsonWebKey2020",
+      controller: did,
+    });
+  });
+
+  test("rejects an unknown verification method", async () => {
+    resolveMock.mockResolvedValue(successfulResolution());
+
+    await expect(documentLoader(`${did}#unknown`)).rejects.toThrow(
+      "unknown is an unknown verification method"
+    );
+  });
+
+  const embeddedMethod = {
+    id: "#key-1",
+    type: "JsonWebKey2020",
+    controller: did,
+  };
+
+  test.each([
+    [
+      "differing definitions",
+      {
+        verificationMethod: [
+          { id: verificationMethodId, type: "Multikey", controller: did },
+        ],
+        assertionMethod: [embeddedMethod],
+      },
+    ],
+    [
+      "identical embedded copies",
+      {
+        assertionMethod: [embeddedMethod],
+        authentication: [embeddedMethod],
+      },
+    ],
+  ])(
+    "rejects a verification method ID defined more than once (%s)",
+    async (_case: string, methods: Record<string, unknown>) => {
+      resolveMock.mockResolvedValue({
+        didResolutionMetadata: {},
+        didDocument: {
+          "@context": "https://www.w3.org/ns/did/v1",
+          id: did,
+          ...methods,
+        },
+        didDocumentMetadata: {},
+      });
+
+      await expect(documentLoader(verificationMethodId)).rejects.toThrow(
+        "key-1 is defined more than once"
+      );
+    }
+  );
+
   test("rejects resolver error metadata even when a document is present", async () => {
     resolveMock.mockResolvedValue({
       didResolutionMetadata: {
