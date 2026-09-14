@@ -1,6 +1,6 @@
 # Plan: did:webvh verification with didwebvh-ts 3.0.0
 
-**Status:** Ready to implement against a locally built, pinned upstream snapshot. Keep the webvh feature branch unmerged until the published npm package passes release validation. This document is a plan; no feature implementation is implied.
+**Status:** Implementation in progress against a locally built, pinned upstream snapshot. Keep the webvh feature branch unmerged until the published npm package passes release validation.
 
 **Basis:** Reviewed on 2026-09-10 against verifier commit `c4e712d` (API 3.6.4) and upstream [`80b3901`](https://github.com/decentralized-identity/didwebvh-ts/tree/80b3901cf5168967d82b3f5a6d231f7d25496c71). On 2026-09-11, direct upstream and npm checks reported HEAD [`3a9f65f`](https://github.com/decentralized-identity/didwebvh-ts/tree/3a9f65fd838cf750422add545c3d3a314dc61dd1), a source package version of 3.0.0, and npm latest 2.8.0. The newer manifest uses pnpm 11.13.0, TypeScript, and Vitest. The detailed code investigation below refers to `80b3901`; review the intervening changes before selecting the implementation snapshot. A source version of 3.0.0 does not identify the eventual npm release contents.
 
@@ -10,7 +10,14 @@ Add `did:webvh` to the verifier's existing DID resolution and credential verific
 
 `didwebvh-ts` validates the DID log: SCID, history hashes, update signatures, key transitions, and required witnesses. The verifier still checks the credential signature, issuer or holder authorization, and credential status. Log update keys are not automatically credential signing keys; no new VC cryptosuite is needed just to support this DID method.
 
-For the first release, verify against the **latest active DID state**. Historical credential verification, persistent DID caching, and browser-side wallet validation are separate follow-ups. Reject explicit webvh history selectors rather than silently ignoring them or selecting old keys from a credential's claimed signing time.
+For normal verification, resolve the DID URL through the upstream resolver; an unqualified DID resolves to its latest state. This integration does not add a verifier-specific policy for historical selectors, so explicit selectors follow the upstream resolver's behavior. Persistent DID caching and browser-side wallet validation are separate follow-ups.
+
+### Current implementation checkpoint (2026-09-14)
+
+- The pinned development artifact, resolver v5 alignment, Node 24 CI switch, resolution-result validation, and webvh resolver registration are committed.
+- Verification-method lookup (checklist step 7) is currently a working-tree/WIP change.
+- Wallet interoperability fixtures (step 6) remain outstanding and can be added when suitable wallet output is available.
+- A Node 22 CI matrix and verifier-specific historical-selector handling are not in scope for this integration.
 
 ## Development dependency and branch workflow
 
@@ -180,7 +187,6 @@ Keep the regression suite focused on these outcomes:
 | Freshness | A subsequent verification sees rotation/deactivation; key and controller checks within one verification use consistent state |
 | Existing methods/formats | Current `did:web`, Ed25519/P-256 `did:key`, JWT, JSON-LD, and envelope fixtures still pass |
 | Existing application behavior | Challenge/domain/holder options, revocation/suspension, mixed-method status lists, GS1 trusted roots, and API result shapes remain unchanged |
-| Initial scope | Explicit webvh historical selectors are rejected clearly; no automatic retry with old keys |
 
 Use the existing Jest setup and restore mocked native fetch after tests. Keep time-sensitive fixtures deterministic. There is no need to reproduce the library's entire conformance suite in this repository.
 
@@ -208,9 +214,10 @@ The technical sections above define behavior; this checklist defines commit boun
    - Verify package imports/exports and clean API installation/build; build the production image from the repository's normal build context.
    - Done when this checkout can consume the artifact without the upstream source directory. If resolver v5 alignment is needed, insert a separate dependency/test commit here.
 
-3. **`ci: validate the API on Node 24`**
-   - The existing test workflow uses Node 22 while production uses Node 24. Add Node 24 build/test coverage, retaining Node 22 coverage initially to avoid changing support policy in this feature.
-   - Done when the workflow runs the build and tests for the production runtime as well as the existing runtime.
+3. **`ci: use Node 24`**
+   - Run the existing API test workflow on Node 24, matching the production runtime used for this feature branch.
+   - A Node 22 compatibility matrix is not part of this integration plan.
+   - Done when the API tests execute on Node 24.
 
 4. **`fix: reject failed or inactive DID resolution`**
    - Retain and validate full resolution results in the loader before returning a document/key. Preserve useful errors in serialized API responses.
@@ -218,8 +225,8 @@ The technical sections above define behavior; this checklist defines commit boun
    - Done when neither JWT nor JSON-LD paths can treat failed resolution as usable key material.
 
 5. **`feat: register the webvh resolver`**
-   - Register the snapshot adapter alongside web/key, disable persistent resolver caching, and reject explicit webvh historical selectors before resolving them.
-   - Test dispatch, selector rejection, and absence of fallback on webvh failure. Existing web/key dispatch must still pass.
+   - Register the snapshot adapter alongside web/key and disable persistent resolver caching.
+   - Test dispatch and absence of fallback on webvh failure. Existing web/key dispatch must still pass.
    - Done when basic webvh resolution works on the branch. Full verification readiness still depends on the later commits.
 
 6. **`test: add wallet webvh interoperability fixtures`**
@@ -275,7 +282,7 @@ The technical sections above define behavior; this checklist defines commit boun
     - Done when the published artifact satisfies the merge gate.
 
 16. **`docs: document webvh support and authorization corrections`**
-    - Update release notes with latest-active-state behavior, unsupported history selectors, and intentional rejection of previously accepted unauthorized credentials. Record final validation evidence.
+    - Update release notes with `did:webvh` support and the intentional rejection of previously accepted unauthorized credentials. Record final validation evidence.
     - Done when the feature branch is ready for final review and merge. Deployment follows the existing release process after staging validation; use a pinned verifier image.
 
 Keep a previous tested image available for rollback. Rolling back removes webvh support, so coordinate issuer rollout accordingly; do not add an automatic fallback to did:web verification.
@@ -291,4 +298,4 @@ Keep a previous tested image available for rollback. Rolling back removes webvh 
 
 The original investigation confirmed resolver v4/v5 compatibility in a probe, reproduced the Ed25519 Multikey decoding failure, and ran 52 upstream tests successfully. This evidence applies to the earlier reviewed snapshot; it does not replace testing the selected development artifact or the published package in this verifier.
 
-Defer historical credential verification, persistent caching, and wallet frontend DID validation. Historical resolution alone is insufficient: key and controller authorization must use the intended version, with an explicit policy for later deactivation and untrusted signing timestamps. No detailed implementation of these follow-ups is required for this release.
+Defer any verifier-specific historical credential policy, persistent caching, and wallet frontend DID validation. No detailed implementation of these follow-ups is required for this release.
