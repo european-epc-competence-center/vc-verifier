@@ -11,9 +11,10 @@ export class TTLCache<T> {
     this.ttlMs = ttlHours * 60 * 60 * 1000; // Convert hours to milliseconds
     
     // Clean up expired entries every 5 minutes
+    // Housekeeping must not keep an otherwise idle process alive.
     setInterval(() => {
       this.cleanup();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000).unref();
   }
 
   set(key: string, value: T): void {

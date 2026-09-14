@@ -1,0 +1,29 @@
+{
+  "type": [
+    "VerifiableCredential",
+    "BitstringStatusListCredential"
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "created": "2026-03-09T23:55:26Z",
+    "verificationMethod": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:eecc#bpp_vc_issuance",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z5ivq312yLi2UHBjXpsR1wW6RzadPuxvJJQfXDTpZD1CxvD5iewviaPzREHD6HTM5cJpsTEGyBwcCGs6A41NP7rcc",
+    "cryptosuite": "ecdsa-rdfc-2019"
+  },
+  "issuer": {
+    "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:eecc",
+    "name": "EECC"
+  },
+  "credentialSubject": {
+    "id": "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/2a6afdb9-e632-4a43-9c31-683930f82284#list",
+    "statusPurpose": "revocation",
+    "type": "BitstringStatusList",
+    "encodedList": "H4sIAAAAAAAA_-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+  },
+  "id": "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/2a6afdb9-e632-4a43-9c31-683930f82284",
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://www.w3.org/ns/credentials/status/v1"
+  ]
+}

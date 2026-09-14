@@ -3,6 +3,8 @@ const config = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
   setupFiles: ['<rootDir>/jest.setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/test-support/setup-http.ts'],
+  coveragePathIgnorePatterns: ['/node_modules/', '<rootDir>/test-support/'],
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
@@ -17,7 +19,7 @@ const config = {
       },
     ],
   },
-  testTimeout: 60000
+  testTimeout: 10000
 };
 
 export default config;

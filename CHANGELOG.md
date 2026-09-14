@@ -3,6 +3,16 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+### Added
+- Support for the `did:webvh` DID method: JWT and JSON-LD credentials signed with a `did:webvh` key are verified against its validated DID log; an invalid log or a deactivated DID is rejected
+
+### Fixed
+- DID resolution errors reported as resolver metadata are no longer ignored, including when the resolver also returns a document; resolution now fails with the resolver's error code and detail, and that reason appears in the API response instead of a later, unrelated error
+- Verification methods are matched against the requested DID and are also found when referenced by fragment (`#key-1`) or embedded in a verification relationship
+
+### Changed
+- API tests and CI run on Node 24
+
 ## 3.6.4 (2026-08-24)
 
 - bump `@eecc/vc-verifier-rules` to 2.8.0

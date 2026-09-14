@@ -1,0 +1,29 @@
+{
+  "type": [
+    "VerifiableCredential",
+    "BitstringStatusListCredential"
+  ],
+  "proof": {
+    "type": "DataIntegrityProof",
+    "created": "2026-03-09T23:54:47Z",
+    "verificationMethod": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_germany#no_secret",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z3Yq2trr5jWAhSLNsjC8WcekYXDdH2k4LYCimYnLy79hzebG1feaUzDVfGaoUBqquR9hzdVgEKHghreq6RQt1wwnc",
+    "cryptosuite": "ecdsa-rdfc-2019"
+  },
+  "issuer": {
+    "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_germany",
+    "name": "GS1 Germany"
+  },
+  "credentialSubject": {
+    "id": "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/b62c5591-5d85-4b91-abb0-816a326b0c7a#list",
+    "statusPurpose": "revocation",
+    "type": "BitstringStatusList",
+    "encodedList": "H4sIAAAAAAAA_-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+  },
+  "id": "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/b62c5591-5d85-4b91-abb0-816a326b0c7a",
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://www.w3.org/ns/credentials/status/v1"
+  ]
+}

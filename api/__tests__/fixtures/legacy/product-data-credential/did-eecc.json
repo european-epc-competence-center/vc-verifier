@@ -1,0 +1,49 @@
+{
+  "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:eecc",
+  "verificationMethod": [
+    {
+      "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:eecc#key-1",
+      "type": "JsonWebKey",
+      "controller": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:eecc",
+      "publicKeyJwk": {
+        "key_ops": [
+          "verify"
+        ],
+        "ext": true,
+        "kty": "EC",
+        "x": "4ykM8ilKz9ebvOouOg477iLIxGlIJYO_4dGTYPuNF5Q",
+        "y": "_0PZWyl-DHLRLbkzlsQnw2B3vGO03QCzWICbFxUq5E8",
+        "crv": "P-256"
+      }
+    },
+    {
+      "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:eecc#bpp_vc_issuance",
+      "type": "JsonWebKey",
+      "controller": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:eecc",
+      "publicKeyJwk": {
+        "key_ops": [
+          "verify"
+        ],
+        "ext": true,
+        "kty": "EC",
+        "x": "p41e6X6rMB9Kz76yigwqnJpZZFZtv57O4MSk3l0Gxpo",
+        "y": "XYAm9WLnBIJ-hS3rOh3GVVZXv8JsunXB1jevG24EFqY",
+        "crv": "P-256"
+      }
+    }
+  ],
+  "controller": [
+    "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:eecc"
+  ],
+  "@context": [
+    "https://www.w3.org/ns/did/v1"
+  ],
+  "assertionMethod": [
+    "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:eecc#key-1",
+    "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:eecc#bpp_vc_issuance"
+  ],
+  "authentication": [
+    "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:eecc#key-1",
+    "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:eecc#bpp_vc_issuance"
+  ]
+}

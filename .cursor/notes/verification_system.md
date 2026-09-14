@@ -435,20 +435,32 @@ const gs1ValidatorRequest = {
 
 ### DID Resolution
 
-**Supported Methods**:
+**Supported Methods** (registered in `documentLoader/didresolver.ts`, resolver cache off):
 - `did:web` - via `web-did-resolver`
-- `did:key` - via `@digitalbazaar/did-method-key`
+- `did:key` - via `@digitalbazaar/did-method-key` (`documentLoader/custom/key.ts`)
+- `did:webvh` - via `didwebvh-ts`, wrapped by `documentLoader/custom/webvh.ts`
 
-**Resolution Process**:
-1. Check cache
-2. Resolve via appropriate resolver
-3. Cache result
-4. Return DID document
+**`did:webvh` specifics**: the library fetches the append-only `did.jsonl` log with
+native `fetch` and validates SCID derivation, the entry hash chain, and each entry's
+`eddsa-jcs-2022` update-key proof before the latest state becomes the DID document.
+The local adapter exists only because the published 2.8.0 ships no `did-resolver`
+binding and no verifier; see the file header for the mapping, the injected strict
+Ed25519 verifier, and the upgrade path. A valid log proves DID history integrity,
+not that a key may issue for a given issuer.
 
-**Verification Method Extraction**:
-- If URL has fragment (e.g., `did:web:example.com#key-1`)
-- Extract specific verification method
-- Inherit context from parent DID document
+**Resolution Process** (`documentLoader/index.ts`):
+1. Resolve the DID URL, retaining the full resolution result
+2. Reject `didResolutionMetadata.error` (even with a document present), a
+   `deactivated` DID, and a missing document, as `DIDResolutionError` carrying the
+   resolver's code and detail
+3. Normalize the document (`documentLoader/didDocument.ts`) and return it, or
+   dereference the requested key. DID documents are not cached.
+
+**Verification Method Extraction** (`didDocument.ts`):
+- Matches the requested DID URL, not the resolved document's own `id`
+- Handles fragment-relative (`#key-1`) and bare-fragment IDs and methods embedded
+  in verification relationships; fails on unknown or duplicated IDs
+- Returns a copy carrying the DID document's context
 
 ### IPFS Support
 

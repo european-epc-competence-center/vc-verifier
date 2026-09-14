@@ -1,0 +1,55 @@
+{
+  "type": [
+    "VerifiableCredential",
+    "GS1PrefixLicenseCredential"
+  ],
+  "proof": {
+    "type": "JsonWebSignature2020",
+    "created": "2025-11-14T08:02:15Z",
+    "verificationMethod": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global#prefixe",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z5Rt4AbjehhmWFeJtXSUJZq6BsUErmvg7Wj5AuSvYozBv3zCooAZajn4F6i6KgiWNkKwzxGujbQXiVsiCSt5SnPXN"
+  },
+  "issuer": {
+    "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_global",
+    "name": "GS1 Global"
+  },
+  "credentialSubject": {
+    "id": "did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_utopia",
+    "alternativeLicenseValue": "951",
+    "licenseValue": "0951",
+    "organization": {
+      "gs1:partyGLN": "0951000000005",
+      "gs1:organizationName": "GS1 Utopia"
+    }
+  },
+  "id": "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/vc/license/gs1_prefix/0951",
+  "validFrom": "2025-11-14T08:01:53Z",
+  "credentialStatus": {
+    "id": "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/e2daaf0a-b6c3-4ed1-89b0-77d2505e182a#121874",
+    "type": "BitstringStatusListEntry",
+    "statusPurpose": "revocation",
+    "statusListIndex": "121874",
+    "statusListCredential": "https://company-wallet-dev.prod-k8s.eecc.de/api/registry/status/revocation/e2daaf0a-b6c3-4ed1-89b0-77d2505e182a"
+  },
+  "credentialSchema": {
+    "id": "https://id.gs1.org/vc/schema/v1/prefix",
+    "type": "JsonSchema"
+  },
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://ref.gs1.org/gs1/vc/license-context",
+    "https://w3id.org/vc/render-method/v1",
+    "https://w3id.org/security/suites/jws-2020/v1"
+  ],
+  "renderMethod": [
+    {
+      "type": "SvgRenderingTemplate2023",
+      "id": "https://gs1.github.io/GS1DigitalLicenses/templates/gs1-sample-license-template.svg",
+      "name": "Web Display",
+      "css3MediaQuery": "@media (min-aspect-ratio: 3/1)"
+    }
+  ],
+  "name": "GS1 Prefix License",
+  "description": "Verifies the authorized assignment of a GS1 prefix to a Member Organization by GS1 Global. This credential establishes the foundational authority that enables the Member Organization to issue Company Prefix Licenses to member companies within their geographic region or market sector. The prefix forms the basis for creating globally unique identifiers in the GS1 system."
+}

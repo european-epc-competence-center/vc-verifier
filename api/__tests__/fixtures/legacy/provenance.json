@@ -1,0 +1,150 @@
+{
+  "createdOn": "2026-09-14",
+  "formatting": "JSON literals were formatted; compact JWT values are unchanged with one trailing newline in the file. The generated status presentation is the only replacement.",
+  "fixtures": {
+    "credential/revoked2020-credential.json": {
+      "source": "api/__tests__/credential.test.ts: revoked2020Credential at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "c5d10b8ef175a4d04c33423ec4dabdb9a531509b96c412d8266b354d290ac98f"
+    },
+    "credential/revoked2021-credential.json": {
+      "source": "api/__tests__/credential.test.ts: revoked2021Credential at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "22e4ab3caea41930c8929bc1ee087822549140c6abee4e0f15dfa67b9f51c641"
+    },
+    "credential/suspended2021-credential.json": {
+      "source": "api/__tests__/credential.test.ts: suspended2021Credential at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "de65ba48c5069df1cb8f7b90625343f4415cb8f1563658e11f2e827334701eca"
+    },
+    "credential/multi-status-credential.json": {
+      "source": "api/__tests__/credential.test.ts: multiStatusCredential at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "e43f65d0d288d197b9f2f0236a5b0903ff1b60e30fe4deedc818e534f15c6d51"
+    },
+    "credential/sdcredential.json": {
+      "source": "api/__tests__/credential.test.ts: SDCredential at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "01ff2dfb1511b4a00fc95c28d76e6f614ebfff932024645b7ce41b0f7d1f2cf5"
+    },
+    "credential/gs1-licence-credential.json": {
+      "source": "api/__tests__/credential.test.ts: GS1LicenceCredential at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "a976031210558d58ea1f5b6c8e75d711cf46ad9e2af41833a83d5432b706ecaa"
+    },
+    "presentation/multi-presentation.json": {
+      "source": "api/__tests__/presentation.test.ts: multiPresentation at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "a896005c8008ac096d949e51d2f5972ab65de2f6e7dd403c1317488424dfd6ce"
+    },
+    "presentation/domain-presentation.json": {
+      "source": "api/__tests__/presentation.test.ts: domainPresentation at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "ab77c7c91b5deef652e630da3eaaa983f42578662af15f2e0e0522de0697a0ac"
+    },
+    "presentation/status-presentation.json": {
+      "source": "Generated replacement; see README.md",
+      "sha256": "5f702f81923963b1db579fbd1014945c72135eee7074550ab0c338752663f88d"
+    },
+    "enveloped/enveloped-credential.json": {
+      "source": "api/__tests__/enveloped.test.ts: envelopedCredential at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "240e2430659f103b664e91d6a84101507f6640f9db4329e5457f769361afd18d"
+    },
+    "jwt/valid-key-credential-as-jwt.jwt": {
+      "source": "api/__tests__/jwt.test.ts: validKeyCredentialAsJwt at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "c0e437399dfd1102ee43e99e61d63a2299f8276d090a4f9db75e314e5300ec1e"
+    },
+    "jwt/valid-company-prefix-license-as-jwt.jwt": {
+      "source": "api/__tests__/jwt.test.ts: validCompanyPrefixLicenseAsJwt at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "82a4ae23e5d7ac9a750f2a9dcd4d1d8de6ae6861d062158f0104946119dbec2c"
+    },
+    "jwt/valid-prefix-license-as-jwt.jwt": {
+      "source": "api/__tests__/jwt.test.ts: validPrefixLicenseAsJwt at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "855af8b06a98fd6290b4f56eb7a49064fbd17824e345a005dcc6289c341fd448"
+    },
+    "jwt/key-credential-status-list-as-jwt.jwt": {
+      "source": "api/__tests__/jwt.test.ts: keyCredentialStatusListAsJwt at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "ec8e14449c7d8e5a0f9bb280e71abefd64dd3ec7255f89e3fddacfbbe56632fa"
+    },
+    "jwt/company-prefix-license-status-list-as-jwt.jwt": {
+      "source": "api/__tests__/jwt.test.ts: companyPrefixLicenseStatusListAsJwt at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "2bade69bf0bedfaa5385cbf88f6928dfc95e648a3e25565ebe855952ddaa8634"
+    },
+    "jwt/gs1-prefix-license-status-list-as-jwt.jwt": {
+      "source": "api/__tests__/jwt.test.ts: gs1PrefixLicenseStatusListAsJwt at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "66c0795cb2789788441c7dcc0d3c4553d0401176d57b625c7d94699dbddee755"
+    },
+    "jwt/did-gs1-company.json": {
+      "source": "api/__tests__/jwt.test.ts: did_gs1_company at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "785a2bf1a3ab390555bb3fcca2fe5cdcb253a480c9e48f96056afe461fafee05"
+    },
+    "jwt/did-gs1-utopia.json": {
+      "source": "api/__tests__/jwt.test.ts: did_gs1_utopia at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "bdeb9433cb6c930d65c3a0907b518d79b1f1c282ede1d62bdd7f06824b04c0ee"
+    },
+    "jwt/did-gs1-global.json": {
+      "source": "api/__tests__/jwt.test.ts: did_gs1_global at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "97a03d826176a1597339b9dfbbe079a24a7cfc375cb505194d3dee86d2823488"
+    },
+    "gs1/did-gs1-org.json": {
+      "source": "api/__tests__/gs1.test.ts: did_gs1_org at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "970b037bdedea9d9692750817cff0fa301e49855d18ff749c63d548fdef8ddaf"
+    },
+    "gs1/licence-key-credential.json": {
+      "source": "api/__tests__/gs1.test.ts: licenceKeyCredential at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "3412edfbc3b4f0cda2d476bdc9d602f098ab9306491d2891c9dde85babcb93e3"
+    },
+    "gs1/company-prefix-credential.json": {
+      "source": "api/__tests__/gs1.test.ts: companyPrefixCredential at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "c1203268d10d6d3771ef8a69ea433d5905941e677b7af9cf49d7f515157bab62"
+    },
+    "gs1/org-data-credential-presentation.json": {
+      "source": "api/__tests__/gs1.test.ts: orgDataCredentialPresentation at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "29816818f57275fc2eec1257a0a4497a56a9313a8f1ffbbe78aeff7908518c5e"
+    },
+    "es256-json-ld/gs1-prefix-license-json-ld.json": {
+      "source": "api/__tests__/es256-json-ld.test.ts: gs1PrefixLicenseJsonLD at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "ef85937a66ec3290409fd12de7ec7b97f82f0816aee716c562f739673b9ff6f2"
+    },
+    "es256-json-ld/status-list-credential-jwt.jwt": {
+      "source": "api/__tests__/es256-json-ld.test.ts: statusListCredentialJWT at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "3d1e9609dfdf17c94aa3d5cedb6b4ca6bdc13046a9bbb4564ab59243fb879243"
+    },
+    "es256-json-ld/did-gs1-global.json": {
+      "source": "api/__tests__/es256-json-ld.test.ts: did_gs1_global at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "fabb5ccdb9c841b49d09de606092d56d7650f6ee224adbfa3f571300a04ff4d8"
+    },
+    "product-data-credential/product-data-credential-as-jwt.jwt": {
+      "source": "api/__tests__/product-data-credential.test.ts: productDataCredentialAsJwt at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "7b40c8dd0a595c6b0a9ae9525aeb54c971f763e12e9db4dadd9632fb73234424"
+    },
+    "product-data-credential/key-credential.json": {
+      "source": "api/__tests__/product-data-credential.test.ts: keyCredential at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "1ef16a9d403b33e4b0263105d4d4a0589a4d885bb055acb24ef683cddda00a14"
+    },
+    "product-data-credential/company-prefix-license-credential.json": {
+      "source": "api/__tests__/product-data-credential.test.ts: companyPrefixLicenseCredential at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "f597524b070dff444fa2f35067f476f26b820ccbcdc2c5d816e8cbd79f3c2897"
+    },
+    "product-data-credential/prefix-license-credential.json": {
+      "source": "api/__tests__/product-data-credential.test.ts: prefixLicenseCredential at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "790d81458dea44aeff3280fa0b364f77c288d20301c9ed81fe2772a65eda8ace"
+    },
+    "product-data-credential/eecc-status-list.json": {
+      "source": "api/__tests__/product-data-credential.test.ts: eeccStatusList at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "44439e5c82a4dfe373c258200606b0e96d7033f4ed6f19016a09536cbee4a833"
+    },
+    "product-data-credential/gs1-germany-status-list.json": {
+      "source": "api/__tests__/product-data-credential.test.ts: gs1GermanyStatusList at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "1be9245c872963ca298f0d2308a07054515ca62f0941e5d608806f10a5f4f3b2"
+    },
+    "product-data-credential/gs1-global-status-list.json": {
+      "source": "api/__tests__/product-data-credential.test.ts: gs1GlobalStatusList at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "898746cd711cee353c016b017bd505f4a92cfda9bcb9535a2c6747bdc0de6b37"
+    },
+    "product-data-credential/did-eecc.json": {
+      "source": "api/__tests__/product-data-credential.test.ts: did_eecc at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "410f435087d2078fb42fd66394d2e5bfdb368202643d38133c903b4673967f2e"
+    },
+    "product-data-credential/did-gs1-germany.json": {
+      "source": "api/__tests__/product-data-credential.test.ts: did_gs1_germany at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "47785ad2c08799ae8774bfb4ee2b1773484d110d276c00bec8a549228dcdf8e8"
+    },
+    "product-data-credential/did-gs1-global.json": {
+      "source": "api/__tests__/product-data-credential.test.ts: did_gs1_global at 0685868e0a8b26929f6cff3c2722e54143f07db8",
+      "sha256": "a2672515e8b3494a19ec1bb6010e529e0b13b1675da6ba975713e777c65348f2"
+    }
+  }
+}
