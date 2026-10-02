@@ -96,6 +96,7 @@ vc-verifier/
 - `VC_REGISTRY` - Credential registry URL
 - `DOCUMENT_CACHE_TTL_HOURS` - Cache TTL for dynamic documents (default: 1)
 - `GS1_GLOBAL_DID` - Trusted issuer DID for `GS1PrefixLicenseCredential` root of trust (default: `did:web:id.gs1.org`; required for non-production GS1 chains)
+- `GS1_ALLOW_DID_WEBVH_TWIN` - When not `false`, `@eecc/vc-verifier-rules` accepts a `did:webvh` issuer where its twin `did:web` is expected (GS1 Global root check stays exact)
 
 ### Frontend
 - `VUE_APP_VERIFIER_API` - Backend API URL

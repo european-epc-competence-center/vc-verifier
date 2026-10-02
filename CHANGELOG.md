@@ -3,6 +3,13 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+## 3.7.1 (2026-10-02)
+
+### Changed
+- bump `@eecc/vc-verifier-rules` to 2.10.0
+  - Accept a `did:webvh` issuer wherever its twin `did:web` is expected (`GS1_ALLOW_DID_WEBVH_TWIN=false` restores exact matching; the GS1 Global root check stays exact)
+  - Accept a company prefix that begins with the parent `alternativeLicenseValue` when it does not begin with `licenseValue` (leading-zero prefix licenses such as `0400` / `400`)
+
 ## 3.7.0 (2026-09-14)
 
 ### Added

@@ -347,7 +347,11 @@ const gs1ValidatorRequest = {
 }
 ```
 
-**Root of trust (GS1PrefixLicenseCredential issuer)** — `@eecc/vc-verifier-rules` reads `process.env.GS1_GLOBAL_DID` (default: `did:web:id.gs1.org`). Error `GS1-140` means the resolved prefix license credential issuer does not match this value. Set `GS1_GLOBAL_DID` on the **API process** (k8s deployment env / docker-compose `api.environment`). Value must match the prefix license `issuer` exactly (e.g. company-wallet dev uses `did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_go`, not `gs1_global`). Not configurable via `gs1ValidatorRequest`.
+**Root of trust (GS1PrefixLicenseCredential issuer)** — `@eecc/vc-verifier-rules` reads `process.env.GS1_GLOBAL_DID` (default: `did:web:id.gs1.org`). Error `GS1-140` means the resolved prefix license credential issuer does not match this value. Set `GS1_GLOBAL_DID` on the **API process** (k8s deployment env / docker-compose `api.environment`). Value must match the prefix license `issuer` exactly (e.g. company-wallet dev uses `did:web:company-wallet-dev.prod-k8s.eecc.de:api:registry:did:gs1_go`, not `gs1_global`). Not configurable via `gs1ValidatorRequest`. The GS1 Global root check is exact: a `did:webvh` twin is not accepted here.
+
+**`did:webvh` twin issuers** — other issuer checks accept `did:webvh:<SCID>:<host>` where `did:web:<host>` is expected. Enabled by default. Set `GS1_ALLOW_DID_WEBVH_TWIN=false` for exact matching. A `did:web` never stands in for a `did:webvh`. No DID resolution.
+
+**Company prefix vs parent license** — a company prefix may begin with the parent `alternativeLicenseValue` when it does not begin with `licenseValue` (leading-zero licenses such as `0400` / `400`). The company prefix must still be longer than the parent `licenseValue`.
 
 **What GS1 rules validation does**:
 - JSON Schema validation against locally bundled GS1 schemas (5 types: key, company-prefix, prefix, product-data, organization-data)
@@ -358,7 +362,7 @@ const gs1ValidatorRequest = {
 
 **Type compatibility** (v2.6.2+): GS1 types allow `type: string | string[] | undefined`, internal types require `type: string[]`. `normalizeVerifiable()` in `gs1.ts` converts GS1 types before passing to `Verifier.verify()`.
 
-**GS1 JWT Workaround**: `@eecc/vc-verifier-rules` uses `atob()` which fails on base64url JWTs. `credentialForGs1Rules()` in `gs1.ts` decodes via `JWTService.decodeJWT()` before `checkGS1CredentialWithoutPresentation()`. Chained credentials loaded via `loadExternalCredential` stay as JWT strings so `Verifier.verify()` can check signatures.
+**GS1 JWT input**: the rules library decodes JWTs with `jose` (`decodeJwt`). `credentialForGs1Rules()` in `gs1.ts` still pre-decodes a single credential via `JWTService.decodeJWT()` before `checkGS1CredentialWithoutPresentation()`. Chained credentials loaded via `loadExternalCredential` stay as JWT strings so `Verifier.verify()` can check signatures.
 
 **Test env**: `api/jest.setup.ts` sets `GS1_GLOBAL_DID` to the company-wallet dev issuer; `gs1.test.ts` overrides to `did:web:id.gs1.org` for production demo credentials.
 
