@@ -103,10 +103,12 @@ export const verifyRouter = Router();
  * Combined W3C cryptographic and GS1 business-rule verification response
  * @summary Response item from `POST /api/verifier/gs1`
  * @typedef {object} GS1VerificationResponse
- * @property {boolean} verified.required - `true` when both W3C verification (`results` / `statusResult`) and GS1 rules (`gs1Result`) passed
+ * @property {boolean} verified.required - `true` when both W3C verification and GS1 rules (`gs1Result`) passed. Credentials use `results` / `statusResult`; presentations use `presentationResult` / `credentialResults`
  * @property {GS1RulesResult|GS1RulesResultContainer} gs1Result.required - GS1 rules outcome: a single credential returns `GS1RulesResult`; a presentation returns `GS1RulesResultContainer`
- * @property {array<object>} results - W3C proof verification results (same structure as `POST /api/verifier`)
- * @property {object} statusResult - Revocation/suspension status check result
+ * @property {array<object>} results - W3C proof verification results for a standalone credential (same structure as `POST /api/verifier`)
+ * @property {object} statusResult - Revocation/suspension status check result for a standalone credential
+ * @property {array<object>} credentialResults - Per-credential results when verifying a presentation (same structure as `POST /api/verifier`)
+ * @property {object} presentationResult - Presentation proof result, including the holder verification method (presentations only)
  * @property {string} errorMessage - Top-level processing error when verification could not complete
  */
 

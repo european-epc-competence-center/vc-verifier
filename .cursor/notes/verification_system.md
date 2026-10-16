@@ -324,7 +324,7 @@ await checkStatus({
 2. GS1 rules validation:
    - **Credential**: `checkGS1CredentialWithoutPresentation()`
    - **Presentation**: `checkGS1CredentialPresentationValidation()`
-3. Merge results into unified response
+3. Merge results into unified response. Credentials contribute `results` and `statusResult`. Presentations contribute `presentationResult` (holder proof, including `verificationMethod`) and `credentialResults`; they have no top-level `results`
 
 ### GS1 Rules Integration
 

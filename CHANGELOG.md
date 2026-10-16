@@ -3,6 +3,9 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+### Fixed
+- `POST /api/verifier/gs1` now returns `presentationResult` and `credentialResults` for presentations, including the holder verification method on the presentation proof. Those fields were verified and then omitted from the GS1 response
+
 ## 3.7.1 (2026-10-02)
 
 ### Changed

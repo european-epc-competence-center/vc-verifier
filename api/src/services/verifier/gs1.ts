@@ -205,6 +205,8 @@ interface GS1VerificationResponse {
   gs1Result: gs1RulesResult | gs1RulesResultContainer;
   statusResult?: any;
   results?: any[];
+  presentationResult?: any;
+  credentialResults?: any[];
   errorMessage?: string;
 }
 
@@ -295,13 +297,18 @@ export class GS1Verifier {
     gs1Result: gs1RulesResult | gs1RulesResultContainer
   ): GS1VerificationResponse {
     
-    const response: GS1VerificationResponse = {
-      verified: credentialVerificationResult.verified && gs1Result.verified,
-      gs1Result,
-      statusResult: credentialVerificationResult.statusResult,
-      results: credentialVerificationResult.results
-    };
+    const { presentationResult, credentialResults, statusResult, results, verified } =
+      credentialVerificationResult;
 
-    return response;
+    return {
+      verified: verified && gs1Result.verified,
+      gs1Result,
+      statusResult,
+      results,
+      // Presentations have no top-level results; the holder proof and enclosed
+      // credentials live on these two fields.
+      ...(presentationResult && { presentationResult }),
+      ...(credentialResults && { credentialResults }),
+    };
   }
 }

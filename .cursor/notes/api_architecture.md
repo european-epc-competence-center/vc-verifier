@@ -339,9 +339,13 @@ try {
     errors: [{ code: string, rule: string }]
   },
   statusResult?: {...},
-  results?: [...]
+  results?: [...],              // standalone credentials
+  presentationResult?: {...},   // presentations: holder proof, including verificationMethod
+  credentialResults?: [...]     // presentations: enclosed credentials
 }
 ```
+
+`GS1Verifier.buildUnifiedResponse()` copies `presentationResult` and `credentialResults` from `Verifier.verify()`. A presentation has no top-level `results`; dropping those two fields hid the holder proof after it had already been checked.
 
 ## Configuration
 
