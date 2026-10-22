@@ -3,6 +3,18 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+## 3.7.3 (2026-10-22)
+
+### Fixed
+
+(CVE-2026-106069, CVE-2026-106072) tls: reject non-canonical IP addresses (Matteo Collina) – High
+(CVE-2026-105482) dns: validate resolve inputs for null bytes (James M Snell) – High
+(CVE-2026-105483) tls: fix ip normalization regression (James M Snell) – High
+(CVE-2026-111497) deps: brotli: cherry-pick 0ed4268a4401abcb44720963 (Evgenii Kliuchnikov) – High
+(CVE-2026-105481) http: ensure agent data guard works without I/O (James M Snell) – Medium
+(CVE-2026-106074) crypto: reset random caches across snapshots (Filip Skokan) – Medium
+(CVE-2026-106073) permission: check permission model in realpathSync (RafaelGSS) – Low
+
 ## 3.7.2 (2026-10-16)
 
 ### Fixed

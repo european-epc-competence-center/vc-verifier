@@ -1,6 +1,6 @@
 const swaggerOptions: any = {
   info: {
-    version: '3.7.2',
+    version: '3.7.3',
     title: 'EECC Verifiable Credential Verifier API',
     license: {
       name: 'AGPL-3.0',
