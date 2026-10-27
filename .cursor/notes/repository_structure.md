@@ -58,7 +58,8 @@ api/src/
 │       └── schemas/      # GS1 JSON schemas (*.json)
 │
 └── utils/
-    └── crypto.ts         # Cryptographic utilities (key extraction)
+    ├── crypto.ts         # Cryptographic utilities (key extraction)
+    └── verifiable.ts     # Credential id and credentials enclosed in a presentation
 ```
 
 ### Build Output (`/api/dist`)

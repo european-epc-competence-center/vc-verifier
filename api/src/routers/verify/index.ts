@@ -580,7 +580,7 @@ verifyRouter.get("/id/:subjectId", verifySubjectsVCs);
 /**
  * POST /api/verifier/gs1
  * @summary Verify GS1 Verifiable Credentials and Presentations
- * @description Same request shape and query parameters as `POST /api/verifier`, with additional GS1 VC business-rule validation via `@eecc/vc-verifier-rules`. Validates JSON Schema, licence chains (prefix → extended credentials), digital links, and GS1-specific subject fields. The `gs1Result` field mirrors `gs1RulesResult` / `gs1RulesResultContainer` from vc-verifier-rules.
+ * @description Same request shape and query parameters as `POST /api/verifier`, with additional GS1 VC business-rule validation via `@eecc/vc-verifier-rules`. Validates JSON Schema, licence chains (prefix → extended credentials), digital links, and GS1-specific subject fields. The `gs1Result` field mirrors `gs1RulesResult` / `gs1RulesResultContainer` from vc-verifier-rules. When chain resolution asks for a credential id that is already in the request array, or inside a presentation in that array, that credential is used instead of fetched. Every submitted credential is still its own result.
  * @tags Verify
  * @operationId verifyGS1Verifiables
  * @param {array<Verifiable|JwtVerifiable>} request.body.required - GS1 credentials, presentations, or JWT strings to verify - application/json

@@ -93,6 +93,7 @@ Methods correspond to router endpoints:
 #### `verifyGS1(req, res)`
 - Similar to `verify()` but uses `GS1Verifier`
 - Performs GS1 rules validation in addition to standard verification
+- Chain ids already present in the request are resolved in `gs1.ts` before `loadExternalCredential()`. See [GS1 Credential Chaining](./verification_system.md#gs1-credential-chaining)
 
 ## Service Layer
 

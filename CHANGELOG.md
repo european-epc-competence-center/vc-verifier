@@ -3,6 +3,9 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+### Changed
+- `POST /api/verifier/gs1` uses a credential already in the request when chain resolution asks for its id, including a credential inside a presentation, and fetches the id otherwise. Every submitted credential remains its own result
+
 ## 3.7.3 (2026-10-22)
 
 ### Fixed

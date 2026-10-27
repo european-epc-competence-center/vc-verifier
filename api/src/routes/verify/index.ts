@@ -162,7 +162,8 @@ export class VerifyRoutes {
             verifiable,
             challenge,
             domain,
-            holderBinding
+            holderBinding,
+            req.body
           );
         })
       );

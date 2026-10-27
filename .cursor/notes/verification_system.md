@@ -317,7 +317,7 @@ await checkStatus({
 
 ### Verification Flow
 
-**Method**: `GS1Verifier.verify(verifiable, challenge?, domain?)`
+**Method**: `GS1Verifier.verify(verifiable, challenge?, domain?, holderBinding?, given?)`
 
 **Steps**:
 1. Standard verification via `Verifier.verify()`
@@ -400,11 +400,11 @@ const gs1ValidatorRequest = {
 **Feature**: Recursive credential loading and verification
 
 **Process**:
-1. Credential A references Credential B (by URL)
-2. GS1 verifier loads Credential B via `loadExternalCredential()`
-3. Verifies Credential B via `validateExternalCredential()`
+1. Credential A references Credential B by `extendsCredential`, otherwise `keyAuthorization`
+2. The rules library looks for B in the presentation being checked. `externalCredentialLoader` in `gs1.ts` then looks for that id in the request array and in presentations in that array. Otherwise `loadExternalCredential()` fetches it. `documentLoader` and the shared `gs1ValidatorRequest` stay unchanged
+3. A loader result is proof-checked via `validateExternalCredential()`. A credential found in the presentation being checked is `inPresentation` and was proof-checked with that presentation
 4. Validates chaining rules (e.g., GS1 prefix delegation)
-5. Returns aggregated validation result
+5. Each submitted credential is its own result. `gs1Result.credentialId` names it. `gs1Result.resolvedCredential` nests ancestors toward the prefix
 
 ## Document Loading
 
