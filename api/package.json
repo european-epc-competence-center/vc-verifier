@@ -42,6 +42,7 @@
     "@eecc/rsa-rdfc-2025-cryptosuite": "^1.0.1",
     "@eecc/vc-verifier-rules": "^2.10.0",
     "@noble/curves": "^2.0.0",
+    "body-parser": "^2.4.0",
     "cors": "^2.8.5",
     "did-resolver": "6.0.0",
     "didwebvh-ts": "3.0.0",

@@ -3,6 +3,10 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+### Fixed
+- (CVE-2026-111181) bump `body-parser` to 2.4.0 – High. A single unauthenticated request with a compressed body followed by trailing bytes could crash the API process, on any path
+  - `body-parser` is now a direct dependency. `app.ts` already imported it, but the version came from `express`
+
 ### Changed
 - bump `didwebvh-ts` to 3.0.0, `did-resolver` to 6.0.0 and `web-did-resolver` to 3.2.0; `did:webvh` now resolves through the library's own `did-resolver` binding
 
