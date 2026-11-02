@@ -3,6 +3,9 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+### Changed
+- bump `didwebvh-ts` to 3.0.0, `did-resolver` to 6.0.0 and `web-did-resolver` to 3.2.0; `did:webvh` now resolves through the library's own `did-resolver` binding
+
 ## 3.7.4 (2026-10-27)
 
 ### Changed

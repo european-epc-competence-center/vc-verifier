@@ -34,9 +34,9 @@ npm test -- --runInBand __tests__/didwebvh.test.ts
 ```
 
 Validation history is in [the provenance file](./didwebvh-provenance.json). These
-fixtures passed first against the vendored 3.0.0 snapshot and then, unchanged,
-against the published `didwebvh-ts@2.8.0` used today. All fixture checksums match
-provenance.
+fixtures passed first against the vendored 3.0.0 snapshot, then against the
+published `didwebvh-ts@2.8.0`, and now, unchanged, against the published
+`didwebvh-ts@3.0.0` used today. All fixture checksums match provenance.
 
 This establishes log validation and signature interoperability for these two
 formats. It does not establish that all credential paths enforce issuer

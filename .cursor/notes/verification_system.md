@@ -442,15 +442,12 @@ const gs1ValidatorRequest = {
 **Supported Methods** (registered in `documentLoader/didresolver.ts`, resolver cache off):
 - `did:web` - via `web-did-resolver`
 - `did:key` - via `@digitalbazaar/did-method-key` (`documentLoader/custom/key.ts`)
-- `did:webvh` - via `didwebvh-ts`, wrapped by `documentLoader/custom/webvh.ts`
+- `did:webvh` - via `getResolver()` from `didwebvh-ts`
 
 **`did:webvh` specifics**: the library fetches the append-only `did.jsonl` log with
 native `fetch` and validates SCID derivation, the entry hash chain, and each entry's
 `eddsa-jcs-2022` update-key proof before the latest state becomes the DID document.
-The local adapter exists only because the published 2.8.0 ships no `did-resolver`
-binding and no verifier; see the file header for the mapping, the injected strict
-Ed25519 verifier, and the upgrade path. A valid log proves DID history integrity,
-not that a key may issue for a given issuer.
+A valid log proves DID history integrity, not that a key may issue for a given issuer.
 
 **Resolution Process** (`documentLoader/index.ts`):
 1. Resolve the DID URL, retaining the full resolution result

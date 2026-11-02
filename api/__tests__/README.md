@@ -23,8 +23,8 @@ loopback HTTP sockets to exercise Express routes.
 - `../test-support/http-fixtures.ts`: shared HTTP response replay.
 - `../test-support/setup-http.ts`: offline enforcement for every suite.
 
-The shared setup replaces `node-fetch`, `cross-fetch` (used by did:web), and
-native `fetch` (used by webvh). Only recorded GET requests are accepted. A missing
+The shared setup replaces `node-fetch` and native `fetch` (used by did:web and
+webvh). Only recorded GET requests are accepted. A missing
 fixture fails the test even if verification catches the fetch error and returns
 `verified: false`. Direct external `http`/`https` calls are also blocked; loopback
 requests are reserved for Supertest. There is no record-on-miss or live fallback.
