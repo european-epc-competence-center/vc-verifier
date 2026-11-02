@@ -3,6 +3,9 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+
+## 3.7.5 (2026-11-02)
+
 ### Fixed
 - (CVE-2026-111181) bump `body-parser` to 2.4.0 – High. A single unauthenticated request with a compressed body followed by trailing bytes could crash the API process, on any path
   - `body-parser` is now a direct dependency. `app.ts` already imported it, but the version came from `express`
