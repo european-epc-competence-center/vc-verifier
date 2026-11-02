@@ -33,12 +33,9 @@ await jest.unstable_mockModule("web-did-resolver", () => ({
   getResolver: () => ({ web: webResolveMock }),
 }));
 
-await jest.unstable_mockModule(
-  "../src/services/documentLoader/custom/webvh",
-  () => ({
-    getResolver: () => ({ webvh: webvhResolveMock }),
-  })
-);
+await jest.unstable_mockModule("didwebvh-ts", () => ({
+  getResolver: () => ({ webvh: webvhResolveMock }),
+}));
 
 const { getResolver } = await import(
   "../src/services/documentLoader/didresolver.js"

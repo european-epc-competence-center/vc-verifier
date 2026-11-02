@@ -7,7 +7,7 @@ const unexpectedRequests: string[] = [];
 const fixtureFetch = createFixtureFetch((message) => unexpectedRequests.push(message));
 const originalFetch = globalThis.fetch;
 
-// Install before application modules load, covering all three fetch transports
+// Install before application modules load, covering both fetch transports
 // used by the API and its DID resolvers.
 const fetchExports = () => ({
   default: fixtureFetch,
@@ -17,7 +17,6 @@ const fetchExports = () => ({
   Response,
 });
 await jest.unstable_mockModule("node-fetch", fetchExports);
-await jest.unstable_mockModule("cross-fetch", fetchExports);
 globalThis.fetch = fixtureFetch;
 
 // Keep Supertest's ephemeral loopback HTTP server usable, but fail immediately

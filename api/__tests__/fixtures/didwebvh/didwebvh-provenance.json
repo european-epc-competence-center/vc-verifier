@@ -30,6 +30,14 @@
     "result": "The unchanged fixtures passed: 9 webvh tests and the full API suite (15 suites, 82 passed, 2 skipped), plus the TypeScript build.",
     "limits": "Offline run with mocked HTTP transports. The live HTTPS retrieval and Node 24 checks were not repeated against 2.8.0."
   },
+  "releasedResolverValidation": {
+    "verifierCommit": "0c292b6b19eab0e4594e9e0700be88bdf66a9c97",
+    "node": "24.22.2",
+    "resolver": "didwebvh-ts@3.0.0 from npm, via its getResolver() and did-resolver@6.0.0",
+    "resolvedVersionId": "3-QmTkxXz2XuP2v6i1fMZW7LDHz1RTYUw6rtFPaibJRc8ZJz",
+    "result": "The unchanged fixtures passed: 9 webvh tests and the full API suite (15 suites, 78 passed, 2 skipped), plus the TypeScript build.",
+    "limits": "Offline run with mocked HTTP transports. The wallet review log returned HTTP 404 on 2026-11-02, so live retrieval of this DID was not repeated."
+  },
   "sha256": {
     "didwebvh-credential.jwt": "4e3a2ca49945eac0812dd69117739958dcd887417d29211191a2a46addcf9ddb",
     "didwebvh-credential.json": "7b23274449f431bc8bf6208ed814119959b6e800e8732e59c12ea1782adddff0",

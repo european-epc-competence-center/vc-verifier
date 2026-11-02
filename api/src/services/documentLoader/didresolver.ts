@@ -1,6 +1,6 @@
 import { Resolver } from 'did-resolver';
 import * as key from './custom/key.js';
-import * as webvh from './custom/webvh.js';
+import * as webvh from 'didwebvh-ts';
 import * as web from 'web-did-resolver';
 
 const resolver = new Resolver(
