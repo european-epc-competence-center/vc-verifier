@@ -3,6 +3,8 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+### Changed
+- Relicense the project from AGPL-3.0 to Apache-2.0
 
 ## 3.7.5 (2026-11-02)
 

@@ -3,8 +3,8 @@ const swaggerOptions: any = {
     version: '3.7.5',
     title: 'EECC Verifiable Credential Verifier API',
     license: {
-      name: 'AGPL-3.0',
-      url: 'https://www.gnu.org/licenses/agpl-3.0.en.html',
+      name: 'Apache-2.0',
+      url: 'https://www.apache.org/licenses/LICENSE-2.0',
     },
     contact: {
       name: 'European EPC Competence Center GmbH (EECC)',

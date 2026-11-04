@@ -21,7 +21,7 @@
     "json-ld"
   ],
   "author": "Chrisitan Fries (EECC)",
-  "license": "AGPL-3.0",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/european-epc-competence-center/vc-verifier/issues"
   },

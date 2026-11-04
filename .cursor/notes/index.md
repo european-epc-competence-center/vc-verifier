@@ -4,7 +4,7 @@
 
 EECC VC Verifier is a full-stack application for verifying W3C Verifiable Credentials (VCs) and Presentations. It consists of two main subprojects: an Express-based TypeScript API and a Vue.js frontend.
 
-**License**: AGPL-3.0  
+**License**: Apache-2.0  
 **Maintainer**: European EPC Competence Center GmbH (EECC)  
 **Versions**: API and frontend are versioned separately (`api/package.json`, `frontend/package.json`); repo releases are tagged `vX.Y.Z` after the API version
 

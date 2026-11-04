@@ -9,7 +9,7 @@ vc-verifier/
 ├── assets/           # Shared images (logo, screenshots for README)
 ├── CHANGELOG.md      # Root changelog (consolidated)
 ├── README.md         # Project documentation
-├── LICENSE           # AGPL-3.0 license
+├── LICENSE           # Apache-2.0 license
 └── docker-compose.yml # Multi-container orchestration
 ```
 
