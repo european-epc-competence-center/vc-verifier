@@ -68,6 +68,30 @@ describe("VCALM response mapping", () => {
     ]);
   });
 
+  test("a GS1 rules failure stays inside problemDetails", () => {
+    const response = toVcalmResponse(
+      {
+        verified: false,
+        gs1Result: { verified: false },
+        errors: [{
+          message: "GS1-140: The issuer of prefix license credential does not match the expected value.",
+          type: "https://ssi.eecc.de/api/vcalm/problems/gs1-rules",
+        }],
+      },
+      { kind: "credential", options: closedFlags }
+    );
+
+    expect(response.status).toBe(400);
+    expect(response.body).not.toHaveProperty("gs1Result");
+    expect(response.body.problemDetails).toEqual([
+      {
+        type: "https://ssi.eecc.de/api/vcalm/problems/gs1-rules",
+        title: "gs1-rules",
+        detail: "GS1-140: The issuer of prefix license credential does not match the expected value.",
+      },
+    ]);
+  });
+
   test("a request that never reaches verification uses the invalid-input type", () => {
     const error = new VcalmInputError("Request body must include verifiableCredential");
     error.stack = "VcalmInputError: boom\n    at secret (service.ts:1:1)";

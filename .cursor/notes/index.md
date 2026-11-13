@@ -88,7 +88,7 @@ vc-verifier/
 - Shared types defined in `api/src/types.d.ts`
 
 ### Testing
-- API: Jest tests in `api/__tests__/` — 2 skipped (DataIntegrityProof / RevocationList2020, see [development_workflow.md](./development_workflow.md))
+- API: Jest tests in `api/__tests__/` — 2 skipped (DataIntegrityProof / RevocationList2020, see [development_workflow.md](./development_workflow.md)). `vcalm-conformance.test.ts` covers the canivc verifier conformance rows that do not need an issuer. Publishing a canivc column is the suite workflow plus an implementations-repo manifest; see [vcalm-api.md](../../docs/vcalm-api.md)
 - Frontend: Unit tests with Jest, E2E with Cypress
 - Run tests before committing
 

@@ -67,7 +67,7 @@ The verification system is the core functionality of the VC Verifier. It support
 
 **Method**: `Verifier.verify(input, options?: VerifyOptions)`
 
-`VerifyOptions` is `challenge`, `domain`, `holderBinding` (default `true`), and `checkStatus` (default `true`). `checkStatus: false` skips status-list fetches for JSON-LD and JWT credentials and for credentials inside a presentation. `/api/verifier` does not set `checkStatus`, so status is still checked when `credentialStatus` is present. `/api/vcalm` sets it from `options.checks` and sets `holderBinding: false` on the presentation route. The HTTP query aliases (`nonce`, `audience`, `aud`) are translated in `routes/verify/index.ts` before this call.
+`VerifyOptions` is `challenge`, `domain`, `holderBinding` (default `true`), and `checkStatus` (default `true`). `checkStatus: false` skips status-list fetches for JSON-LD and JWT credentials and for credentials inside a presentation. `/api/verifier` does not set `checkStatus`, so status is still checked when `credentialStatus` is present. `/api/vcalm` sets it from `options.checks` and sets `holderBinding: false` on the presentation route. When `options.checks` includes `gs1Rules`, `VcalmService` calls `GS1Verifier.verify` instead of `Verifier.verify`, then drops `gs1Result` and turns rule failures into `errors` for the VCALM mapper (`https://ssi.eecc.de/api/vcalm/problems/gs1-rules`). The HTTP query aliases (`nonce`, `audience`, `aud`) are translated in `routes/verify/index.ts` before this call.
 
 **Input Types**:
 1. **String**: Assumed JWT, validated and parsed
@@ -322,11 +322,13 @@ await checkStatus({
 **Method**: `GS1Verifier.verify(verifiable, challenge?, domain?, holderBinding?, given?)`
 
 **Steps**:
-1. Standard verification via `Verifier.verify()`
-2. GS1 rules validation:
+1. Standard verification via `Verifier.verify()` (`checkStatus` is forwarded; default `true`)
+2. GS1 rules validation (`performGS1Validation`):
    - **Credential**: `checkGS1CredentialWithoutPresentation()`
    - **Presentation**: `checkGS1CredentialPresentationValidation()`
-3. Merge results into unified response. Credentials contribute `results` and `statusResult`. Presentations contribute `presentationResult` (holder proof, including `verificationMethod`) and `credentialResults`; they have no top-level `results`
+3. Merge results into unified response, including `gs1Result`. Credentials contribute `results` and `statusResult`. Presentations contribute `presentationResult` (holder proof, including `verificationMethod`) and `credentialResults`; they have no top-level `results`
+
+`/api/vcalm` uses this class when `options.checks` includes `gs1Rules`. It removes `gs1Result` before building the VCALM body. `Verifier.verify` does not call GS1 rules; `GS1Verifier` calls `Verifier.verify` for the signature check, so the rules stay on this path only.
 
 ### GS1 Rules Integration
 
@@ -433,11 +435,13 @@ const gs1ValidatorRequest = {
 - Preloaded contexts
 
 **2. TTL Cache** (class-based)
-- DID documents (default: 1 hour)
-- Verifiable credentials (default: 1 hour)
+- Verifiable credentials fetched by HTTP URL (default: 1 hour)
 - Configurable via `DOCUMENT_CACHE_TTL_HOURS`
+- No in-flight dedup: concurrent misses for the same URL all fetch
 
-**Status Credentials Exception**: Never cached (always fresh)
+**Not cached**:
+- DID documents. `did:` URLs return from `getResolver().resolve()` before either cache. The resolver is constructed with `cache: false` in `didresolver.ts`.
+- Status-list credentials (`BitstringStatusListCredential`, `StatusList2021Credential`, `RevocationList2020Credential`)
 
 ### DID Resolution
 

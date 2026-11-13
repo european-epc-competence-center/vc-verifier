@@ -76,7 +76,7 @@ This repository does not issue credentials. The following VCALM endpoints are no
 - `POST /credentials/issue`, `POST /credentials/status`, `GET` and `DELETE /credentials/{id}`
 - `POST /credentials/derive`, presentation exchange, and workflow callbacks
 - `POST /challenges` (the suites use a static challenge)
-- GS1 rules (`POST /api/verifier/gs1` stays the GS1 API)
+- A `gs1Result` field on the VCALM body (`POST /api/verifier/gs1` stays the GS1 API). `options.checks` containing `gs1Rules` runs those rules and reports a failure as `problemDetails`
 - Replacing or versioning `POST /api/verifier`
 
 VC Data Model 2.0 issuer statements need an issuer that secures credentials with `eddsa-rdfc-2022`. Those rows stay unimplemented. The cryptosuite verifier suites sign their own vectors and only need the two verify routes.
@@ -105,8 +105,8 @@ Request:
 
 Processing:
 
-1. Read `options.checks`. Absent means proof and, when `credentialStatus` is present, status. Present means run only the named checks this verifier implements. Ignore `credentialSchema` and any other check name.
-2. Call `Verifier.verify` with status checking gated by that decision.
+1. Read `options.checks`. Absent means proof and, when `credentialStatus` is present, status. Present means run only the named checks this verifier implements. `gs1Rules` selects `GS1Verifier.verify`. Ignore `credentialSchema` and any other check name.
+2. Call `Verifier.verify` with status checking gated by that decision. When `gs1Rules` is requested, call `GS1Verifier.verify` instead and drop `gs1Result` before mapping.
 3. Map the result with the status rule below.
 
 ### `POST /api/vcalm/presentations/verify`
@@ -218,6 +218,7 @@ Follow the existing layering: router, route handler, service.
 | `api/src/routes/vcalm/index.ts` | `VcalmRoutes`: parse the body, translate options, call `Verifier`, write the status and body |
 | `api/src/services/vcalm/response.ts` | Map a `VerificationResult` or a thrown error to `{ status, body }` |
 | `api/__tests__/vcalm.test.ts` | Supertest coverage of the contract below |
+| `api/__tests__/vcalm-conformance.test.ts` | The canivc conformance rows this verifier can run without an issuer |
 
 Export the router from `api/src/routers/index.ts` and mount it in `api/src/app.ts`:
 
@@ -241,12 +242,15 @@ export interface VerifyOptions {
 
 `checkStatus: false` skips `getCheckStatus` for both JSON-LD and JWT credentials. Enclosed credentials in a presentation inherit the same flag. `holderBinding` defaults to `true` when the options object omits it.
 
+`options.checks` containing `gs1Rules` does not add a flag to `Verifier.verify`. `VcalmService` calls `GS1Verifier.verify` (the same verifier as `POST /api/verifier/gs1`) and then drops `gs1Result` before the VCALM mapper runs. Rule failures become `problemDetails`.
+
 ### Option translation in the route
 
 ```text
 checks absent                          → checkStatus: true
 checks includes "credentialStatus"     → checkStatus: true
 checks is an array without that entry  → checkStatus: false
+checks includes "gs1Rules"             → GS1Verifier.verify, then drop gs1Result
 options.challenge / options.domain     → VerifyOptions.challenge / domain
 VCALM presentation route               → holderBinding: false
 VCALM credential route                 → holderBinding omitted (no presentation)
@@ -279,18 +283,68 @@ Cover at least:
 7. A presentation whose holder differs from the credential subject still returns 200 when the proof is valid (`holderBinding: false`).
 8. `POST /api/verifier` with the same failing credential still returns 200 and `verified: false`.
 
+`api/__tests__/vcalm-conformance.test.ts` repeats the conformance rows canivc shows for a verifier that does not issue:
+
+- VC API Verifier, "Verify Credential - Data Integrity" (`w3c-ccg/vc-api-verifier-test-suite` `tests/10-vc-di.js`). The harness accepts HTTP 200 for the valid credential and HTTP 400 or 422 for each mutation. `result.status` in that file is the HTTP status.
+- VC Data Model 2.0, "Basic Conformance" verifier statements (`w3c/vc-data-model-2.0-test-suite` `tests/1.03-conformance.js`). The non-conforming document is `{ "type": ["NonconformingDocument"] }` on both routes.
+
+The JWT column (`tests/11-vc-jwt.js`) issues a credential before it mutates it, and it only runs for endpoints tagged `JWT`. This repository has no issuer, so that column is not claimed.
+
 Run from `api`:
 
 ```sh
+npm test -- --runInBand __tests__/vcalm-conformance.test.ts
 npm test -- --runInBand
 npm run build-tsc
 ```
 
 ## Running the W3C suites locally
 
-After the routes pass the Jest contract, run a suite against a local API before registering. The suite repos are not part of this repository. Clone the suite next to it, copy `localConfig.example.cjs` to `localConfig.cjs`, and point the endpoints at the local server.
+The Jest file checks the same status rule on a local fixture. The published column is produced by the suite repositories, which are not part of this repository. Clone a suite as a sibling of `canivc` (the directory name must match the suite repo, for example `vc-data-model-2.0-test-suite`). Start this API with `npm run dev` from `api` so it can fetch `https://www.w3.org/ns/credentials/v2` and resolve `did:key`. The Jest offline fetch stub must not be active in that process.
 
-For `vc-di-eddsa-test-suite`, the local implementation needs a verifier tagged for the suite (the suite filters on the tag in its own config; a local config entry with the endpoint is enough when `testAllImplementations` is false). Start the API so it can fetch `https://www.w3.org/ns/credentials/v2` and resolve `did:key`. The API test suite's offline fetch stub must not be active in that process.
+In the suite root, copy `localConfig.example.cjs` to `localConfig.cjs`. Suites select endpoints with `filterByTag`, so each endpoint needs its tag. A `localConfig.cjs` with `testAllImplementations` left false runs only this file:
+
+```js
+const baseUrl = process.env.BASE_URL || 'http://localhost:3000/api/vcalm';
+module.exports = {
+  settings: {
+    enableInteropTests: false,
+    testAllImplementations: false
+  },
+  implementations: [{
+    name: 'European EPC Competence Center GmbH (EECC)',
+    implementation: 'EECC VC Verifier',
+    verifiers: [{
+      id: `${baseUrl}/credentials/verify`,
+      endpoint: `${baseUrl}/credentials/verify`,
+      supportedEcdsaKeyTypes: ['P-256'],
+      options: { checks: ['proof'] },
+      tags: ['vc2.0', 'eddsa-rdfc-2022', 'ecdsa-rdfc-2019', 'ecdsa-sd-2023', 'Ed25519Signature2020', 'vc-api']
+    }, {
+      id: `${baseUrl}/credentials/verify#status`,
+      endpoint: `${baseUrl}/credentials/verify`,
+      options: { checks: ['proof', 'credentialStatus'] },
+      tags: ['BitstringStatusList']
+    }],
+    vpVerifiers: [{
+      id: `${baseUrl}/presentations/verify`,
+      endpoint: `${baseUrl}/presentations/verify`,
+      tags: ['vc2.0']
+    }]
+  }]
+};
+```
+
+Use the proof endpoint for the cryptosuite suites and the `#status` endpoint when the suite's requests must include `credentialStatus`. The VC API verifier suite reads the `vc-api` tag from [w3c-ccg/vc-test-suite-implementations](https://github.com/w3c-ccg/vc-test-suite-implementations). The Working Group suites read their tags from [w3c/vc-test-suite-implementations](https://github.com/w3c/vc-test-suite-implementations). One local file can carry both; each suite ignores tags it does not query.
+
+Working Group suites declare Node.js 22 or newer. The VC API verifier suite workflow uses Node.js 20. From the suite root:
+
+```sh
+npm install
+npm test
+```
+
+`npm test` installs the implementations package from `main` and writes `reports/`, including `reports/index.json`. Issuer rows in the data-model suite fail or skip. That is the missing issuer. Fix verifier failures before any manifest pull request.
 
 Suggested order, one suite at a time:
 
@@ -299,10 +353,41 @@ Suggested order, one suite at a time:
 3. `vc-di-ed25519signature2020-test-suite`
 4. `vc-bitstring-status-list-test-suite` against the status-checks endpoint
 5. `vc-data-model-2.0-test-suite` verifier and `vpVerifier` cases
+6. `vc-api-verifier-test-suite` for the Data Integrity conformance matrix. Its default issuer is Digital Bazaar (`ISSUER_NAME` overrides that). The JWT matrix still needs a `JWT` issuer
 
-Expect the data-model suite's issuer tests to fail or skip. That is the missing issuer, not a verifier defect. Fix verifier failures before any manifest pull request.
+### Preview in canivc
 
-`CANIVC_LOCAL_REPORTS=1` in the canivc checkout reads a sibling suite's `reports/index.json` after `npm test` has written it. Use that to preview the report. Publishing still happens from the suite repository's workflow, which reads the public manifest on `w3c/vc-test-suite-implementations`.
+canivc does not store results. `src/_data/results.js` fetches each suite's published `index.json`. With the suite checkouts as siblings of the canivc checkout:
+
+```sh
+cd ../canivc
+npm install
+npm run serve:local
+```
+
+`CANIVC_LOCAL_REPORTS=1` reads `../<suite-repo>/reports/index.json` and falls back to the published URL when that file is absent. Open the report page for the suite and confirm the EECC column.
+
+### Publishing the column
+
+A pull request to canivc is not how an implementation appears. canivc already lists these suite report URLs. The column appears after both of the following happen:
+
+1. The public deployment is registered. Open a manifest pull request, using the example in [Suites this surface can claim](#suites-this-surface-can-claim), and only after the local verifier rows pass. Working Group tags go to `w3c/vc-test-suite-implementations`. The VC API Data Integrity matrix also needs `w3c-ccg/vc-test-suite-implementations` with the tag `vc-api` on `POST /api/vcalm/credentials/verify`. Leave `JWT` off. Endpoints must be public HTTPS. The suites do not use the Jest process.
+2. The suite workflow runs. `Generate W3C Interoperability Report` (Working Group) and `Generate Interop Report` (VC API verifier) run on Sunday at 05:00 UTC and on `workflow_dispatch`. Each run executes `npm test` against the manifests on `main`, then deploys the `reports/` directory to `gh-pages`. canivc reads that deployment, for example `https://w3c.github.io/vc-data-model-2.0-test-suite/index.json`.
+
+To start a run after the manifest is on `main`, from a checkout of canivc, with the GitHub CLI authenticated for `workflow`:
+
+```sh
+scripts/rerun-test-reports.sh vc-data-model-2.0-test-suite
+scripts/test-report-status.sh
+```
+
+The rerun script lists the Working Group suites only. The VC API verifier suite is published the same way and is already a canivc source; trigger it directly:
+
+```sh
+gh workflow run main.yml --repo w3c-ccg/vc-api-verifier-test-suite --ref main
+```
+
+`scripts/rerun-test-reports.sh --list` prints the Working Group suite names the script knows. Adding a suite that canivc does not yet fetch is a separate change to `src/_data/results.js` in canivc.
 
 ## Work sequence
 

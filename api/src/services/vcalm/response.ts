@@ -184,9 +184,12 @@ function problemsFromResult(result: any): VcalmProblemDetail[] {
     ));
   }
 
-  for (const message of messagesFrom(result.error, result.errors)) {
-    if (statusFailed && /status/i.test(message)) continue;
-    problems.push(problem(CRYPTOGRAPHIC_SECURITY_ERROR, message));
+  for (const entry of errorEntries(result)) {
+    const message = messageOf(entry);
+    if (!message) continue;
+    const explicitType = httpsProblemType(entry);
+    if (statusFailed && !explicitType && /status/i.test(message)) continue;
+    problems.push(problem(explicitType ?? CRYPTOGRAPHIC_SECURITY_ERROR, message));
   }
 
   if (Array.isArray(result.credentialResults)) {
@@ -219,18 +222,20 @@ function problemType(error: unknown, message: string): string {
 }
 
 function problem(type: string, detail: string): VcalmProblemDetail {
-  const title = type.includes('#') ? type.slice(type.lastIndexOf('#') + 1) : 'invalid-input';
+  const marker = type.includes('#') ? '#' : '/';
+  const title = type.slice(type.lastIndexOf(marker) + 1);
   return { type, title, detail };
 }
 
-function messagesFrom(error: unknown, errors: unknown): string[] {
-  const list = Array.isArray(errors) ? errors : [];
-  const fromList = list
-    .map((entry) => messageOf(entry))
-    .filter((message): message is string => Boolean(message));
-  if (fromList.length > 0) return fromList;
-  const message = messageOf(error);
-  return message ? [message] : [];
+function errorEntries(result: any): unknown[] {
+  if (Array.isArray(result.errors) && result.errors.length > 0) return result.errors;
+  return result.error ? [result.error] : [];
+}
+
+function httpsProblemType(entry: unknown): string | undefined {
+  if (!entry || typeof entry !== 'object' || !('type' in entry)) return undefined;
+  const type = (entry as { type?: unknown }).type;
+  return typeof type === 'string' && type.startsWith('https://') ? type : undefined;
 }
 
 function messageOf(value: unknown): string | undefined {

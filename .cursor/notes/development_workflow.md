@@ -138,6 +138,8 @@ npm test
 
 **Test Files**: `api/__tests__/*.test.ts`
 
+`vcalm-conformance.test.ts` repeats the canivc conformance rows a verifier can run without an issuer (VC API Data Integrity, VC 2.0 basic conformance). A published canivc column comes from the suite repo's report workflow after a manifest pull request, not from this Jest file. Commands and the `localConfig.cjs` shape are in `docs/vcalm-api.md`.
+
 **Test Coverage Output**: `api/coverage/`
 
 **Writing Tests**:

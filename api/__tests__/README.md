@@ -13,7 +13,7 @@ loopback HTTP sockets to exercise Express routes.
 
 ## Layout
 
-- `*.test.ts`: assertions and test-specific setup.
+- `*.test.ts`: assertions and test-specific setup. `vcalm-conformance.test.ts` follows the canivc conformance rows that do not need an issuer.
 - `fixtures/legacy/`: named credentials, presentations, JWTs, and DID documents
   extracted from the existing tests. See its provenance and README.
 - `fixtures/http/`: recorded HTTP response bodies, with an exact URL-to-file map,

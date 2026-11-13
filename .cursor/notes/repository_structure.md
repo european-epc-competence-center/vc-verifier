@@ -9,7 +9,7 @@ vc-verifier/
 ├── assets/           # Shared images (logo, screenshots for README)
 ├── CHANGELOG.md      # Root changelog (consolidated)
 ├── README.md         # Project documentation
-├── docs/vcalm-api.md # Plan for a VCALM verifier API beside /api/verifier (not implemented)
+├── docs/vcalm-api.md # VCALM verifier contract, local suite runs, and canivc publication
 ├── LICENSE           # Apache-2.0 license
 └── docker-compose.yml # Multi-container orchestration
 ```

@@ -71,7 +71,7 @@ vcalmRouter.post('/credentials/verify', verifyCredential);
 vcalmRouter.post('/presentations/verify', verifyPresentation);
 ```
 
-Handlers in `routes/vcalm/index.ts` only write the status and JSON body from `VcalmService` (`services/vcalm/`). The service parses the VCALM body, calls `Verifier.verify` with a `VerifyOptions` object (`checkStatus`, and `holderBinding: false` for presentations), and `services/vcalm/response.ts` maps the result. Unknown option keys are ignored. `options.checks` without `credentialStatus` sets `checkStatus: false`.
+Handlers in `routes/vcalm/index.ts` only write the status and JSON body from `VcalmService` (`services/vcalm/`). The service parses the VCALM body, calls `Verifier.verify` with a `VerifyOptions` object (`checkStatus`, and `holderBinding: false` for presentations), and `services/vcalm/response.ts` maps the result. Unknown option keys are ignored. `options.checks` without `credentialStatus` sets `checkStatus: false`. `options.checks` containing `gs1Rules` calls `GS1Verifier.verify` instead. Rule failures become `problemDetails`; the body has no `gs1Result`.
 
 ### Health Router (`routers/health/index.ts`)
 
@@ -115,7 +115,7 @@ Methods correspond to router endpoints:
 
 #### `Verifier.verify(input, options?: VerifyOptions)`
 
-`options` carries `challenge`, `domain`, `holderBinding` (default `true`), and `checkStatus` (default `true`). `checkStatus: false` does not fetch a status list. Libraries that require a status function when `credentialStatus` is present receive a no-op that does not fetch. `/api/verifier` still reads `challenge`/`nonce` and `domain`/`audience`/`aud` from the query string and passes them in this object.
+`options` carries `challenge`, `domain`, `holderBinding` (default `true`), and `checkStatus` (default `true`). `checkStatus: false` does not fetch a status list. Libraries that require a status function when `credentialStatus` is present receive a no-op that does not fetch. `/api/verifier` still reads `challenge`/`nonce` and `domain`/`audience`/`aud` from the query string and passes them in this object. GS1 rules are not selected here; `GS1Verifier.verify` is the GS1 entry point.
 
 **Flow**:
 1. Unwrap `EnvelopedVerifiableCredential` if present (via `unwrapEnvelopedCredential()` in `envelope.ts`)
@@ -208,15 +208,16 @@ Integrates with `@eecc/vc-verifier-rules` package for GS1-specific validation.
 
 **Two-tier caching**:
 1. **Permanent cache** (`contexts` Map): Static resources (contexts, schemas)
-2. **TTL cache** (`TTLCache`): Dynamic resources (DIDs, credentials)
+2. **TTL cache** (`TTLCache`): HTTP-fetched verifiable credentials
    - Default TTL: 1 hour (configurable via `DOCUMENT_CACHE_TTL_HOURS`)
+   - DID documents and status-list credentials are not stored here
 
 #### Resolution Flow
 
 ```
 documentLoader(url)
     ↓
-  DID URL? → DID Resolver → Cache → Return
+  DID URL? → DID Resolver (cache off) → Return
     ↓
   Check permanent cache (contexts)
     ↓
@@ -228,8 +229,9 @@ documentLoader(url)
   HTTP? → fetch_jsonld_or_jwt()
     ↓
   Cache based on type:
-    - VC/DID → TTL cache
+    - VC → TTL cache
     - Context/Schema → Permanent cache
+    - Status list → not cached
     ↓
   Return document
 ```
@@ -393,8 +395,10 @@ All array-based verification endpoints use `Promise.all()` for parallel processi
 
 ### Caching Strategy
 - Static contexts: Never expire (Map)
-- Dynamic resources: 1-hour TTL (configurable)
-- No caching for status credentials (always fresh check)
+- HTTP-fetched verifiable credentials: 1-hour TTL (configurable)
+- DID documents: not cached (`didresolver.ts` uses `cache: false`; the `did:` branch returns before `TTLCache`)
+- Status credentials: never cached (always a fresh check)
+- `Verifier` is a stateless static facade, so replicas do not share cache and do not share mutable verification state
 
 ### Module Loading
 - ES2022 modules enable tree-shaking
