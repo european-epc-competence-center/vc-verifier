@@ -3,7 +3,12 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+### Added
+- VCALM verification at `POST /api/vcalm/credentials/verify` and `POST /api/vcalm/presentations/verify`. Each request verifies one document through the existing `Verifier`. HTTP 200 means the document was accepted; a failed proof or requested status check is HTTP 400 with `problemDetails`. `options.checks` can skip status lists. `POST /api/verifier` is unchanged
+- The VCALM request, status, and response contract is recorded in `docs/vcalm-api.md`
+
 ### Changed
+- `Verifier.verify` takes a `VerifyOptions` object (`challenge`, `domain`, `holderBinding`, `checkStatus`). The separate positional arguments are removed
 - Relicense the project from AGPL-3.0 to Apache-2.0
 
 ## 3.7.5 (2026-11-02)

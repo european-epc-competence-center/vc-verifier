@@ -40,7 +40,10 @@ app.use(bodyParser.urlencoded())     // Form data parsing
 ```typescript
 app.use('/', healthRouter)                  // Health checks (no /api prefix)
 app.use('/api/verifier', verifyRouter)     // Verification endpoints
+app.use('/api/vcalm', vcalmRouter)         // VCALM verify endpoints
 ```
+
+`/api/vcalm` verifies one document per request and returns HTTP 200 only when `verified` is true. It calls `Verifier` and does not change the `/api/verifier` array body or the HTTP 200 plus `verified: false` failure behavior. See [the VCALM contract](../../docs/vcalm-api.md).
 
 **Note**: Health endpoints have no `/api` prefix for Kubernetes probe compatibility.
 
@@ -60,6 +63,15 @@ verifyRouter.post("/gs1", verifyGS1);                 // GS1-specific verificati
 ```
 
 Contains extensive JSDoc comments for Swagger API documentation.
+
+### VCALM Router (`routers/vcalm/index.ts`)
+
+```typescript
+vcalmRouter.post('/credentials/verify', verifyCredential);
+vcalmRouter.post('/presentations/verify', verifyPresentation);
+```
+
+Handlers in `routes/vcalm/index.ts` only write the status and JSON body from `VcalmService` (`services/vcalm/`). The service parses the VCALM body, calls `Verifier.verify` with a `VerifyOptions` object (`checkStatus`, and `holderBinding: false` for presentations), and `services/vcalm/response.ts` maps the result. Unknown option keys are ignored. `options.checks` without `credentialStatus` sets `checkStatus: false`.
 
 ### Health Router (`routers/health/index.ts`)
 
@@ -101,7 +113,9 @@ Methods correspond to router endpoints:
 
 **Main Class**: `Verifier`
 
-#### `Verifier.verify(input, challenge?, domain?)`
+#### `Verifier.verify(input, options?: VerifyOptions)`
+
+`options` carries `challenge`, `domain`, `holderBinding` (default `true`), and `checkStatus` (default `true`). `checkStatus: false` does not fetch a status list. Libraries that require a status function when `credentialStatus` is present receive a no-op that does not fetch. `/api/verifier` still reads `challenge`/`nonce` and `domain`/`audience`/`aud` from the query string and passes them in this object.
 
 **Flow**:
 1. Unwrap `EnvelopedVerifiableCredential` if present (via `unwrapEnvelopedCredential()` in `envelope.ts`)

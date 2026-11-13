@@ -65,7 +65,9 @@ The verification system is the core functionality of the VC Verifier. It support
 
 ### Main Verification Entry Point
 
-**Method**: `Verifier.verify(input, challenge?, domain?)`
+**Method**: `Verifier.verify(input, options?: VerifyOptions)`
+
+`VerifyOptions` is `challenge`, `domain`, `holderBinding` (default `true`), and `checkStatus` (default `true`). `checkStatus: false` skips status-list fetches for JSON-LD and JWT credentials and for credentials inside a presentation. `/api/verifier` does not set `checkStatus`, so status is still checked when `credentialStatus` is present. `/api/vcalm` sets it from `options.checks` and sets `holderBinding: false` on the presentation route. The HTTP query aliases (`nonce`, `audience`, `aud`) are translated in `routes/verify/index.ts` before this call.
 
 **Input Types**:
 1. **String**: Assumed JWT, validated and parsed

@@ -7,6 +7,16 @@ interface RecordedResponse {
   sha256: string;
 }
 
+const requestedUrls: string[] = [];
+
+export function httpRequests(): readonly string[] {
+  return requestedUrls;
+}
+
+export function resetHttpRequests(): void {
+  requestedUrls.length = 0;
+}
+
 const fixtureDirectory = new URL("../__tests__/fixtures/http/", import.meta.url);
 const manifest = JSON.parse(
   readFileSync(new URL("manifest.json", fixtureDirectory), "utf8")
@@ -18,6 +28,7 @@ export function createFixtureFetch(onUnexpected: (message: string) => void): typ
     const url = typeof input === "string" || input instanceof URL
       ? String(input)
       : input.url;
+    requestedUrls.push(url);
     const method = (init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase();
     const fixture = manifest.responses[url];
     if (method !== "GET" || !fixture) {

@@ -9,6 +9,7 @@ vc-verifier/
 ├── assets/           # Shared images (logo, screenshots for README)
 ├── CHANGELOG.md      # Root changelog (consolidated)
 ├── README.md         # Project documentation
+├── docs/vcalm-api.md # Plan for a VCALM verifier API beside /api/verifier (not implemented)
 ├── LICENSE           # Apache-2.0 license
 └── docker-compose.yml # Multi-container orchestration
 ```
@@ -186,6 +187,8 @@ GET  /api/verifier/vc/:vcid           # Verify credential by ID
 POST /api/verifier                    # Verify array of verifiables
 GET  /api/verifier/id/:subjectId     # Verify subject's credentials
 POST /api/verifier/gs1                # GS1-specific verification
+POST /api/vcalm/credentials/verify    # VCALM: one credential
+POST /api/vcalm/presentations/verify  # VCALM: one presentation
 GET  /api/verifier/swagger            # Swagger UI
 ```
 

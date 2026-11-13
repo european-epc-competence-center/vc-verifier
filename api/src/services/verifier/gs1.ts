@@ -184,7 +184,7 @@ export const validateExternalCredential: verifyExternalCredential = async (
 ): Promise<gs1RulesResult> => {
   // Normalize the GS1 credential type to our internal Verifiable type
   const normalizedCredential = normalizeVerifiable(credential);
-  const credVerificationResult = await Verifier.verify(normalizedCredential, challenge, domain);
+  const credVerificationResult = await Verifier.verify(normalizedCredential, { challenge, domain });
 
   const errors: any[] = [];
 
@@ -265,9 +265,7 @@ export class GS1Verifier {
       // Perform standard credential/presentation verification
       const credentialVerificationResult = await Verifier.verify(
         normalizedVerifiable as any,
-        challenge,
-        domain,
-        holderBinding
+        { challenge, domain, holderBinding }
       );
       
       // Extract credential payload for type checking

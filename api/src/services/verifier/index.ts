@@ -23,10 +23,20 @@ interface StatusResult {
   error?: any;
 }
 
-interface VerificationOptions {
+export interface VerifyOptions {
   challenge?: string;
   domain?: string;
   holderBinding?: boolean;
+  /** When false, ignore credentialStatus. Default true. */
+  checkStatus?: boolean;
+}
+
+function resolveVerifyOptions(options: VerifyOptions = {}): VerifyOptions {
+  return {
+    holderBinding: true,
+    checkStatus: true,
+    ...options,
+  };
 }
 
 const CREDENTIAL_TYPES = {
@@ -94,9 +104,16 @@ function getPresentationStatus(
   return credentials[0].credentialStatus;
 }
 
+/** Satisfies libraries that require a status function without reading a status list. */
+const skipStatusCheck = async () => ({ verified: true });
+
 function getCheckStatus(
-  credentialStatus?: CredentialStatus[] | CredentialStatus
+  credentialStatus?: CredentialStatus[] | CredentialStatus,
+  checkStatus = true
 ): any | undefined {
+  if (!checkStatus) {
+    return credentialStatus ? skipStatusCheck : undefined;
+  }
   if (!credentialStatus) return undefined;
 
   const statusTypes = Array.isArray(credentialStatus)
@@ -122,15 +139,9 @@ export class Verifier {
 
   static async verify(
     input: Verifiable | verifiableJwt | string,
-    challenge?: string,
-    domain?: string,
-    holderBinding = true
+    options: VerifyOptions = {}
   ): Promise<VerificationResult> {
-    const options: VerificationOptions = {
-      challenge,
-      domain,
-      holderBinding,
-    };
+    options = resolveVerifyOptions(options);
 
     // Unwrap enveloped credential if present
     const unwrappedInput = unwrapEnvelopedCredential(input);
@@ -144,7 +155,7 @@ export class Verifier {
 
   private static async verifyJWTInput(
     input: string,
-    options: VerificationOptions
+    options: VerifyOptions
   ): Promise<VerificationResult> {
     if (!JWTService.isJWT(input)) {
       throw new Error('String input provided but not in valid JWT format');
@@ -223,8 +234,11 @@ export class Verifier {
       });
     }
 
-    // Check status for JWT credentials if they have credentialStatus
-    if (types.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL) && decodedBody.credentialStatus) {
+    if (
+      options.checkStatus !== false &&
+      types.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL) &&
+      decodedBody.credentialStatus
+    ) {
       return this.verifyJWTCredentialStatus(decodedBody, jwtResult);
     }
 
@@ -274,7 +288,7 @@ export class Verifier {
 
   private static async verifyObjectInput(
     verifiable: Verifiable,
-    options: VerificationOptions
+    options: VerifyOptions
   ): Promise<VerificationResult> {
     // Validate that verifiable has required properties
     if (!verifiable || !verifiable.type || !Array.isArray(verifiable.type)) {
@@ -284,7 +298,7 @@ export class Verifier {
     const suite = getSuites(verifiable.proof);
 
     if (verifiable.type.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL)) {
-      return this.verifyCredential(verifiable as VerifiableCredential, suite);
+      return this.verifyCredential(verifiable as VerifiableCredential, suite, options);
     }
 
     if (verifiable.type.includes(CREDENTIAL_TYPES.VERIFIABLE_PRESENTATION)) {
@@ -300,9 +314,13 @@ export class Verifier {
 
   private static async verifyCredential(
     credential: VerifiableCredential,
-    suite: unknown[]
+    suite: unknown[],
+    options: VerifyOptions
   ): Promise<VerificationResult> {
-    const checkStatus = getCheckStatus(credential.credentialStatus);
+    const checkStatus = getCheckStatus(
+      credential.credentialStatus,
+      options.checkStatus !== false
+    );
     const isDataIntegrityProof = this.isDataIntegrityProof(credential.proof);
 
     let result;
@@ -315,7 +333,7 @@ export class Verifier {
       });
 
       // Manual status check as long as not implemented in jsigs
-      if (checkStatus) {
+      if (checkStatus && options.checkStatus !== false) {
         result.statusResult = await checkStatus({
           credential,
           documentLoader,
@@ -335,13 +353,17 @@ export class Verifier {
       });
     }
 
+    if (options.checkStatus === false) {
+      delete result.statusResult;
+    }
+
     return this.normalizeResult(result);
   }
 
   private static async verifyPresentation(
     presentation: VerifiablePresentation,
     suite: unknown[],
-    options: VerificationOptions
+    options: VerifyOptions
   ): Promise<VerificationResult> {
     presentation = unwrapPresentationVerifiableCredentials(
       decodeVerifiableInput(presentation)
@@ -356,7 +378,9 @@ export class Verifier {
         : presentation.proof.challenge;
     }
 
-    const checkStatus = getCheckStatus(getPresentationStatus(presentation));
+    const checkStatus = options.checkStatus === false
+      ? skipStatusCheck
+      : getCheckStatus(getPresentationStatus(presentation));
 
     let result;
 
@@ -418,12 +442,19 @@ export class Verifier {
       };
     }
 
+    if (options.checkStatus === false) {
+      delete result.statusResult;
+      for (const credentialResult of result.credentialResults ?? []) {
+        delete credentialResult.statusResult;
+      }
+    }
+
     return this.normalizeResult(result);
   }
 
   private static async verifyPresentationCredentials(
     presentation: VerifiablePresentation,
-    options: VerificationOptions
+    options: VerifyOptions
   ): Promise<any[]> {
     if (!presentation.verifiableCredential) return [];
 
@@ -433,11 +464,7 @@ export class Verifier {
 
     const credentialResults = await Promise.all(
       credentials.map((credential: VerifiableCredential) => {
-        return this.verify(
-          credential as Verifiable,
-          options.challenge,
-          options.domain
-        );
+        return this.verify(credential as Verifiable, options);
       })
     );
 

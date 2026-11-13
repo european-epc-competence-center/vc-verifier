@@ -82,12 +82,11 @@ export class VerifyRoutes {
 
       let tasks = Promise.all(
         req.body.map(function (verifiable: Verifiable | verifiableJwt | string) {
-          return Verifier.verify(
-            verifiable,
-            challenge,
-            domain,
-            holderBinding
-          );
+          return Verifier.verify(verifiable, {
+            challenge: typeof challenge === "string" ? challenge : undefined,
+            domain: typeof domain === "string" ? domain : undefined,
+            holderBinding,
+          });
         })
       );
 
