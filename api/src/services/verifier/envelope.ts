@@ -6,7 +6,7 @@
  * 2. Wrapped: An object with a "verifiableCredential" field containing the above structure
  */
 
-import { JWTService } from './jwt.js';
+import { decodeJWT, isJWT } from './jwt.js';
 
 const ENVELOPED_JWT_DATA_URL_PREFIXES = [
   'data:application/vc+jwt,',
@@ -123,8 +123,8 @@ function stripEnvelopedJwtDataUrl(id: string): string {
 export function decodeVerifiableInput(verifiable: any): any {
   let body = verifiable;
 
-  if (typeof verifiable === 'string' && JWTService.isJWT(verifiable)) {
-    const decoded = JWTService.decodeJWT(verifiable);
+  if (typeof verifiable === 'string' && isJWT(verifiable)) {
+    const decoded = decodeJWT(verifiable);
     if ('error' in decoded) {
       throw new Error(`Failed to decode verifiable JWT: ${decoded.error}`);
     }
@@ -146,8 +146,8 @@ export function decodeVerifiableInput(verifiable: any): any {
  * Decodes one presentation entry: compact JWT, enveloped JWT, or JSON-LD VC.
  */
 export function decodeVerifiableCredentialEntry(credential: any): any {
-  if (typeof credential === 'string' && JWTService.isJWT(credential)) {
-    const decoded = JWTService.decodeJWT(credential);
+  if (typeof credential === 'string' && isJWT(credential)) {
+    const decoded = decodeJWT(credential);
     if ('error' in decoded) {
       throw new Error(`Failed to decode credential JWT: ${decoded.error}`);
     }
@@ -155,8 +155,8 @@ export function decodeVerifiableCredentialEntry(credential: any): any {
   }
 
   const unwrapped = unwrapEnvelopedCredential(credential);
-  if (typeof unwrapped === 'string' && JWTService.isJWT(unwrapped)) {
-    const decoded = JWTService.decodeJWT(unwrapped);
+  if (typeof unwrapped === 'string' && isJWT(unwrapped)) {
+    const decoded = decodeJWT(unwrapped);
     if ('error' in decoded) {
       throw new Error(`Failed to decode credential JWT: ${decoded.error}`);
     }

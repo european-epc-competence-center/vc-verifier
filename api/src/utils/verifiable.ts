@@ -1,4 +1,4 @@
-import { JWTService } from "../services/verifier/jwt.js";
+import { decodeJWT, isJWT } from "../services/verifier/jwt.js";
 
 /** Credentials carried inside a presentation, in their original form. */
 export function enclosedCredentials(verifiable: unknown): unknown[] {
@@ -30,10 +30,10 @@ export function credentialId(verifiable: unknown): string | undefined {
 
 function payloadOf(verifiable: unknown): any {
   if (typeof verifiable === "string") {
-    if (!JWTService.isJWT(verifiable)) {
+    if (!isJWT(verifiable)) {
       return undefined;
     }
-    const decoded = JWTService.decodeJWT(verifiable);
+    const decoded = decodeJWT(verifiable);
     return "error" in decoded ? undefined : decoded.payload;
   }
   if (typeof verifiable === "object" && verifiable !== null) {

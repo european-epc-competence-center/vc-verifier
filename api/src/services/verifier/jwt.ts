@@ -5,7 +5,7 @@ import * as EcdsaMultikey from '@digitalbazaar/ecdsa-multikey';
 // @ts-ignore
 import jsigs from 'jsonld-signatures';
 import { documentLoader } from '../documentLoader/index.js';
-import { extractPublicKeyBytes, stringToBytes, base64ToBytes, type KNOWN_KEY_TYPE } from '../../utils/crypto.js';
+import { extractPublicKeyBytes, stringToBytes, base64ToBytes } from '../../utils/crypto.js';
 import {
   checkPayloadHolderMatches,
   resolveHolderFromVerificationMethod,
@@ -58,8 +58,7 @@ export interface JWTDecoded {
   payload: any;
 }
 
-export class JWTService {
-  private static toErrorDetails(error: unknown): JWTResult['error'] {
+function toErrorDetails(error: unknown): JWTResult['error'] {
     const fallback = {
       name: 'VerificationError',
       message: 'JWT verification failed'
@@ -84,12 +83,12 @@ export class JWTService {
     };
   }
 
-  static isJWT(input: string): boolean {
+export function isJWT(input: string): boolean {
     if (typeof input !== 'string') return false;
     return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(input.trim());
   }
 
-  static holderBindingFromPayload(
+export function holderBindingFromPayload(
     payload: Record<string, unknown>
   ): JWTHolderBinding {
     const nonce = payload.nonce;
@@ -110,7 +109,7 @@ export class JWTService {
    * Validates JWT presentation holder binding via `AuthenticationProofPurpose`,
    * mapping `nonce`/`aud` onto the library's `challenge`/`domain` checks.
    */
-  static async validatePresentationHolderBinding(
+export async function validatePresentationHolderBinding(
     expected: JWTHolderBinding,
     actual: JWTHolderBinding,
     verificationMethod: { id: string; controller?: string | { id: string } },
@@ -176,7 +175,7 @@ export class JWTService {
     }
   }
 
-  static decodeJWT(jwt: string): JWTDecoded | { error: string } {
+export function decodeJWT(jwt: string): JWTDecoded | { error: string } {
     try {
       const payload = jose.decodeJwt(jwt);
       const header = jose.decodeProtectedHeader(jwt);
@@ -186,42 +185,42 @@ export class JWTService {
     }
   }
 
-  static async verifyJWT(jwt: string): Promise<JWTDetectionResult> {
-    const decoded = this.decodeJWT(jwt);
+export async function verifyJWT(jwt: string): Promise<JWTDetectionResult> {
+    const decoded = decodeJWT(jwt);
 
     if ('error' in decoded) {
-      return this.createFailureResult(jwt, decoded, undefined, {
+      return createFailureResult(jwt, decoded, undefined, {
         name: 'VerificationError',
         message: decoded.error
       });
     }
 
-    const { issuer, holder, kid, alg } = this.extractJWTParams(decoded);
+    const { issuer, holder, kid, alg } = extractJWTParams(decoded);
     
     if (!kid) {
-      return this.createFailureResult(jwt, decoded, undefined, {
+      return createFailureResult(jwt, decoded, undefined, {
         name: 'VerificationError',
         message: 'Missing kid in JWT header'
       });
     }
 
     // A did:key kid is self-contained and doesn't require an issuer
-    if ((!issuer && !holder) && !this.isSelfContainedDID(kid)) {
-      return this.createFailureResult(jwt, decoded, undefined, {
+    if ((!issuer && !holder) && !isSelfContainedDID(kid)) {
+      return createFailureResult(jwt, decoded, undefined, {
         name: 'VerificationError',
         message: 'Missing issuer in JWT payload'
       });
     }
 
-    const { verificationMethod, error: loadError } = await this.loadVerificationMethod(issuer, kid);
+    const { verificationMethod, error: loadError } = await loadVerificationMethod(issuer, kid);
     if (!verificationMethod) {
-      return this.createFailureResult(jwt, decoded, undefined, loadError ?? {
+      return createFailureResult(jwt, decoded, undefined, loadError ?? {
         name: 'VerificationError',
         message: 'Failed to load verification method'
       });
     }
 
-    const verificationResult = await this.performVerification(jwt, verificationMethod, alg);
+    const verificationResult = await performVerification(jwt, verificationMethod, alg);
     
     return {
       verified: verificationResult.verified,
@@ -236,7 +235,7 @@ export class JWTService {
     };
   }
 
-  private static extractJWTParams(decoded: JWTDecoded) {
+function extractJWTParams(decoded: JWTDecoded) {
     const issuer = decoded.payload.issuer?.id || decoded.payload.issuer || decoded.payload.iss;
     const holder = decoded.payload.holder?.id || decoded.payload.holder || decoded.payload.holder;
     const kid = decoded.header.kid;
@@ -244,11 +243,11 @@ export class JWTService {
     return { issuer, holder, kid, alg };
   }
 
-  private static isSelfContainedDID(kid: string): boolean {
+function isSelfContainedDID(kid: string): boolean {
     return kid.startsWith('did:key:');
   }
 
-  private static async loadVerificationMethod(issuer: string | undefined, kid: string): Promise<{
+async function loadVerificationMethod(issuer: string | undefined, kid: string): Promise<{
     verificationMethod?: any;
     error?: JWTResult['error'];
   }> {
@@ -256,7 +255,7 @@ export class JWTService {
       let verificationMethodUrl: string;
       if (kid.includes('#')) {
         verificationMethodUrl = kid;
-      } else if (this.isSelfContainedDID(kid)) {
+      } else if (isSelfContainedDID(kid)) {
         // For self-contained DIDs like did:key, the verification method id is did#keyId
         const keyId = kid.split(':').pop()!;
         verificationMethodUrl = `${kid}#${keyId}`;
@@ -266,31 +265,31 @@ export class JWTService {
       const res = await documentLoader(verificationMethodUrl);
       return { verificationMethod: res.document };
     } catch (error) {
-      return { error: this.toErrorDetails(error) };
+      return { error: toErrorDetails(error) };
     }
   }
 
-  private static async performVerification(
+async function performVerification(
     jwt: string,
     verificationMethod: any,
     alg: string
   ): Promise<{ verified: boolean; error?: JWTResult['error'] }> {
     if (verificationMethod.type.startsWith('JsonWebKey') && verificationMethod.publicKeyJwk) {
-      return this.verifyWithJWK(jwt, verificationMethod.publicKeyJwk, alg);
+      return verifyWithJWK(jwt, verificationMethod.publicKeyJwk, alg);
     }
     
-    if (this.isEd25519VerificationMethod(verificationMethod.type) && this.isEd25519Algorithm(alg)) {
-      return this.verifyEd25519(jwt, verificationMethod);
+    if (isEd25519VerificationMethod(verificationMethod.type) && isEd25519Algorithm(alg)) {
+      return verifyEd25519(jwt, verificationMethod);
     }
 
     if (verificationMethod.type === 'Multikey' && verificationMethod.publicKeyMultibase) {
-      return this.verifyWithMultikey(jwt, verificationMethod, alg);
+      return verifyWithMultikey(jwt, verificationMethod, alg);
     }
     
     return { verified: false, error: { name: 'VerificationError', message: `Unsupported verification method: ${verificationMethod.type}` } };
   }
 
-  private static async verifyWithMultikey(
+async function verifyWithMultikey(
     jwt: string,
     verificationMethod: any,
     alg: string
@@ -298,13 +297,13 @@ export class JWTService {
     try {
       const keyPair = await EcdsaMultikey.from(verificationMethod);
       const publicKeyJwk = await EcdsaMultikey.toJwk({ keyPair, secretKey: false });
-      return this.verifyWithJWK(jwt, publicKeyJwk, alg);
+      return verifyWithJWK(jwt, publicKeyJwk, alg);
     } catch (error) {
-      return { verified: false, error: this.toErrorDetails(error) };
+      return { verified: false, error: toErrorDetails(error) };
     }
   }
 
-  private static async verifyWithJWK(
+async function verifyWithJWK(
     jwt: string,
     publicKeyJwk: any,
     alg: string
@@ -320,11 +319,11 @@ export class JWTService {
       
       return { verified: true };
     } catch (error) {
-      return { verified: false, error: this.toErrorDetails(error) };
+      return { verified: false, error: toErrorDetails(error) };
     }
   }
 
-  private static verifyEd25519(
+function verifyEd25519(
     jwt: string,
     verificationMethod: any
   ): { verified: boolean; error?: JWTResult['error'] } {
@@ -343,19 +342,19 @@ export class JWTService {
       
       return { verified: isValid };
     } catch (error) {
-      return { verified: false, error: this.toErrorDetails(error) };
+      return { verified: false, error: toErrorDetails(error) };
     }
   }
 
-  private static isEd25519VerificationMethod(type: string): boolean {
+function isEd25519VerificationMethod(type: string): boolean {
     return type === 'Ed25519VerificationKey2020' || type === 'Ed25519VerificationKey2018';
   }
 
-  private static isEd25519Algorithm(alg: string): boolean {
+function isEd25519Algorithm(alg: string): boolean {
     return alg === 'Ed25519' || alg === 'EdDSA';
   }
 
-  private static createFailureResult(
+function createFailureResult(
     jwt: string,
     decoded: JWTDecoded | { error: string },
     verificationMethod?: any,
@@ -373,4 +372,3 @@ export class JWTService {
       }]
     };
   }
-}

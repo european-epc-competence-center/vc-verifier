@@ -1,4 +1,7 @@
-import { JWTService } from '../src/services/verifier/jwt.js';
+import {
+  holderBindingFromPayload,
+  validatePresentationHolderBinding,
+} from '../src/services/verifier/jwt.js';
 
 const holderDid = 'did:example:holder';
 const verificationMethod = {
@@ -25,7 +28,7 @@ describe('JWT presentation holder binding', () => {
   };
 
   test('extracts nonce, aud, and holder from JWT presentation payloads', () => {
-    expect(JWTService.holderBindingFromPayload(payload)).toEqual({
+    expect(holderBindingFromPayload(payload)).toEqual({
       nonce: payload.nonce,
       aud: payload.aud,
       holder: payload.holder,
@@ -33,9 +36,9 @@ describe('JWT presentation holder binding', () => {
   });
 
   test('accepts matching nonce and aud via AuthenticationProofPurpose', async () => {
-    const binding = JWTService.holderBindingFromPayload(payload);
+    const binding = holderBindingFromPayload(payload);
 
-    const result = await JWTService.validatePresentationHolderBinding(
+    const result = await validatePresentationHolderBinding(
       {
         nonce: payload.nonce,
         aud: payload.aud,
@@ -53,12 +56,12 @@ describe('JWT presentation holder binding', () => {
   });
 
   test('accepts presentations without an explicit holder claim', async () => {
-    const binding = JWTService.holderBindingFromPayload({
+    const binding = holderBindingFromPayload({
       nonce: payload.nonce,
       aud: payload.aud,
     });
 
-    const result = await JWTService.validatePresentationHolderBinding(
+    const result = await validatePresentationHolderBinding(
       {
         nonce: payload.nonce,
         aud: payload.aud,
@@ -82,7 +85,7 @@ describe('JWT presentation holder binding', () => {
       holder: holderDid,
     };
 
-    const result = await JWTService.validatePresentationHolderBinding(
+    const result = await validatePresentationHolderBinding(
       { nonce: 'abc123', aud: 'verifier' },
       binding,
       verificationMethod,
@@ -94,7 +97,7 @@ describe('JWT presentation holder binding', () => {
   });
 
   test('rejects missing nonce before delegating to AuthenticationProofPurpose', async () => {
-    const result = await JWTService.validatePresentationHolderBinding(
+    const result = await validatePresentationHolderBinding(
       {},
       { holder: holderDid },
       verificationMethod,
@@ -108,9 +111,9 @@ describe('JWT presentation holder binding', () => {
   });
 
   test('rejects mismatched nonce', async () => {
-    const binding = JWTService.holderBindingFromPayload(payload);
+    const binding = holderBindingFromPayload(payload);
 
-    const result = await JWTService.validatePresentationHolderBinding(
+    const result = await validatePresentationHolderBinding(
       { nonce: 'wrong-nonce' },
       binding,
       verificationMethod,
@@ -122,7 +125,7 @@ describe('JWT presentation holder binding', () => {
   });
 
   test('rejects missing nonce in payload when nonce is expected', async () => {
-    const result = await JWTService.validatePresentationHolderBinding(
+    const result = await validatePresentationHolderBinding(
       { nonce: payload.nonce },
       { aud: payload.aud, holder: holderDid },
       verificationMethod,
@@ -134,9 +137,9 @@ describe('JWT presentation holder binding', () => {
   });
 
   test('rejects mismatched aud when domain option is provided', async () => {
-    const binding = JWTService.holderBindingFromPayload(payload);
+    const binding = holderBindingFromPayload(payload);
 
-    const result = await JWTService.validatePresentationHolderBinding(
+    const result = await validatePresentationHolderBinding(
       {
         nonce: payload.nonce,
         aud: 'redirect_uri:https://other.example/response',
@@ -151,9 +154,9 @@ describe('JWT presentation holder binding', () => {
   });
 
   test('skips aud validation when no aud option is provided', async () => {
-    const binding = JWTService.holderBindingFromPayload(payload);
+    const binding = holderBindingFromPayload(payload);
 
-    const result = await JWTService.validatePresentationHolderBinding(
+    const result = await validatePresentationHolderBinding(
       { nonce: payload.nonce },
       binding,
       verificationMethod,

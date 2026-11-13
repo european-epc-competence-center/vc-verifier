@@ -1,8 +1,10 @@
 import { Router } from "express";
-import { VerifyRoutes } from "../../routes/index.js";
-
-const verifyRoutes = new VerifyRoutes();
-const { fetchAndVerify, verify, verifySubjectsVCs, verifyGS1 } = verifyRoutes;
+import {
+  fetchAndVerify,
+  verify,
+  verifyGS1,
+  verifySubjectsVCs,
+} from "../../routes/verify/index.js";
 
 export const verifyRouter = Router();
 

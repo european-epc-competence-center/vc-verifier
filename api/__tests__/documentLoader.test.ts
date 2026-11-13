@@ -12,7 +12,7 @@ await jest.unstable_mockModule(
 const { DIDResolutionError, documentLoader } = await import(
   "../src/services/documentLoader/index.js"
 );
-const { Verifier } = await import("../src/services/verifier/index.js");
+const { verify } = await import("../src/services/verifier/index.js");
 
 const did = "did:example:issuer";
 const verificationMethodId = `${did}#key-1`;
@@ -336,7 +336,7 @@ describe("DID document resolution", () => {
       didDocumentMetadata: {},
     });
 
-    const result = await Verifier.verify(jwtFor(did, verificationMethodId));
+    const result = await verify(jwtFor(did, verificationMethodId));
     const responseBody = JSON.parse(JSON.stringify(result));
 
     expect(result.verified).toBe(false);

@@ -7,7 +7,10 @@ import {
   resolveHolderFromVerificationMethod,
   validateCredentialHolderBinding,
 } from '../src/services/verifier/holder.js';
-import { JWTService } from '../src/services/verifier/jwt.js';
+import {
+  holderBindingFromPayload,
+  validatePresentationHolderBinding,
+} from '../src/services/verifier/jwt.js';
 
 const holderDid = 'did:example:holder';
 const subjectDid = 'did:example:subject';
@@ -120,13 +123,13 @@ describe('JWT presentation holder-controller binding', () => {
   });
 
   test('rejects when JWT holder claim does not match signing key controller', async () => {
-    const binding = JWTService.holderBindingFromPayload(payload);
+    const binding = holderBindingFromPayload(payload);
     const verificationMethod = {
       id: `${subjectDid}#key-1`,
       controller: subjectDid,
     };
 
-    const result = await JWTService.validatePresentationHolderBinding(
+    const result = await validatePresentationHolderBinding(
       { nonce: payload.nonce, aud: payload.aud },
       binding,
       verificationMethod,
@@ -138,13 +141,13 @@ describe('JWT presentation holder-controller binding', () => {
   });
 
   test('skips JWT holder claim check when enforcement is disabled', async () => {
-    const binding = JWTService.holderBindingFromPayload(payload);
+    const binding = holderBindingFromPayload(payload);
     const verificationMethod = {
       id: `${subjectDid}#key-1`,
       controller: subjectDid,
     };
 
-    const result = await JWTService.validatePresentationHolderBinding(
+    const result = await validatePresentationHolderBinding(
       { nonce: payload.nonce, aud: payload.aud },
       binding,
       verificationMethod,

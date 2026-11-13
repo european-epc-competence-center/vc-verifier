@@ -1,8 +1,8 @@
 import { NextFunction, Request, response, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { Verifier, fetch_json } from "../../services/index.js";
-import { GS1Verifier } from "../../services/verifier/gs1.js";
+import { verify as verifyVerifiable, fetch_json } from "../../services/index.js";
+import { verifyGs1 } from "../../services/verifier/gs1.js";
 
 const VC_REGISTRY = process.env.VC_REGISTRY
   ? process.env.VC_REGISTRY
@@ -28,8 +28,7 @@ function parseBooleanQueryParam(
   throw new Error(`The ${paramName} must be provided as a boolean string.`);
 }
 
-export class VerifyRoutes {
-  fetchAndVerify = async (
+export const fetchAndVerify = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -49,7 +48,7 @@ export class VerifyRoutes {
           .send("Credential not found!\n" + error);
       }
 
-      const result = await Verifier.verify(credential);
+      const result = await verifyVerifiable(credential);
 
       return res.status(StatusCodes.OK).json(result);
     } catch (error) {
@@ -59,7 +58,7 @@ export class VerifyRoutes {
     }
   };
 
-  verify = async (
+export const verify = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -82,12 +81,11 @@ export class VerifyRoutes {
 
       let tasks = Promise.all(
         req.body.map(function (verifiable: Verifiable | verifiableJwt | string) {
-          return Verifier.verify(
-            verifiable,
-            challenge,
-            domain,
-            holderBinding
-          );
+          return verifyVerifiable(verifiable, {
+            challenge: typeof challenge === "string" ? challenge : undefined,
+            domain: typeof domain === "string" ? domain : undefined,
+            holderBinding,
+          });
         })
       );
 
@@ -103,7 +101,7 @@ export class VerifyRoutes {
     }
   };
 
-  verifySubjectsVCs = async (
+export const verifySubjectsVCs = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -122,7 +120,7 @@ export class VerifyRoutes {
 
       let tasks = Promise.all(
         credentials.map(function (vc) {
-          return Verifier.verify(vc);
+          return verifyVerifiable(vc);
         })
       );
 
@@ -137,7 +135,7 @@ export class VerifyRoutes {
     }
   };
 
-  verifyGS1 = async (
+export const verifyGS1 = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -158,7 +156,7 @@ export class VerifyRoutes {
 
       let tasks = Promise.all(
         req.body.map(function (verifiable: Verifiable | verifiableJwt | string) {
-          return GS1Verifier.verify(
+          return verifyGs1(
             verifiable,
             challenge,
             domain,
@@ -179,4 +177,3 @@ export class VerifyRoutes {
         .send("Something went wrong verifying GS1 credential!\n" + error);
     }
   };
-}

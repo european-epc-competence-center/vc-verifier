@@ -2,7 +2,7 @@
 import { Bitstring } from "@digitalbazaar/bitstring";
 // @ts-ignore
 import { verifyCredential as vcVerifyCredential } from "@digitalbazaar/vc";
-import { JWTService } from './jwt.js';
+import { decodeJWT, verifyJWT } from './jwt.js';
 import { unwrapEnvelopedCredential } from './envelope.js';
 import { getSuites } from './suites.js';
 
@@ -197,7 +197,7 @@ async function _checkSingleBitstringStatus({
   
   let slCredentialStatusPurpose;
   if (typeof slCredential === 'string') {
-    const decoded = JWTService.decodeJWT(slCredential);
+    const decoded = decodeJWT(slCredential);
     if ('error' in decoded) {
       throw new Error(`Failed to decode status list JWT: ${decoded.error}`);
     }
@@ -216,8 +216,8 @@ async function _checkSingleBitstringStatus({
 
   if (verifyStatusListCredential) {
     if (typeof slCredential === 'string') {
-      // JWT verification using JWTService directly
-      const jwtVerifyResult = await JWTService.verifyJWT(slCredential);
+      // JWT verification through verifyJWT
+      const jwtVerifyResult = await verifyJWT(slCredential);
       if (!jwtVerifyResult.verified) {
         const firstResult = jwtVerifyResult.results[0];
         const errorMessage = firstResult && firstResult.decoded && 'error' in firstResult.decoded 
@@ -259,7 +259,7 @@ async function _checkSingleBitstringStatus({
     let statusListCredentialIssuer;
 
     if (typeof credential === 'string') {
-      const decoded = JWTService.decodeJWT(credential);
+      const decoded = decodeJWT(credential);
       if ('error' in decoded) {
         throw new Error(`Failed to decode credential JWT: ${decoded.error}`);
       }
@@ -274,7 +274,7 @@ async function _checkSingleBitstringStatus({
 
     // Get issuer from the status list credential
     if (typeof slCredential === 'string') {
-      const decoded = JWTService.decodeJWT(slCredential);
+      const decoded = decodeJWT(slCredential);
       if ('error' in decoded) {
         throw new Error(`Failed to decode status list JWT: ${decoded.error}`);
       }
@@ -298,7 +298,7 @@ async function _checkSingleBitstringStatus({
 
   let credentialTypes;
   if (typeof slCredential === 'string') {
-    const decoded = JWTService.decodeJWT(slCredential);
+    const decoded = decodeJWT(slCredential);
     if ('error' in decoded) {
       throw new Error(`Failed to decode status list JWT: ${decoded.error}`);
     }
@@ -315,7 +315,7 @@ async function _checkSingleBitstringStatus({
 
   let credentialSubject;
   if (typeof slCredential === 'string') {
-    const decoded = JWTService.decodeJWT(slCredential);
+    const decoded = decodeJWT(slCredential);
     if ('error' in decoded) {
       throw new Error(`Failed to decode status list JWT: ${decoded.error}`);
     }

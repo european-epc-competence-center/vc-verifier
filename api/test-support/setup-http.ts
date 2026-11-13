@@ -1,7 +1,7 @@
-import { jest, afterAll, afterEach } from "@jest/globals";
+import { jest, afterAll, afterEach, beforeEach } from "@jest/globals";
 import http from "node:http";
 import https from "node:https";
-import { createFixtureFetch } from "./http-fixtures.js";
+import { createFixtureFetch, resetHttpRequests } from "./http-fixtures.js";
 
 const unexpectedRequests: string[] = [];
 const fixtureFetch = createFixtureFetch((message) => unexpectedRequests.push(message));
@@ -47,6 +47,10 @@ for (const { transport, request, get } of originals) {
   transport.request = guard(request);
   transport.get = guard(get);
 }
+
+beforeEach(() => {
+  resetHttpRequests();
+});
 
 afterEach(() => {
   const requests = unexpectedRequests.splice(0);

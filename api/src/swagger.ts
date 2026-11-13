@@ -27,6 +27,8 @@ const swaggerOptions: any = {
       '',
       '**GS1 endpoint** — `POST /api/verifier/gs1` applies the same cryptographic checks plus GS1 VC business rules (prefix licence chains, product credentials, etc.).',
       '',
+      '**VCALM** — `POST /api/vcalm/credentials/verify` and `POST /api/vcalm/presentations/verify` each verify one document. HTTP 200 means it was accepted. HTTP 400 means it was rejected. `POST /api/verifier` is unchanged and still returns HTTP 200 with `verified: false` when a proof fails.',
+      '',
       'Interactive UI: `/api/verifier/swagger` · OpenAPI JSON: `/api/docs`',
     ].join('\n'),
   },

@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 
-import { verifyRouter, healthRouter } from './routers/index.js';
+import { verifyRouter, healthRouter, vcalmRouter } from './routers/index.js';
 
 
 // Swagger UI
@@ -28,5 +28,6 @@ app.use('/', healthRouter);
 
 // public verify router
 app.use('/api/verifier', verifyRouter);
+app.use('/api/vcalm', vcalmRouter);
 
 export default app;
