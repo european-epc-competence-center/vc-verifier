@@ -3,6 +3,8 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+## 4.0.0 (2026-11-13)
+
 ### Added
 - `POST /api/vcalm` runs GS1 verification when `options.checks` includes `gs1Rules`, by calling `verifyGs1` (the same verifier as `POST /api/verifier/gs1`). A rules failure is `verified: false` and `problemDetails`. The VCALM body does not gain `gs1Result`, and `verify` stays limited to cryptographic checks
 - VCALM verification at `POST /api/vcalm/credentials/verify` and `POST /api/vcalm/presentations/verify`. Each request verifies one document through the existing `Verifier`. HTTP 200 means the document was accepted; a failed proof or requested status check is HTTP 400 with `problemDetails`. `options.checks` can skip status lists. `POST /api/verifier` is unchanged
@@ -12,7 +14,7 @@ VC Verifier Changelog
 ### Changed
 - Verification, JWT, GS1, and VCALM entry points are module functions (`verify`, `verifyJWT`, `verifyGs1`, `verifyCredential`, `verifyPresentation`). HTTP handlers in `routes/verify` and `routes/vcalm` are functions too. `HealthRoutes`, `TTLCache`, `BitstringStatusList`, and `VcalmInputError` stay classes because they hold state or extend `Error`
 - `POST /api/verifier/gs1` keeps `error` and `errors` from the cryptographic check when that check produced them
-- `verify` takes a `VerifyOptions` object (`challenge`, `domain`, `holderBinding`, `checkStatus`). The separate positional arguments are removed
+- **Breaking:** `verify` takes a `VerifyOptions` object (`challenge`, `domain`, `holderBinding`, `checkStatus`). The separate positional arguments are removed
 - Relicense the project from AGPL-3.0 to Apache-2.0
 
 ## 3.7.5 (2026-11-02)
