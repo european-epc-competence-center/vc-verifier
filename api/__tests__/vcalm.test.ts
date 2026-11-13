@@ -1,6 +1,6 @@
 import request from "supertest";
 import app from "../src/app";
-import { Verifier } from "../src/services/verifier/index";
+import { verify } from "../src/services/verifier/index";
 import {
   VcalmInputError,
   failureToVcalmResponse,
@@ -107,16 +107,16 @@ describe("VCALM response mapping", () => {
   });
 });
 
-describe("Verifier checkStatus option", () => {
+describe("verify checkStatus option", () => {
   test("false skips status and the default still checks it", async () => {
-    const skipped = await Verifier.verify(statusCredential, { checkStatus: false });
+    const skipped = await verify(statusCredential, { checkStatus: false });
 
     expect(skipped.verified).toBe(true);
     expect(skipped.statusResult).toBeUndefined();
     expect(sawStatusList(statusCredential)).toBe(false);
 
     resetHttpRequests();
-    const checked = await Verifier.verify(statusCredential);
+    const checked = await verify(statusCredential);
 
     expect(checked.verified).toBe(true);
     expect(checked.statusResult?.verified).toBe(true);

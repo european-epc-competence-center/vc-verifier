@@ -12,8 +12,8 @@ import { checkGS1CredentialPresentationValidation,
 } from "@eecc/vc-verifier-rules";
 
 import { documentLoader } from "../documentLoader/index.js";
-import { Verifier } from "./index.js";
-import { JWTService } from "./jwt.js";
+import { verify } from "./index.js";
+import { decodeJWT, isJWT } from "./jwt.js";
 import { getJsonSchema, downloadAndCacheSchemas } from "./schemas.js";
 import { normalizePresentationInput } from "./envelope.js";
 import { credentialId, enclosedCredentials } from "../../utils/verifiable.js";
@@ -59,8 +59,8 @@ function extractCredentialInfo(credential: GS1VerifiableCredential | gs1Verifiab
   let credentialPayload: any;
   
   // Handle JWT credentials
-  if (typeof credential === 'string' && JWTService.isJWT(credential)) {
-    const decoded = JWTService.decodeJWT(credential);
+  if (typeof credential === 'string' && isJWT(credential)) {
+    const decoded = decodeJWT(credential);
     if ('error' in decoded) {
       return {
         credentialId: 'jwt-credential-decode-error',
@@ -94,11 +94,11 @@ function extractCredentialInfo(credential: GS1VerifiableCredential | gs1Verifiab
 function credentialForGs1Rules(
   credential: GS1VerifiableCredential | gs1VerifiableJwt | string
 ): GS1VerifiableCredential | gs1VerifiableJwt | string {
-  if (typeof credential !== 'string' || !JWTService.isJWT(credential)) {
+  if (typeof credential !== 'string' || !isJWT(credential)) {
     return credential;
   }
 
-  const decoded = JWTService.decodeJWT(credential);
+  const decoded = decodeJWT(credential);
   if ('error' in decoded) {
     return credential;
   }
@@ -190,7 +190,7 @@ function performGS1Validation(
 }
 
 function extractCredentialPayload(verifiable: any): any {
-  if (typeof verifiable === "string" && JWTService.isJWT(verifiable)) {
+  if (typeof verifiable === "string" && isJWT(verifiable)) {
     return normalizePresentationInput(verifiable);
   }
   if (verifiable?.vp || verifiable?.verifiableCredential) {
@@ -218,7 +218,7 @@ export const validateExternalCredential: verifyExternalCredential = async (
 ): Promise<gs1RulesResult> => {
   // Normalize the GS1 credential type to our internal Verifiable type
   const normalizedCredential = normalizeVerifiable(credential);
-  const credVerificationResult = await Verifier.verify(normalizedCredential, { challenge, domain });
+  const credVerificationResult = await verify(normalizedCredential, { challenge, domain });
 
   const errors: any[] = [];
 
@@ -284,15 +284,14 @@ interface GS1VerificationResponse {
   errorMessage?: string;
 }
 
-export class GS1Verifier {
-  static async verify(
-    verifiable: Verifiable | VerifiableCredential | GS1VerifiableCredential | gs1VerifiableJwt | string,
-    challenge?: string,
-    domain?: string,
-    holderBinding = true,
-    given?: readonly unknown[],
-    checkStatus = true
-  ): Promise<GS1VerificationResponse> { 
+export async function verifyGs1(
+  verifiable: Verifiable | VerifiableCredential | GS1VerifiableCredential | gs1VerifiableJwt | string,
+  challenge?: string,
+  domain?: string,
+  holderBinding = true,
+  given?: readonly unknown[],
+  checkStatus = true
+): Promise<GS1VerificationResponse> { 
     try {
       // Normalize the credential type if needed (for GS1 types)
       const normalizedVerifiable = typeof verifiable === 'string' || isVerifiableObject(verifiable)
@@ -300,7 +299,7 @@ export class GS1Verifier {
         : verifiable;
       
       // Perform standard credential/presentation verification
-      const credentialVerificationResult = await Verifier.verify(
+      const credentialVerificationResult = await verify(
         normalizedVerifiable as any,
         { challenge, domain, holderBinding, checkStatus }
       );
@@ -314,7 +313,7 @@ export class GS1Verifier {
       );
       
       // Build unified response
-      return this.buildUnifiedResponse(credentialVerificationResult, gs1Result);
+      return buildUnifiedResponse(credentialVerificationResult, gs1Result);
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -334,7 +333,7 @@ export class GS1Verifier {
     }
   }
 
-  private static buildUnifiedResponse(
+function buildUnifiedResponse(
     credentialVerificationResult: any,
     gs1Result: gs1RulesResult | gs1RulesResultContainer
   ): GS1VerificationResponse {
@@ -355,4 +354,3 @@ export class GS1Verifier {
       ...(credentialResults && { credentialResults }),
     };
   }
-}

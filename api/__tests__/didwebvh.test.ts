@@ -30,7 +30,7 @@ await jest.unstable_mockModule("node-fetch", () => ({ default: contextFetch }));
 
 const { getResolver } = await import("../src/services/documentLoader/didresolver.js");
 const { documentLoader } = await import("../src/services/documentLoader/index.js");
-const { Verifier } = await import("../src/services/verifier/index.js");
+const { verify } = await import("../src/services/verifier/index.js");
 
 beforeEach(() => {
   servedLog = originalLog;
@@ -108,7 +108,7 @@ describe("wallet did:webvh interoperability", () => {
   });
 
   test.each(formats)("verifies the wallet %s credential through the real resolver", async (format) => {
-    const result = await Verifier.verify(inputFor(format));
+    const result = await verify(inputFor(format));
 
     expect(result.verified).toBe(true);
     expect(result.results).toHaveLength(1);
@@ -131,7 +131,7 @@ describe("wallet did:webvh interoperability", () => {
       input.credentialSubject.id = "urn:tampered:subject";
     }
 
-    const result = await Verifier.verify(input);
+    const result = await verify(input);
 
     expect(result.verified).toBe(false);
     expect(result.results?.[0].verified).toBe(false);
@@ -156,7 +156,7 @@ describe("wallet did:webvh interoperability", () => {
     });
 
     test.each(formats)("rejects the unchanged wallet %s credential", async (format) => {
-      const result = await Verifier.verify(inputFor(format));
+      const result = await verify(inputFor(format));
 
       expect(result.verified).toBe(false);
       expect(result.results?.[0].error).toMatchObject({ code: "invalidDid" });

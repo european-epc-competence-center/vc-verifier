@@ -1,6 +1,6 @@
-import { Verifier, type VerifyOptions } from '../verifier/index.js';
-import { GS1Verifier } from '../verifier/gs1.js';
-import { JWTService } from '../verifier/jwt.js';
+import { verify, type VerifyOptions } from '../verifier/index.js';
+import { verifyGs1 } from '../verifier/gs1.js';
+import { isJWT } from '../verifier/jwt.js';
 import {
   VcalmInputError,
   failureToVcalmResponse,
@@ -18,21 +18,20 @@ const DOCUMENT_KEY = {
 } as const;
 
 /**
- * VCALM verify service. Proof checks are performed by `Verifier`.
- * `options.checks` containing `gs1Rules` uses `GS1Verifier` instead, then
+ * VCALM verify service. Proof checks are performed by `verify`.
+ * `options.checks` containing `gs1Rules` uses `verifyGs1` instead, then
  * drops `gs1Result` so the VCALM body stays unchanged.
  * HTTP 200 is used only when verification succeeds.
  */
-export class VcalmService {
-  static async verifyCredential(body: unknown): Promise<VcalmHttpResponse> {
-    return this.verify(body, 'credential');
-  }
+export async function verifyCredential(body: unknown): Promise<VcalmHttpResponse> {
+  return verifyDocument(body, 'credential');
+}
 
-  static async verifyPresentation(body: unknown): Promise<VcalmHttpResponse> {
-    return this.verify(body, 'presentation');
-  }
+export async function verifyPresentation(body: unknown): Promise<VcalmHttpResponse> {
+  return verifyDocument(body, 'presentation');
+}
 
-  private static async verify(body: unknown, kind: VcalmKind): Promise<VcalmHttpResponse> {
+async function verifyDocument(body: unknown, kind: VcalmKind): Promise<VcalmHttpResponse> {
     const view: VcalmView = { kind };
     try {
       const parsed = parseRequest(body, kind);
@@ -41,13 +40,12 @@ export class VcalmService {
       const options = verifyOptions(parsed, kind);
       const result = parsed.gs1Rules
         ? await verifyWithGs1(parsed.document, options)
-        : await Verifier.verify(parsed.document as Verifiable | string, options);
+        : await verify(parsed.document as Verifiable | string, options);
       return toVcalmResponse(result, view);
     } catch (error) {
       return failureToVcalmResponse(error, view);
     }
   }
-}
 
 interface ParsedRequest {
   document: unknown;
@@ -78,7 +76,7 @@ function parseRequest(body: unknown, kind: VcalmKind): ParsedRequest {
 
 function readDocument(document: unknown, key: string): unknown {
   if (typeof document === 'string') {
-    if (!JWTService.isJWT(document)) {
+    if (!isJWT(document)) {
       throw new VcalmInputError(`${key} must be a JSON object or a compact JWT string`);
     }
     return document;
@@ -132,7 +130,7 @@ const GS1_RULES_PROBLEM = 'https://ssi.eecc.de/api/vcalm/problems/gs1-rules';
 
 /** Same verifier as `POST /api/verifier/gs1`, mapped onto a VCALM result. */
 async function verifyWithGs1(document: unknown, options: VerifyOptions): Promise<any> {
-  const response = await GS1Verifier.verify(
+  const response = await verifyGs1(
     document as Verifiable | string,
     options.challenge,
     options.domain,

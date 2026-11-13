@@ -10,7 +10,7 @@ await jest.unstable_mockModule("@eecc/vc-verifier-rules", () => ({
   checkGS1CredentialPresentationValidation,
 }));
 
-const { Verifier } = await import("../src/services/verifier/index.js");
+const { verify } = await import("../src/services/verifier/index.js");
 const { default: app } = await import("../src/app.js");
 
 const credential = readJsonFixture("legacy/credential/gs1-licence-credential.json");
@@ -43,7 +43,7 @@ describe("VCALM gs1Rules check", () => {
   });
 
   test("leaves a credential on the cryptographic result when omitted", async () => {
-    const result = await Verifier.verify(credential);
+    const result = await verify(credential);
 
     expect(result.verified).toBe(true);
     expect(result).not.toHaveProperty("gs1Result");

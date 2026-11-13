@@ -65,9 +65,9 @@ The verification system is the core functionality of the VC Verifier. It support
 
 ### Main Verification Entry Point
 
-**Method**: `Verifier.verify(input, options?: VerifyOptions)`
+**Function**: `verify(input, options?: VerifyOptions)` in `services/verifier/index.ts`
 
-`VerifyOptions` is `challenge`, `domain`, `holderBinding` (default `true`), and `checkStatus` (default `true`). `checkStatus: false` skips status-list fetches for JSON-LD and JWT credentials and for credentials inside a presentation. `/api/verifier` does not set `checkStatus`, so status is still checked when `credentialStatus` is present. `/api/vcalm` sets it from `options.checks` and sets `holderBinding: false` on the presentation route. When `options.checks` includes `gs1Rules`, `VcalmService` calls `GS1Verifier.verify` instead of `Verifier.verify`, then drops `gs1Result` and turns rule failures into `errors` for the VCALM mapper (`https://ssi.eecc.de/api/vcalm/problems/gs1-rules`). The HTTP query aliases (`nonce`, `audience`, `aud`) are translated in `routes/verify/index.ts` before this call.
+`VerifyOptions` is `challenge`, `domain`, `holderBinding` (default `true`), and `checkStatus` (default `true`). `checkStatus: false` skips status-list fetches for JSON-LD and JWT credentials and for credentials inside a presentation. `/api/verifier` does not set `checkStatus`, so status is still checked when `credentialStatus` is present. `/api/vcalm` sets it from `options.checks` and sets `holderBinding: false` on the presentation route. When `options.checks` includes `gs1Rules`, `services/vcalm` calls `verifyGs1` instead of `verify`, then drops `gs1Result` and turns rule failures into `errors` for the VCALM mapper (`https://ssi.eecc.de/api/vcalm/problems/gs1-rules`). The HTTP query aliases (`nonce`, `audience`, `aud`) are translated in `routes/verify/index.ts` before this call.
 
 **Input Types**:
 1. **String**: Assumed JWT, validated and parsed
@@ -77,7 +77,7 @@ The verification system is the core functionality of the VC Verifier. It support
 ### Verification Path Selection
 
 ```
-Verifier.verify(input)
+verify(input)
     ↓
   unwrapEnvelopedCredential()  ← strips EnvelopedVerifiableCredential wrapper
     ↓
@@ -100,13 +100,13 @@ Two forms supported:
 - **Wrapped**: `{ verifiableCredential: { type: "EnvelopedVerifiableCredential", id: "..." } }`
 - **In presentations**: each entry in `verifiableCredential[]` may be enveloped — use `unwrapPresentationVerifiableCredentials()` before verification
 
-The JWT is extracted from the `id` field (`data:application/vc+jwt,` and `data:application/vc-ld+jwt,` prefixes are stripped). **JWT presentations** often list each VC as a compact JWT string in `verifiableCredential`; `normalizePresentationInput()` in `envelope.ts` decodes the VP (and `vp` claim), unwraps envelopes, and expands nested JWTs for GS1 rule processing, while `Verifier.verify()` keeps contained JWTs as JWT strings during signature verification so proof material is not lost.
+The JWT is extracted from the `id` field (`data:application/vc+jwt,` and `data:application/vc-ld+jwt,` prefixes are stripped). **JWT presentations** often list each VC as a compact JWT string in `verifiableCredential`; `normalizePresentationInput()` in `envelope.ts` decodes the VP (and `vp` claim), unwraps envelopes, and expands nested JWTs for GS1 rule processing, while `verify()` keeps contained JWTs as JWT strings during signature verification so proof material is not lost.
 
 ## JSON-LD Verification (Linked Data Proofs)
 
 ### Credential Verification Flow
 
-**Method**: `Verifier.verifyCredential(credential, suite)`
+**Function**: `verifyCredentialDocument(credential, suite)`
 
 **Steps**:
 1. Extract proof(s) from credential
@@ -123,7 +123,7 @@ The JWT is extracted from the `id` field (`data:application/vc+jwt,` and `data:a
 
 ### Presentation Verification Flow
 
-**Method**: `Verifier.verifyPresentation(presentation, suite, options)`
+**Function**: `verifyPresentationDocument(presentation, suite, options)`
 
 **Steps**:
 1. Extract challenge and domain (from options or proof)
@@ -170,13 +170,13 @@ switch (proof.type) {
 
 ### Detection
 
-**Method**: `JWTService.isJWT(input: string): boolean`
+**Method**: `isJWT(input: string): boolean`
 
 **Pattern**: `/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/`
 
 ### Decoding
 
-**Method**: `JWTService.decodeJWT(jwt: string)`
+**Method**: `decodeJWT(jwt: string)`
 
 **Process**:
 - Uses `jose.decodeJwt()` for payload
@@ -185,7 +185,7 @@ switch (proof.type) {
 
 ### Verification
 
-**Method**: `JWTService.verifyJWT(jwt: string)`
+**Method**: `verifyJWT(jwt: string)`
 
 **Flow**:
 1. Decode JWT
@@ -207,7 +207,7 @@ switch (proof.type) {
 - This mirrors linked-data-style error visibility and includes key fields (`name`, `message`, and when available `code`, `claim`, `reason`) from JOSE errors such as expired tokens (`ERR_JWT_EXPIRED`).
 
 **JWT VP holder binding (`nonce` / `aud` / `holder`)**:
-- `JWTService.holderBindingFromPayload()` reads `nonce` and `aud` from the JWT payload; see `api/src/services/verifier/jwt.ts`.
+- `holderBindingFromPayload()` reads `nonce` and `aud` from the JWT payload; see `api/src/services/verifier/jwt.ts`.
 - `validatePresentationHolderBinding()` maps `nonce`/`aud` onto `AuthenticationProofPurpose` (challenge/domain). Holder is derived from the presentation signing key (`verificationMethod.controller`, or id prefix before `#`); an explicit `holder` claim is checked against that value when present. Both expected and actual OID4VP fields use the unified `JWTHolderBinding` interface (`nonce`, `aud`, `holder`).
 - **Payload is the norm**: OpenID4VP, JWT VC Presentation Profile, and VC-JWT v1.1 examples all place `nonce` and `aud` in the claims set.
 - **Header is spec-permitted for `aud`**: VC-JWT v1.1 §4.2.1 allows registered claims as JOSE header parameters; RFC7519 registers `aud` as a replicable header param (primarily for JWE); VC-JOSE-COSE v2 §3.1.3 accepts registered members in header *or* payload.
@@ -313,22 +313,22 @@ await checkStatus({
 
 ### GS1 Verifier
 
-**Class**: `GS1Verifier` in `services/verifier/gs1.ts`
+**Function**: `verifyGs1` in `services/verifier/gs1.ts`
 
 **Purpose**: Add GS1-specific validation rules on top of standard verification
 
 ### Verification Flow
 
-**Method**: `GS1Verifier.verify(verifiable, challenge?, domain?, holderBinding?, given?)`
+**Function**: `verifyGs1(verifiable, challenge?, domain?, holderBinding?, given?, checkStatus?)`
 
 **Steps**:
-1. Standard verification via `Verifier.verify()` (`checkStatus` is forwarded; default `true`)
+1. Standard verification via `verify()` (`checkStatus` is forwarded; default `true`)
 2. GS1 rules validation (`performGS1Validation`):
    - **Credential**: `checkGS1CredentialWithoutPresentation()`
    - **Presentation**: `checkGS1CredentialPresentationValidation()`
 3. Merge results into unified response, including `gs1Result`. Credentials contribute `results` and `statusResult`. Presentations contribute `presentationResult` (holder proof, including `verificationMethod`) and `credentialResults`; they have no top-level `results`
 
-`/api/vcalm` uses this class when `options.checks` includes `gs1Rules`. It removes `gs1Result` before building the VCALM body. `Verifier.verify` does not call GS1 rules; `GS1Verifier` calls `Verifier.verify` for the signature check, so the rules stay on this path only.
+`/api/vcalm` calls `verifyGs1` when `options.checks` includes `gs1Rules`. It removes `gs1Result` before building the VCALM body. `verify` does not call GS1 rules; `verifyGs1` calls `verify` for the signature check, so the rules stay on this path only.
 
 ### GS1 Rules Integration
 
@@ -345,7 +345,7 @@ const gs1ValidatorRequest = {
   fullJsonSchemaValidationOn: true,
   gs1DocumentResolver: {
     externalCredentialLoader: loadExternalCredential,       // fetches chained credentials by URL via documentLoader
-    externalCredentialVerification: validateExternalCredential, // calls Verifier.verify() on each chained credential
+    externalCredentialVerification: validateExternalCredential, // calls verify() on each chained credential
     externalJsonSchemaLoader: getJsonSchema                 // returns locally cached GS1 JSON schemas
   }
 }
@@ -364,9 +364,9 @@ const gs1ValidatorRequest = {
 
 **JSON Schema loading** (`schemas.ts`): Schemas are loaded from local files in `schemas/` at startup (via `downloadAndCacheSchemas()` / `loadLocalSchemas()`). Remote download from GS1 GitHub is implemented but currently disabled because upstream schemas are incompatible with the local modified versions.
 
-**Type compatibility** (v2.6.2+): GS1 types allow `type: string | string[] | undefined`, internal types require `type: string[]`. `normalizeVerifiable()` in `gs1.ts` converts GS1 types before passing to `Verifier.verify()`.
+**Type compatibility** (v2.6.2+): GS1 types allow `type: string | string[] | undefined`, internal types require `type: string[]`. `normalizeVerifiable()` in `gs1.ts` converts GS1 types before passing to `verify()`.
 
-**GS1 JWT input**: the rules library decodes JWTs with `jose` (`decodeJwt`). `credentialForGs1Rules()` in `gs1.ts` still pre-decodes a single credential via `JWTService.decodeJWT()` before `checkGS1CredentialWithoutPresentation()`. Chained credentials loaded via `loadExternalCredential` stay as JWT strings so `Verifier.verify()` can check signatures.
+**GS1 JWT input**: the rules library decodes JWTs with `jose` (`decodeJwt`). `credentialForGs1Rules()` in `gs1.ts` still pre-decodes a single credential via `decodeJWT()` before `checkGS1CredentialWithoutPresentation()`. Chained credentials loaded via `loadExternalCredential` stay as JWT strings so `verify()` can check signatures.
 
 **Test env**: `api/jest.setup.ts` sets `GS1_GLOBAL_DID` to the company-wallet dev issuer; `gs1.test.ts` overrides to `did:web:id.gs1.org` for production demo credentials.
 
@@ -375,7 +375,7 @@ const gs1ValidatorRequest = {
 **Function**: `validateExternalCredential(credential, challenge?, domain?)`
 
 **Process**:
-1. Verify credential via `Verifier.verify()`
+1. Verify credential via `verify()`
 2. Check signature validity
 3. Check status validity
 4. Map to GS1 error codes:
@@ -422,7 +422,7 @@ const gs1ValidatorRequest = {
 - Load credentials by URL
 - Cache appropriately
 
-**Errors**: Document loaders should throw plain `Error` with a descriptive message. `jsonld-signatures` wraps failures in its internal `VerificationError` at `verify()` time; that class is not exported and must not be thrown from custom loaders. JWT verification propagates loader errors via `JWTService.loadVerificationMethod` → `results[0].error` → top-level `error` in `Verifier.promoteJWTError`.
+**Errors**: Document loaders should throw plain `Error` with a descriptive message. `jsonld-signatures` wraps failures in its internal `VerificationError` at `verify()` time; that class is not exported and must not be thrown from custom loaders. JWT verification propagates loader errors via `loadVerificationMethod` → `results[0].error` → top-level `error` in `promoteJwtError`.
 
 ### Caching Strategy
 
@@ -563,7 +563,7 @@ A valid log proves DID history integrity, not that a key may issue for a given i
 - Support for challenge/nonce in presentation proofs
 - Prevents replay attacks
 - Domain/audience validation
-- JWT presentation holder binding is handled in `JWTService` by mapping `nonce`/`aud` onto `AuthenticationProofPurpose`; linked-data presentations use `jsigs.verify()` directly
+- JWT presentation holder binding is handled in `jwt.ts` by mapping `nonce`/`aud` onto `AuthenticationProofPurpose`; linked-data presentations use `jsigs.verify()` directly
 
 ## Testing Strategy
 

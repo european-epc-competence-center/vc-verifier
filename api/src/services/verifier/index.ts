@@ -1,5 +1,5 @@
 // @ts-ignore
-import { verifyCredential, verify } from "@digitalbazaar/vc";
+import { verifyCredential as verifyCredentialProof, verify as verifyPresentationProof } from "@digitalbazaar/vc";
 // @ts-ignore
 import { checkStatus as checkStatus2020 } from "@digitalbazaar/vc-revocation-list";
 // @ts-ignore
@@ -58,7 +58,12 @@ const STATUS_TYPES = {
 } as const;
 
 import { documentLoader } from "../documentLoader/index.js";
-import { JWTService } from "./jwt.js";
+import {
+  holderBindingFromPayload,
+  isJWT,
+  validatePresentationHolderBinding,
+  verifyJWT,
+} from "./jwt.js";
 import { checkBitstringStatus } from "./status.js";
 import {
   decodeVerifiableInput,
@@ -135,36 +140,34 @@ function getCheckStatus(
   throw new Error(`Status types [${statusTypes.join(', ')}] not implemented`);
 }
 
-export class Verifier {
+export async function verify(
+  input: Verifiable | verifiableJwt | string,
+  options: VerifyOptions = {}
+): Promise<VerificationResult> {
+  options = resolveVerifyOptions(options);
 
-  static async verify(
-    input: Verifiable | verifiableJwt | string,
-    options: VerifyOptions = {}
-  ): Promise<VerificationResult> {
-    options = resolveVerifyOptions(options);
+  // Unwrap enveloped credential if present
+  const unwrappedInput = unwrapEnvelopedCredential(input);
 
-    // Unwrap enveloped credential if present
-    const unwrappedInput = unwrapEnvelopedCredential(input);
-
-    if (typeof unwrappedInput === 'string') {
-      return this.verifyJWTInput(unwrappedInput, options);
-    }
-
-    return this.verifyObjectInput(unwrappedInput as Verifiable, options);
+  if (typeof unwrappedInput === 'string') {
+    return verifyJwtInput(unwrappedInput, options);
   }
 
-  private static async verifyJWTInput(
+  return verifyObjectInput(unwrappedInput as Verifiable, options);
+}
+
+async function verifyJwtInput(
     input: string,
     options: VerifyOptions
   ): Promise<VerificationResult> {
-    if (!JWTService.isJWT(input)) {
+    if (!isJWT(input)) {
       throw new Error('String input provided but not in valid JWT format');
     }
 
-    const jwtResult = await JWTService.verifyJWT(input);
+    const jwtResult = await verifyJWT(input);
     
     if (!jwtResult.verified) {
-      return this.promoteJWTError(jwtResult);
+      return promoteJwtError(jwtResult);
     }
 
     if (jwtResult.results.length === 0) {
@@ -186,8 +189,8 @@ export class Verifier {
 
     if (types.includes(CREDENTIAL_TYPES.VERIFIABLE_PRESENTATION)) {
       const presentationBody = unwrapPresentationVerifiableCredentials(decodedBody);
-      const holderBinding = JWTService.holderBindingFromPayload(payload);
-      const bindingResult = await JWTService.validatePresentationHolderBinding(
+      const holderBinding = holderBindingFromPayload(payload);
+      const bindingResult = await validatePresentationHolderBinding(
         { nonce: options.challenge, aud: options.domain },
         holderBinding,
         firstResult.verificationMethod,
@@ -201,7 +204,7 @@ export class Verifier {
         ...(bindingResult.holder ? { holder: bindingResult.holder } : {}),
       } as VerifiablePresentation;
 
-      const credentialResults = await this.verifyPresentationCredentials(
+      const credentialResults = await verifyPresentationCredentials(
         presentation,
         {
           ...options,
@@ -226,7 +229,7 @@ export class Verifier {
         options.holderBinding !== false
       );
 
-      return this.normalizeResult({
+      return normalizeResult({
         presentationResult,
         verified: presentationResult.verified && allCredentialsVerified,
         credentialResults,
@@ -239,13 +242,13 @@ export class Verifier {
       types.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL) &&
       decodedBody.credentialStatus
     ) {
-      return this.verifyJWTCredentialStatus(decodedBody, jwtResult);
+      return verifyJwtCredentialStatus(decodedBody, jwtResult);
     }
 
     return jwtResult;
   }
 
-  private static async verifyJWTCredentialStatus(
+async function verifyJwtCredentialStatus(
     payload: any,
     jwtResult: any
   ): Promise<VerificationResult> {
@@ -286,7 +289,7 @@ export class Verifier {
     }
   }
 
-  private static async verifyObjectInput(
+async function verifyObjectInput(
     verifiable: Verifiable,
     options: VerifyOptions
   ): Promise<VerificationResult> {
@@ -298,11 +301,11 @@ export class Verifier {
     const suite = getSuites(verifiable.proof);
 
     if (verifiable.type.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL)) {
-      return this.verifyCredential(verifiable as VerifiableCredential, suite, options);
+      return verifyCredentialDocument(verifiable as VerifiableCredential, suite, options);
     }
 
     if (verifiable.type.includes(CREDENTIAL_TYPES.VERIFIABLE_PRESENTATION)) {
-      return this.verifyPresentation(
+      return verifyPresentationDocument(
         verifiable as VerifiablePresentation,
         suite,
         options
@@ -312,7 +315,7 @@ export class Verifier {
     throw new Error("Provided verifiable object is of unknown type!");
   }
 
-  private static async verifyCredential(
+async function verifyCredentialDocument(
     credential: VerifiableCredential,
     suite: unknown[],
     options: VerifyOptions
@@ -321,11 +324,11 @@ export class Verifier {
       credential.credentialStatus,
       options.checkStatus !== false
     );
-    const isDataIntegrityProof = this.isDataIntegrityProof(credential.proof);
+    const dataIntegrityProof = isDataIntegrityProof(credential.proof);
 
     let result;
 
-    if (isDataIntegrityProof) {
+    if (dataIntegrityProof) {
       result = await jsigs.verify(credential, {
         suite,
         purpose: new AssertionProofPurpose(),
@@ -345,7 +348,7 @@ export class Verifier {
         }
       }
     } else {
-      result = await verifyCredential({
+      result = await verifyCredentialProof({
         credential,
         suite,
         documentLoader,
@@ -357,10 +360,10 @@ export class Verifier {
       delete result.statusResult;
     }
 
-    return this.normalizeResult(result);
+    return normalizeResult(result);
   }
 
-  private static async verifyPresentation(
+async function verifyPresentationDocument(
     presentation: VerifiablePresentation,
     suite: unknown[],
     options: VerifyOptions
@@ -384,10 +387,10 @@ export class Verifier {
 
     let result;
 
-    if (this.isDataIntegrityProof(presentation.proof)) {
+    if (isDataIntegrityProof(presentation.proof)) {
       // jsigs.verify + AuthenticationProofPurpose already validates challenge,
       // domain, and authentication-key authorization for the presentation proof.
-      const credentialResults = await this.verifyPresentationCredentials(
+      const credentialResults = await verifyPresentationCredentials(
         presentation,
         options
       );
@@ -415,7 +418,7 @@ export class Verifier {
         error: presentationResult.error,
       };
     } else {
-      result = await verify({
+      result = await verifyPresentationProof({
         presentation,
         suite,
         documentLoader,
@@ -449,10 +452,10 @@ export class Verifier {
       }
     }
 
-    return this.normalizeResult(result);
+    return normalizeResult(result);
   }
 
-  private static async verifyPresentationCredentials(
+async function verifyPresentationCredentials(
     presentation: VerifiablePresentation,
     options: VerifyOptions
   ): Promise<any[]> {
@@ -464,7 +467,7 @@ export class Verifier {
 
     const credentialResults = await Promise.all(
       credentials.map((credential: VerifiableCredential) => {
-        return this.verify(credential as Verifiable, options);
+        return verify(credential as Verifiable, options);
       })
     );
 
@@ -475,12 +478,12 @@ export class Verifier {
     return credentialResults;
   }
 
-  private static isDataIntegrityProof(proof: Proof | Proof[]): boolean {
+function isDataIntegrityProof(proof: Proof | Proof[]): boolean {
     const proofType = Array.isArray(proof) ? proof[0].type : proof.type;
     return proofType === PROOF_TYPES.DATA_INTEGRITY;
   }
 
-  private static promoteJWTError(jwtResult: any): VerificationResult {
+function promoteJwtError(jwtResult: any): VerificationResult {
     const resultError = jwtResult.results?.[0]?.error;
     if (!resultError) {
       return jwtResult;
@@ -495,7 +498,7 @@ export class Verifier {
     };
   }
 
-  private static normalizeResult(result: any): VerificationResult {
+function normalizeResult(result: any): VerificationResult {
     // Make non-enumerable errors enumerable for the response
     if (result.error) {
       if (!result.error.errors) {
@@ -508,4 +511,3 @@ export class Verifier {
 
     return result;
   }
-}

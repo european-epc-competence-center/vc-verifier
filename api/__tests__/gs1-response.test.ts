@@ -5,7 +5,7 @@ const checkGS1CredentialWithoutPresentation = jest.fn<(...args: any[]) => Promis
 const checkGS1CredentialPresentationValidation = jest.fn<(...args: any[]) => Promise<any>>();
 
 await jest.unstable_mockModule("../src/services/verifier/index.js", () => ({
-  Verifier: { verify },
+  verify,
 }));
 
 await jest.unstable_mockModule("@eecc/vc-verifier-rules", () => ({
@@ -13,14 +13,14 @@ await jest.unstable_mockModule("@eecc/vc-verifier-rules", () => ({
   checkGS1CredentialPresentationValidation,
 }));
 
-const { GS1Verifier } = await import("../src/services/verifier/gs1.js");
+const { verifyGs1 } = await import("../src/services/verifier/gs1.js");
 
 const holderMethod = {
   id: "did:example:holder#key-1",
   controller: "did:example:holder",
 };
 
-describe("GS1Verifier response shape", () => {
+describe("verifyGs1 response shape", () => {
   beforeEach(() => {
     verify.mockReset();
     checkGS1CredentialWithoutPresentation.mockReset();
@@ -59,7 +59,7 @@ describe("GS1Verifier response shape", () => {
       ],
     });
 
-    const response = await GS1Verifier.verify({
+    const response = await verifyGs1({
       type: ["VerifiablePresentation"],
       verifiableCredential: [
         {
@@ -92,7 +92,7 @@ describe("GS1Verifier response shape", () => {
       errors: [],
     });
 
-    const response = await GS1Verifier.verify({
+    const response = await verifyGs1({
       type: ["VerifiableCredential", "GS1PrefixLicenseCredential"],
       id: "https://example.com/vc/prefix",
     });
@@ -142,10 +142,10 @@ describe("GS1Verifier response shape", () => {
       };
     });
 
-    const fromArray = await GS1Verifier.verify(product as any, undefined, undefined, true, [key, product]);
+    const fromArray = await verifyGs1(product as any, undefined, undefined, true, [key, product]);
     expect(fromArray.verified).toBe(true);
 
-    const fromPresentation = await GS1Verifier.verify(
+    const fromPresentation = await verifyGs1(
       product as any,
       undefined,
       undefined,
@@ -175,7 +175,7 @@ describe("GS1Verifier response shape", () => {
       return { verified: true, credentialId: product.id, credentialName: "ProductDataCredential", errors: [] };
     });
 
-    const response = await GS1Verifier.verify(product as any, undefined, undefined, true, [keyJwt]);
+    const response = await verifyGs1(product as any, undefined, undefined, true, [keyJwt]);
     expect(response.verified).toBe(true);
   });
 });

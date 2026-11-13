@@ -28,7 +28,7 @@ or, for a presentation:
 
 It treats the HTTP status as the verdict. **200** means the document was accepted. **400** or **422** means it was rejected. A body with `verified: false` on a 200 response is counted as a pass. The VC 2.0 client also treats a 200 body that contains a non-empty `errors` array as a failure.
 
-Those two behaviors cannot be one route. Adding VCALM fields to `POST /api/verifier` would break the frontend and the GS1 endpoint. The VCALM routes are a new mount that calls the same `Verifier`.
+Those two behaviors cannot be one route. Adding VCALM fields to `POST /api/verifier` would break the frontend and the GS1 endpoint. The VCALM routes are a new mount that calls the same `verify` function.
 
 ## What this API has to fulfill
 
@@ -105,8 +105,8 @@ Request:
 
 Processing:
 
-1. Read `options.checks`. Absent means proof and, when `credentialStatus` is present, status. Present means run only the named checks this verifier implements. `gs1Rules` selects `GS1Verifier.verify`. Ignore `credentialSchema` and any other check name.
-2. Call `Verifier.verify` with status checking gated by that decision. When `gs1Rules` is requested, call `GS1Verifier.verify` instead and drop `gs1Result` before mapping.
+1. Read `options.checks`. Absent means proof and, when `credentialStatus` is present, status. Present means run only the named checks this verifier implements. `gs1Rules` selects `verifyGs1`. Ignore `credentialSchema` and any other check name.
+2. Call `verify` with status checking gated by that decision. When `gs1Rules` is requested, call `verifyGs1` instead and drop `gs1Result` before mapping.
 3. Map the result with the status rule below.
 
 ### `POST /api/vcalm/presentations/verify`
@@ -124,13 +124,13 @@ Request:
 }
 ```
 
-`verifiablePresentation` is required. Pass `options.challenge` and `options.domain` through to `Verifier.verify`. Pass `holderBinding: false`. Apply the same `checks` rule to enclosed credentials.
+`verifiablePresentation` is required. Pass `options.challenge` and `options.domain` through to `verify`. Pass `holderBinding: false`. Apply the same `checks` rule to enclosed credentials.
 
 The VC 2.0 suite also submits unsigned presentations. A presentation the verifier cannot process, including one with no proof when a proof is required, is HTTP 400.
 
 ### Status mapping
 
-| `Verifier` outcome | HTTP | Body |
+| `verify` outcome | HTTP | Body |
 |---|---|---|
 | `verified === true` | 200 | `{ "verified": true, "results": ..., "problemDetails": [] }` |
 | `verified === false` | 400 | `{ "verified": false, "problemDetails": [ ... ] }` |
@@ -215,7 +215,7 @@ Follow the existing layering: router, route handler, service.
 | File | Responsibility |
 |---|---|
 | `api/src/routers/vcalm/index.ts` | `POST /credentials/verify` and `POST /presentations/verify`, with JSDoc for the existing `express-jsdoc-swagger` setup |
-| `api/src/routes/vcalm/index.ts` | `VcalmRoutes`: parse the body, translate options, call `Verifier`, write the status and body |
+| `api/src/routes/vcalm/index.ts` | HTTP handlers: write the status and JSON body from `verifyCredential` / `verifyPresentation` in `services/vcalm` |
 | `api/src/services/vcalm/response.ts` | Map a `VerificationResult` or a thrown error to `{ status, body }` |
 | `api/__tests__/vcalm.test.ts` | Supertest coverage of the contract below |
 | `api/__tests__/vcalm-conformance.test.ts` | The canivc conformance rows this verifier can run without an issuer |
@@ -226,9 +226,9 @@ Export the router from `api/src/routers/index.ts` and mount it in `api/src/app.t
 app.use('/api/vcalm', vcalmRouter);
 ```
 
-### `Verifier` options
+### `verify` options
 
-`Verifier.verify` is `(input, options?: VerifyOptions)` and checks status when `credentialStatus` is present unless `options.checkStatus` is `false` (`api/src/services/verifier/index.ts`, `getCheckStatus`). Callers in `routes/verify/index.ts` and `gs1.ts` pass the same fields in that object:
+`verify` is `(input, options?: VerifyOptions)` and checks status when `credentialStatus` is present unless `options.checkStatus` is `false` (`api/src/services/verifier/index.ts`, `getCheckStatus`). Callers in `routes/verify/index.ts` and `gs1.ts` pass the same fields in that object:
 
 ```typescript
 export interface VerifyOptions {
@@ -242,7 +242,7 @@ export interface VerifyOptions {
 
 `checkStatus: false` skips `getCheckStatus` for both JSON-LD and JWT credentials. Enclosed credentials in a presentation inherit the same flag. `holderBinding` defaults to `true` when the options object omits it.
 
-`options.checks` containing `gs1Rules` does not add a flag to `Verifier.verify`. `VcalmService` calls `GS1Verifier.verify` (the same verifier as `POST /api/verifier/gs1`) and then drops `gs1Result` before the VCALM mapper runs. Rule failures become `problemDetails`.
+`options.checks` containing `gs1Rules` does not add a flag to `verify`. `verifyCredential` / `verifyPresentation` in `services/vcalm` call `verifyGs1` (the same verifier as `POST /api/verifier/gs1`) and then drop `gs1Result` before the VCALM mapper runs. Rule failures become `problemDetails`.
 
 ### Option translation in the route
 
@@ -250,17 +250,17 @@ export interface VerifyOptions {
 checks absent                          → checkStatus: true
 checks includes "credentialStatus"     → checkStatus: true
 checks is an array without that entry  → checkStatus: false
-checks includes "gs1Rules"             → GS1Verifier.verify, then drop gs1Result
+checks includes "gs1Rules"             → verifyGs1, then drop gs1Result
 options.challenge / options.domain     → VerifyOptions.challenge / domain
 VCALM presentation route               → holderBinding: false
 VCALM credential route                 → holderBinding omitted (no presentation)
 ```
 
-Do not require `checks` to contain `"proof"`. Every suite request that reaches verification wants the proof checked, and a credential with no proof already fails inside `Verifier`.
+Do not require `checks` to contain `"proof"`. Every suite request that reaches verification wants the proof checked, and a credential with no proof already fails inside `verify`.
 
 ### Response mapping
 
-`normalizeResult` in `Verifier` already copies `error.errors` onto `errors` and returns `verified`. `response.ts` is the only place that chooses the HTTP status. The existing verify route must not import it.
+`normalizeResult` in `services/verifier/index.ts` already copies `error.errors` onto `errors` and returns `verified`. `response.ts` is the only place that chooses the HTTP status. The existing verify route must not import it.
 
 `problemDetails[].type` should prefer the URLs the data model already defines (for example `https://www.w3.org/TR/vc-data-model-2.0#CRYPTOGRAPHIC_SECURITY_ERROR`). When the thrown error has no matching type, use a local type under a stable prefix such as `https://ssi.eecc.de/api/vcalm/problems/invalid-input` and put the message in `detail`. Do not put stack traces in `detail`.
 
@@ -391,7 +391,7 @@ gh workflow run main.yml --repo w3c-ccg/vc-api-verifier-test-suite --ref main
 
 ## Work sequence
 
-1. **Options on `Verifier`.** Add `checkStatus` without changing current call results. Unit-test that `checkStatus: false` skips status and the default still checks it.
+1. **Options on `verify`.** Add `checkStatus` without changing current call results. Unit-test that `checkStatus: false` skips status and the default still checks it.
 2. **Response mapper.** Pure function, tested without HTTP.
 3. **Routes.** Mount `/api/vcalm`, implement both handlers, add the Supertest cases above, including the regression that `/api/verifier` is unchanged.
 4. **Swagger text** for the two routes and the status profile.

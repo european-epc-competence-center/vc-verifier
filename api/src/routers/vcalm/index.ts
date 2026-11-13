@@ -1,7 +1,5 @@
 import { Router } from 'express';
-import { VcalmRoutes } from '../../routes/index.js';
-
-const vcalmRoutes = new VcalmRoutes();
+import { verifyCredential, verifyPresentation } from '../../routes/vcalm/index.js';
 
 export const vcalmRouter = Router();
 
@@ -31,7 +29,7 @@ export const vcalmRouter = Router();
 /**
  * Options accepted by both VCALM verify routes. Unknown keys are ignored.
  * @typedef {object} VcalmVerifyOptions
- * @property {array<string>} checks - `proof` selects cryptographic verification. `credentialStatus` selects status verification. `gs1Rules` selects `GS1Verifier` (the same verification as `POST /api/verifier/gs1`). A rules failure is `verified: false` with `problemDetails` and does not add `gs1Result`. Other names are ignored. Absent means proof plus status when `credentialStatus` is present
+ * @property {array<string>} checks - `proof` selects cryptographic verification. `credentialStatus` selects status verification. `gs1Rules` selects the same GS1 verification as `POST /api/verifier/gs1`. A rules failure is `verified: false` with `problemDetails` and does not add `gs1Result`. Other names are ignored. Absent means proof plus status when `credentialStatus` is present
  * @property {boolean} returnResults - Include per-check results. Default `false`
  * @property {boolean} returnProblemDetails - Accepted and ignored; `problemDetails` is always present
  * @property {string} challenge - Presentation challenge. Credential route ignores it
@@ -50,7 +48,7 @@ export const vcalmRouter = Router();
  * @return {VcalmVerificationResponse} 200 - Credential accepted - application/json
  * @return {VcalmVerificationResponse} 400 - Credential rejected or the request could not be verified - application/json
  */
-vcalmRouter.post('/credentials/verify', vcalmRoutes.verifyCredential);
+vcalmRouter.post('/credentials/verify', verifyCredential);
 
 /**
  * POST /api/vcalm/presentations/verify
@@ -62,4 +60,4 @@ vcalmRouter.post('/credentials/verify', vcalmRoutes.verifyCredential);
  * @return {VcalmVerificationResponse} 200 - Presentation accepted - application/json
  * @return {VcalmVerificationResponse} 400 - Presentation rejected or the request could not be verified - application/json
  */
-vcalmRouter.post('/presentations/verify', vcalmRoutes.verifyPresentation);
+vcalmRouter.post('/presentations/verify', verifyPresentation);

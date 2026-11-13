@@ -36,7 +36,7 @@ vc-verifier/
 
 - **[development_workflow.md](./development_workflow.md)** - Build processes, testing setup, Docker containerization, deployment patterns, and the manual release process (version bump + changelog + GitHub Release for tag `vX.Y.Z`)
 
-- **[vcalm-api.md](../../docs/vcalm-api.md)** - Contract for the VCALM verifier at `/api/vcalm`. HTTP 200 only when `verified` is true. Proof checks stay in `Verifier`; VCALM code is `services/vcalm`, `routes/vcalm`, and `routers/vcalm`
+- **[vcalm-api.md](../../docs/vcalm-api.md)** - Contract for the VCALM verifier at `/api/vcalm`. HTTP 200 only when `verified` is true. Proof checks stay in `verify`; VCALM code is `services/vcalm`, `routes/vcalm`, and `routers/vcalm`
 
 ## Key Technologies
 

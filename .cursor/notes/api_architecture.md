@@ -71,7 +71,7 @@ vcalmRouter.post('/credentials/verify', verifyCredential);
 vcalmRouter.post('/presentations/verify', verifyPresentation);
 ```
 
-Handlers in `routes/vcalm/index.ts` only write the status and JSON body from `VcalmService` (`services/vcalm/`). The service parses the VCALM body, calls `Verifier.verify` with a `VerifyOptions` object (`checkStatus`, and `holderBinding: false` for presentations), and `services/vcalm/response.ts` maps the result. Unknown option keys are ignored. `options.checks` without `credentialStatus` sets `checkStatus: false`. `options.checks` containing `gs1Rules` calls `GS1Verifier.verify` instead. Rule failures become `problemDetails`; the body has no `gs1Result`.
+Handlers in `routes/vcalm/index.ts` only write the status and JSON body from `verifyCredential` / `verifyPresentation` (`services/vcalm/`). The service parses the VCALM body, calls `verify` with a `VerifyOptions` object (`checkStatus`, and `holderBinding: false` for presentations), and `services/vcalm/response.ts` maps the result. Unknown option keys are ignored. `options.checks` without `credentialStatus` sets `checkStatus: false`. `options.checks` containing `gs1Rules` calls `verifyGs1` instead. Rule failures become `problemDetails`; the body has no `gs1Result`.
 
 ### Health Router (`routers/health/index.ts`)
 
@@ -79,15 +79,15 @@ Simple health and readiness endpoints for container orchestration.
 
 ## Route Handler Layer
 
-**Pattern**: Class-based handlers with business logic
+**Pattern**: Exported handler functions. `HealthRoutes` is the exception: it keeps a class because it stores process start time and readiness.
 
-### VerifyRoutes Class (`routes/verify/index.ts`)
+### Verify handlers (`routes/verify/index.ts`)
 
-Methods correspond to router endpoints:
+Exported functions correspond to router endpoints:
 
 #### `fetchAndVerify(req, res)`
 - Fetches credential from URL (path param `vcid`)
-- Calls `Verifier.verify()`
+- Calls `verify()`
 - Returns verification result
 
 #### `verify(req, res)`
@@ -103,24 +103,24 @@ Methods correspond to router endpoints:
 - Returns array of results
 
 #### `verifyGS1(req, res)`
-- Similar to `verify()` but uses `GS1Verifier`
+- Similar to `verify()` but uses `verifyGs1`
 - Performs GS1 rules validation in addition to standard verification
 - Chain ids already present in the request are resolved in `gs1.ts` before `loadExternalCredential()`. See [GS1 Credential Chaining](./verification_system.md#gs1-credential-chaining)
 
 ## Service Layer
 
-### Core Verifier (`services/verifier/index.ts`)
+### Core verifier (`services/verifier/index.ts`)
 
-**Main Class**: `Verifier`
+**Entry function**: `verify`. The file exports functions. It has no class.
 
-#### `Verifier.verify(input, options?: VerifyOptions)`
+#### `verify(input, options?: VerifyOptions)`
 
-`options` carries `challenge`, `domain`, `holderBinding` (default `true`), and `checkStatus` (default `true`). `checkStatus: false` does not fetch a status list. Libraries that require a status function when `credentialStatus` is present receive a no-op that does not fetch. `/api/verifier` still reads `challenge`/`nonce` and `domain`/`audience`/`aud` from the query string and passes them in this object. GS1 rules are not selected here; `GS1Verifier.verify` is the GS1 entry point.
+`options` carries `challenge`, `domain`, `holderBinding` (default `true`), and `checkStatus` (default `true`). `checkStatus: false` does not fetch a status list. Libraries that require a status function when `credentialStatus` is present receive a no-op that does not fetch. `/api/verifier` still reads `challenge`/`nonce` and `domain`/`audience`/`aud` from the query string and passes them in this object. GS1 rules are not selected here; `verifyGs1` is the GS1 entry point.
 
 **Flow**:
 1. Unwrap `EnvelopedVerifiableCredential` if present (via `unwrapEnvelopedCredential()` in `envelope.ts`)
 2. Detect input type (JWT string vs JSON-LD object)
-3. If JWT: delegate to `JWTService.verifyJWT()`
+3. If JWT: delegate to `verifyJWT()`
 4. If JSON-LD: 
    - Extract proof(s)
    - Determine verifiable type (Credential vs Presentation)
@@ -150,9 +150,7 @@ Methods correspond to router endpoints:
 **`getCheckStatus(credentialStatus)`**: Returns status checking function
 **`isDataIntegrityProof(proof)`**: Determines proof type for routing
 
-### JWT Service (`services/verifier/jwt.ts`)
-
-**Class**: `JWTService`
+### JWT functions (`services/verifier/jwt.ts`)
 
 #### Methods
 
@@ -175,16 +173,16 @@ Methods correspond to router endpoints:
 
 **`did:key` self-contained JWTs**: When `kid` starts with `did:key:`, no issuer is required; the key ID is derived from the DID itself.
 
-### GS1 Verifier (`services/verifier/gs1.ts`)
+### GS1 verification (`services/verifier/gs1.ts`)
 
-**Class**: `GS1Verifier`
+**Function**: `verifyGs1`
 
 Integrates with `@eecc/vc-verifier-rules` package for GS1-specific validation.
 
-#### `GS1Verifier.verify(verifiable, challenge?, domain?)`
+#### `verifyGs1(verifiable, challenge?, domain?)`
 
 **Flow**:
-1. Perform standard credential verification (`Verifier.verify()`)
+1. Perform standard credential verification (`verify()`)
 2. Perform GS1 rules validation:
    - Single credential: `checkGS1CredentialWithoutPresentation()`
    - Presentation: `checkGS1CredentialPresentationValidation()`
@@ -252,7 +250,7 @@ documentLoader(url)
 Handles `EnvelopedVerifiableCredential` (W3C VC Data Model v2.0):
 - Detects objects with `type: "EnvelopedVerifiableCredential"` (direct or wrapped in `verifiableCredential` field)
 - Extracts the JWT from the `id` field (strips `data:application/vc+jwt,` prefix if present)
-- Called by `Verifier.verify()` before type detection
+- Called by `verify()` before type detection
 
 ### Fetch Service (`services/fetch/index.ts`)
 
@@ -362,7 +360,7 @@ try {
 }
 ```
 
-`GS1Verifier.buildUnifiedResponse()` copies `presentationResult` and `credentialResults` from `Verifier.verify()`. A presentation has no top-level `results`; dropping those two fields hid the holder proof after it had already been checked.
+`buildUnifiedResponse()` copies `presentationResult` and `credentialResults` from `verify()`. A presentation has no top-level `results`; dropping those two fields hid the holder proof after it had already been checked.
 
 ## Configuration
 
@@ -398,7 +396,7 @@ All array-based verification endpoints use `Promise.all()` for parallel processi
 - HTTP-fetched verifiable credentials: 1-hour TTL (configurable)
 - DID documents: not cached (`didresolver.ts` uses `cache: false`; the `did:` branch returns before `TTLCache`)
 - Status credentials: never cached (always a fresh check)
-- `Verifier` is a stateless static facade, so replicas do not share cache and do not share mutable verification state
+- `verify` is a stateless function, so replicas do not share cache and do not share mutable verification state
 
 ### Module Loading
 - ES2022 modules enable tree-shaking

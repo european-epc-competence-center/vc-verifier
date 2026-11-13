@@ -31,7 +31,7 @@ api/src/
 │
 ├── routes/                 # Route handlers (business logic)
 │   ├── index.ts           # Exports all route handlers
-│   ├── verify/index.ts    # VerifyRoutes class with handlers
+│   ├── verify/index.ts    # Verify route handler functions
 │   └── health/index.ts    # Health check handlers
 │
 ├── services/              # Core business logic
@@ -50,9 +50,9 @@ api/src/
 │   │   └── index.ts     # JSON-LD/JWT/IPFS fetch helpers
 │   │
 │   └── verifier/         # Verification services (CORE)
-│       ├── index.ts      # Main Verifier class (JSON-LD)
-│       ├── jwt.ts        # JWTService for VC-JWT verification
-│       ├── gs1.ts        # GS1Verifier with rules integration
+│       ├── index.ts      # verify() for JSON-LD and JWT dispatch
+│       ├── jwt.ts        # VC-JWT functions (isJWT, verifyJWT)
+│       ├── gs1.ts        # verifyGs1 and GS1 rules integration
 │       ├── status.ts     # Status checking (revocation, suspension)
 │       ├── envelope.ts   # EnvelopedVerifiableCredential unwrapping
 │       ├── schemas.ts    # JSON Schema loading/caching
@@ -176,7 +176,7 @@ Each uses pre-built images from GitHub Container Registry.
 **Pattern**: `routers/` → `routes/` separation
 - **Routers**: Express Router instances, route definitions
 - **Routes**: Class-based handlers with business logic
-- Example: `routers/verify/index.ts` defines endpoints, imports `routes/verify/index.ts` VerifyRoutes class
+- Example: `routers/verify/index.ts` defines endpoints and passes handler functions from `routes/verify/index.ts`
 
 ### API Endpoints
 
