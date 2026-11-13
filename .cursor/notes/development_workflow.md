@@ -140,6 +140,8 @@ npm test
 
 `vcalm-conformance.test.ts` repeats the canivc conformance rows a verifier can run without an issuer (VC API Data Integrity, VC 2.0 basic conformance). A published canivc column comes from the suite repo's report workflow after a manifest pull request, not from this Jest file. Commands and the `localConfig.cjs` shape are in `docs/vcalm-api.md`.
 
+`filterByTag` in `vc-test-suite-implementations` defaults to the `issuers` property. The VC Data Model 2.0 and Bitstring Status List suites use that default, so a verifier-only `localConfig.cjs` records no rows for them. Cryptosuite verifier files pass `property: 'verifiers'` and do run. Interop matrices stay empty without an issuer in that file.
+
 **Test Coverage Output**: `api/coverage/`
 
 **Writing Tests**:

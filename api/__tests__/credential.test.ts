@@ -27,9 +27,9 @@ describe("Verifier API Test for Credentials", () => {
     });
 
     /**
-     * Test selective disclosure DataIntegrityProof credential 
-     * TODO: Test credential needs to be regenerated with @digitalbazaar/ecdsa-sd-2023-cryptosuite v3.x format
-     * The v3.x cryptosuite has stricter validation requiring publicKey as Uint8Array of length 35
+     * Selective disclosure credential issued with cryptosuite 1.x.
+     * Its proofValue carries a 36-byte public key, which still selects
+     * cryptosuite 1.0.2. Cryptosuite 3.x proof values use a 35-byte key.
      */
     test.skip("Verify single DataIntegrityProof credential", async () => {
         const res = await request(app).post("/api/verifier").send([SDCredential]);

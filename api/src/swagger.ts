@@ -1,6 +1,6 @@
 const swaggerOptions: any = {
   info: {
-    version: '4.0.0',
+    version: '4.0.1',
     title: 'EECC Verifiable Credential Verifier API',
     license: {
       name: 'Apache-2.0',

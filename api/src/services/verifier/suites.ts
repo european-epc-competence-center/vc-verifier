@@ -7,6 +7,8 @@ import { ES256Signature2020 } from "@eecc/es256-signature-2020";
 // @ts-ignore
 import * as ecdsaSd2023Cryptosuite from "@digitalbazaar/ecdsa-sd-2023-cryptosuite";
 // @ts-ignore
+import * as ecdsaSd2023CryptosuiteV1 from "ecdsa-sd-2023-cryptosuite-v1";
+// @ts-ignore
 import { cryptosuite as eddsaRdfc2022CryptoSuite } from "@digitalbazaar/eddsa-rdfc-2022-cryptosuite";
 // @ts-ignore
 import { cryptosuite as ecdsaRdfc2019CryptoSuite } from "@digitalbazaar/ecdsa-rdfc-2019-cryptosuite";
@@ -14,10 +16,18 @@ import { cryptosuite as ecdsaRdfc2019CryptoSuite } from "@digitalbazaar/ecdsa-rd
 import { cryptosuite as rsaRdfc2025CryptoSuite } from "@eecc/rsa-rdfc-2025-cryptosuite";
 // @ts-ignore
 import { DataIntegrityProof } from "@digitalbazaar/data-integrity";
+import { ecdsaSdPublicKeyLength } from "./sdProof.js";
 
-const { createVerifyCryptosuite } = ecdsaSd2023Cryptosuite;
+function ecdsaSdVerifyCryptosuite(proof: { proofValue?: unknown }): unknown {
+  // 36-byte keys are the 1.x proof value. 35-byte keys are the 3.x value.
+  if (ecdsaSdPublicKeyLength(proof?.proofValue) === 36) {
+    return ecdsaSd2023CryptosuiteV1.createVerifyCryptosuite();
+  }
+  return ecdsaSd2023Cryptosuite.createVerifyCryptosuite();
+}
 
-function getDataIntegritySuite(cryptosuite?: string): unknown {
+function getDataIntegritySuite(proof: { cryptosuite?: string; proofValue?: unknown }): unknown {
+  const cryptosuite = proof?.cryptosuite;
   if (!cryptosuite) {
     throw new Error('Cryptosuite is required for data integrity proof');
   }
@@ -26,7 +36,7 @@ function getDataIntegritySuite(cryptosuite?: string): unknown {
     case 'eddsa-rdfc-2022':  return eddsaRdfc2022CryptoSuite;
     case 'ecdsa-rdfc-2019':  return ecdsaRdfc2019CryptoSuite;
     case 'rsa-rdfc-2025':    return rsaRdfc2025CryptoSuite;
-    case 'ecdsa-sd-2023':    return createVerifyCryptosuite();
+    case 'ecdsa-sd-2023':    return ecdsaSdVerifyCryptosuite(proof);
     default:
       throw new Error(`Cryptosuite ${cryptosuite} not implemented`);
   }
@@ -38,7 +48,7 @@ export function getSuite(proof: any): unknown {
     case 'Ed25519Signature2020': return new Ed25519Signature2020();
     case 'JsonWebSignature2020': return new ES256Signature2020();
     case 'DataIntegrityProof':
-      return new DataIntegrityProof({ cryptosuite: getDataIntegritySuite(proof.cryptosuite) });
+      return new DataIntegrityProof({ cryptosuite: getDataIntegritySuite(proof) });
     default:
       throw new Error(`Proof type ${proof?.type} not implemented`);
   }

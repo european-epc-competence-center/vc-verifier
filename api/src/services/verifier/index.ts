@@ -71,6 +71,7 @@ import {
   unwrapPresentationVerifiableCredentials,
 } from "./envelope.js";
 import { applyCredentialHolderBinding } from "./holder.js";
+import { previousProofReferenceError } from "./previousProof.js";
 import { getSuites } from "./suites.js";
 
 const {
@@ -299,6 +300,10 @@ async function verifyObjectInput(
     }
 
     const suite = getSuites(verifiable.proof);
+    const previousProofError = previousProofReferenceError(verifiable.proof);
+    if (previousProofError) {
+      return normalizeResult({ verified: false, error: previousProofError });
+    }
 
     if (verifiable.type.includes(CREDENTIAL_TYPES.VERIFIABLE_CREDENTIAL)) {
       return verifyCredentialDocument(verifiable as VerifiableCredential, suite, options);

@@ -3,6 +3,12 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+## 4.0.1 (2026-11-13)
+
+### Fixed
+- Data Integrity proofs whose `previousProof` does not name another proof on the same document are rejected. A matching `previousProof` still verifies
+- `ecdsa-sd-2023` verification uses cryptosuite 3.x for the current 35-byte public key and cryptosuite 1.0.2 for a 36-byte proof value already in circulation
+
 ## 4.0.0 (2026-11-13)
 
 ### Added

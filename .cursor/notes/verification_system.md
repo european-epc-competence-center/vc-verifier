@@ -49,10 +49,14 @@ The verification system is the core functionality of the VC Verifier. It support
 - Use: RSA signatures with RDFC
 
 **ecdsa-sd-2023** (Selective Disclosure)
-- Library: `@digitalbazaar/ecdsa-sd-2023-cryptosuite`
+- Library: `@digitalbazaar/ecdsa-sd-2023-cryptosuite` 3.x, and `ecdsa-sd-2023-cryptosuite-v1` (1.0.2) when `ecdsaSdPublicKeyLength` in `sdProof.ts` is 36
 - Proof type: DataIntegrityProof
 - Use: ECDSA with selective disclosure
-- Special: Uses verify cryptosuite (`createVerifyCryptosuite()`)
+- Special: `getSuite` picks `createVerifyCryptosuite()` from the matching package. 3.x proof values carry a 35-byte public key; 1.x values carry 36 bytes
+
+`previousProofReferenceError` in `previousProof.ts` runs in `verifyObjectInput` before signature verification. A `previousProof` string or list must name the `id` of a proof on that same document. `jsonld-signatures` does not check the link. Credentials with no `previousProof` are unchanged.
+
+`Ed25519Signature2020` and the other non-Data-Integrity suites go through `@digitalbazaar/vc` `CredentialIssuancePurpose`, which requires `issuer` to equal the verification-method controller. Data Integrity verification uses `AssertionProofPurpose` and does not add that comparison.
 
 ### JWT Support
 
