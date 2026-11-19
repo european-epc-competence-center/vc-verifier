@@ -347,7 +347,7 @@ docker-compose up -d
 - Root `CHANGELOG.md` — headings stay `## X.Y.Z (YYYY-MM-DD)`
 - `frontend/package.json` and `frontend/src/store/index.js` are leftover UI version fields and are not part of a release
 
-**Release script**: `scripts/release.js`, invoked from `api/`:
+**Release script**: `scripts/release.js`, run from the repo root. `api/package.json` has no release script. The root `package.json` is private and has no version; a release still bumps only the API files:
 
 ```bash
 npm run release:patch   # or release:minor / release:major

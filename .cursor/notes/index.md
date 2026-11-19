@@ -6,7 +6,7 @@ EECC VC Verifier verifies W3C Verifiable Credentials (VCs) and Presentations. Th
 
 **License**: Apache-2.0  
 **Maintainer**: European EPC Competence Center GmbH (EECC)  
-**Versions**: Releases follow `api/package.json` (also `api/src/swagger.ts` and `api/package-lock.json`). `scripts/release.js` bumps those files, rewrites the root changelog, and tags `vX.Y.Z`. Run it from `api/` with `npm run release`.
+**Versions**: Releases follow `api/package.json` (also `api/src/swagger.ts` and `api/package-lock.json`). `scripts/release.js` bumps those files, rewrites the root changelog, and tags `vX.Y.Z`. Run `npm run release` from the repo root. The root `package.json` is private and only exposes those scripts. The API package has no release script.
 
 ## Repository Structure
 
@@ -15,6 +15,7 @@ vc-verifier/
 ├── api/              # Backend verification API (TypeScript, Express)
 ├── frontend/         # Legacy Vue.js UI (local build only; not in CI)
 ├── scripts/          # API release script
+├── package.json      # Private; `npm run release` calls scripts/release.js
 ├── CHANGELOG.md      # The single changelog for the whole repo
 ├── docs/vcalm-api.md # VCALM verifier API contract for `/api/vcalm`
 ├── docker-compose.yml # Container orchestration
@@ -35,7 +36,7 @@ vc-verifier/
 
 - **[verification_system.md](./verification_system.md)** - Deep dive into how credential verification works: cryptographic suites, status checking, JWT handling, and GS1 integration
 
-- **[development_workflow.md](./development_workflow.md)** - Build, test, Docker, and the API release script (`npm run release` from `api/`; tag `vX.Y.Z` publishes the API image and opens the GitHub Release)
+- **[development_workflow.md](./development_workflow.md)** - Build, test, Docker, and the API release script (`npm run release` from the repo root; tag `vX.Y.Z` publishes the API image and opens the GitHub Release)
 
 - **[vcalm-api.md](../../docs/vcalm-api.md)** - Contract for the VCALM verifier at `/api/vcalm`. HTTP 200 only when `verified` is true. Proof checks stay in `verify`; VCALM code is `services/vcalm`, `routes/vcalm`, and `routers/vcalm`
 

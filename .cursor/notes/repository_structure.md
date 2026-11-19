@@ -7,6 +7,7 @@ vc-verifier/
 ├── api/              # Backend Express API subproject
 ├── frontend/         # Legacy Vue.js UI (local build only)
 ├── scripts/          # API release script (`release.js`)
+├── package.json      # Private root scripts; `npm run release` calls `scripts/release.js`
 ├── assets/           # Shared images (logo, screenshots for README)
 ├── CHANGELOG.md      # Root changelog (consolidated)
 ├── README.md         # Project documentation

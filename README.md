@@ -23,6 +23,7 @@ vc-verifier/
 │   └── Dockerfile
 ├── frontend/     # Legacy Vue.js UI, local build only (frontend/README.md)
 ├── scripts/      # API release script (release.js)
+├── package.json  # `npm run release` from the repo root; releases the API only
 ├── assets/       # Images for README and UI
 ├── docker-compose.yml
 └── .github/workflows/  # CI: tests.yml, build-all.yml (API image and GitHub Release)
@@ -58,7 +59,7 @@ Environment variables (see `docker-compose.yml`):
 Releases follow the API version. On `main`, with notes under `## [Unreleased]` in `CHANGELOG.md`:
 
 ```bash
-cd api && npm run release:patch   # or release:minor / release:major
+npm run release:patch   # from the repo root; or release:minor / release:major
 ```
 
 That bumps `api/package.json`, `api/package-lock.json`, and `api/src/swagger.ts`, moves the changelog section to `## X.Y.Z (YYYY-MM-DD)`, commits, tags `vX.Y.Z`, and pushes. The tag workflow publishes the API image and opens the GitHub Release. `npm run release -- patch --skip-git` updates the files and leaves git alone.

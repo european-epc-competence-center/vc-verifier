@@ -1,0 +1,11 @@
+{
+  "name": "vc-verifier",
+  "private": true,
+  "description": "Convenience scripts for the VC Verifier repository. Releases the API only.",
+  "scripts": {
+    "release": "node scripts/release.js",
+    "release:patch": "npm run release patch",
+    "release:minor": "npm run release minor",
+    "release:major": "npm run release major"
+  }
+}
