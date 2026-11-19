@@ -60,10 +60,10 @@ const STATUS_TYPES = {
 import { documentLoader } from "../documentLoader/index.js";
 import {
   holderBindingFromPayload,
-  isJWT,
   validatePresentationHolderBinding,
   verifyJWT,
 } from "./jwt.js";
+import { isJWT } from "./jwtDecode.js";
 import { checkBitstringStatus } from "./status.js";
 import {
   decodeVerifiableInput,

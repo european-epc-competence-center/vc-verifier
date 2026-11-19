@@ -180,6 +180,15 @@
       },
       "sha256": "a306a32dcda99638921ffe3ea415285d121cefc8d75faad7ca313979c86dc9e8",
       "source": "Generated locally on 2026-09-14 with @digitalbazaar/vc and @digitalbazaar/vc-revocation-list. Signed with an ephemeral Ed25519 key whose private material was discarded; index 1 is unrevoked. See ../legacy/README.md."
+    },
+    "https://fixtures.example/status/enveloped-status-list": {
+      "file": "generated-enveloped-status-list.json",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json"
+      },
+      "sha256": "7f422b03077dadced436c520c278e64381114e2a6544b791e5dea2f30c7a1a18",
+      "source": "Generated locally on 2026-11-19. Unsigned (placeholder signature); only exercises the document loader's status list detection."
     }
   }
 }

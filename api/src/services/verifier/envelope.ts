@@ -6,7 +6,8 @@
  * 2. Wrapped: An object with a "verifiableCredential" field containing the above structure
  */
 
-import { decodeJWT, isJWT } from './jwt.js';
+// The document loader imports this module: never import jwt.ts (it imports the loader).
+import { decodeJWT, isJWT } from './jwtDecode.js';
 
 const ENVELOPED_JWT_DATA_URL_PREFIXES = [
   'data:application/vc+jwt,',

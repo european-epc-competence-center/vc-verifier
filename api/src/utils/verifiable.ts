@@ -1,4 +1,4 @@
-import { decodeJWT, isJWT } from "../services/verifier/jwt.js";
+import { decodeJWT, isJWT } from "../services/verifier/jwtDecode.js";
 
 /** Credentials carried inside a presentation, in their original form. */
 export function enclosedCredentials(verifiable: unknown): unknown[] {

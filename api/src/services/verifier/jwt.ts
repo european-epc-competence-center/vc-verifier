@@ -5,6 +5,7 @@ import * as EcdsaMultikey from '@digitalbazaar/ecdsa-multikey';
 // @ts-ignore
 import jsigs from 'jsonld-signatures';
 import { documentLoader } from '../documentLoader/index.js';
+import { decodeJWT, type JWTDecoded } from './jwtDecode.js';
 import { extractPublicKeyBytes, stringToBytes, base64ToBytes } from '../../utils/crypto.js';
 import {
   checkPayloadHolderMatches,
@@ -53,11 +54,6 @@ export interface JWTResult {
   decoded?: JWTDecoded | { error: string };
 }
 
-export interface JWTDecoded {
-  header: any;
-  payload: any;
-}
-
 function toErrorDetails(error: unknown): JWTResult['error'] {
     const fallback = {
       name: 'VerificationError',
@@ -81,11 +77,6 @@ function toErrorDetails(error: unknown): JWTResult['error'] {
       claim: typedError.claim,
       reason: typedError.reason
     };
-  }
-
-export function isJWT(input: string): boolean {
-    if (typeof input !== 'string') return false;
-    return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(input.trim());
   }
 
 export function holderBindingFromPayload(
@@ -172,16 +163,6 @@ export async function validatePresentationHolderBinding(
         nonce,
         error: error instanceof Error ? error : new Error(String(error)),
       };
-    }
-  }
-
-export function decodeJWT(jwt: string): JWTDecoded | { error: string } {
-    try {
-      const payload = jose.decodeJwt(jwt);
-      const header = jose.decodeProtectedHeader(jwt);
-      return { header, payload };
-    } catch (error) {
-      return { error: `Invalid JWT format: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
   }
 

@@ -300,7 +300,7 @@ docker-compose up -d
 **API Runtime Variables**:
 - `PORT` - Server port
 - `VC_REGISTRY` - Credential registry URL
-- `DOCUMENT_CACHE_TTL_HOURS` - Cache TTL
+- `DOCUMENT_CACHE_TTL_HOURS` - Max age of cached remote documents served as outage fallback (default: 1)
 
 **Frontend Runtime Variables**:
 - Injected at build time via Vue CLI

@@ -14,10 +14,13 @@ run through the normal verifier.
 test explicitly verifies its JWT signature and reports the unavailable status
 list. This fixture does not claim that the credential is revoked.
 
-`generated-revocation-list-2020.json` is the sole generated response, for the
+`generated-revocation-list-2020.json` is a generated response, for the
 replacement presentation described in [the legacy fixture notes](../legacy/README.md).
 It is a real signed status-list credential, with index 1 unrevoked. Its URL is a
 test-only identifier and is served locally by the fixture transport.
+
+`generated-enveloped-status-list.json` is a generated, unsigned enveloped status
+list. It only checks that the document loader detects enveloped status lists.
 
 These files cover active tests only. Enabling an existing skipped test may need
 additional dependencies; the offline guard will identify missing URLs.

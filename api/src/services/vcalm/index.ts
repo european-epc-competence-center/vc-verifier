@@ -1,6 +1,6 @@
 import { verify, type VerifyOptions } from '../verifier/index.js';
 import { verifyGs1 } from '../verifier/gs1.js';
-import { isJWT } from '../verifier/jwt.js';
+import { isJWT } from '../verifier/jwtDecode.js';
 import {
   VcalmInputError,
   failureToVcalmResponse,

@@ -38,6 +38,34 @@ export class TTLCache<T> {
     return entry.value;
   }
 
+  /**
+   * Loads the value live and caches it, so the cache only bridges short
+   * upstream outages: when loading fails with an error `isTransient` accepts,
+   * the last cached value (at most one TTL old) is served instead. Any other
+   * failure is authoritative and evicts the key, so a rejected value is never
+   * served by a later fallback.
+   */
+  async load(
+    key: string,
+    loadLive: () => Promise<T>,
+    isTransient: (error: unknown) => boolean = () => true
+  ): Promise<T> {
+    try {
+      const value = await loadLive();
+      this.set(key, value);
+      return value;
+    } catch (error) {
+      if (!isTransient(error)) {
+        this.delete(key);
+        throw error;
+      }
+      const cached = this.get(key);
+      if (cached === undefined) throw error;
+      console.warn(`Refreshing ${key} failed, serving cached copy:`, error);
+      return cached;
+    }
+  }
+
   has(key: string): boolean {
     return this.get(key) !== undefined;
   }
@@ -56,7 +84,6 @@ export class TTLCache<T> {
   }
 
   private cleanup(): void {
-    console.log("Cleaning up TTL cache");
     const now = Date.now();
     const keysToDelete: string[] = [];
     
@@ -69,6 +96,8 @@ export class TTLCache<T> {
     keysToDelete.forEach(key => {
       this.cache.delete(key);
     });
-    console.log("Keys deleted from TTL cache", keysToDelete);
+    if (keysToDelete.length > 0) {
+      console.log(`TTL cache cleanup: removed ${keysToDelete.length} expired entries`);
+    }
   }
 }
