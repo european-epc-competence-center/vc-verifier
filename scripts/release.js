@@ -210,10 +210,10 @@ function assertReleaseBranchIsClean() {
   }
 }
 
-function localTagExists(tag) {
+function localTagExists(tag, cwd = repoRoot) {
   try {
     execFileSync("git", ["rev-parse", "--verify", "--quiet", `refs/tags/${tag}`], {
-      cwd: repoRoot,
+      cwd,
       stdio: "ignore",
     });
     return true;

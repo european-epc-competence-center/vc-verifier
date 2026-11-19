@@ -3,6 +3,9 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+### Fixed
+- The release script tag check is tested in its own temporary repository, so CI passes when the checkout has no tags
+
 ## 4.0.3 (2026-11-19)
 
 ### Fixed

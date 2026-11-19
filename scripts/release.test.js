@@ -1,5 +1,9 @@
 const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { execFileSync } = require("child_process");
 const {
   bumpVersion,
   extractUnreleasedChanges,
@@ -69,9 +73,31 @@ describe("changelog", () => {
 });
 
 describe("localTagExists", () => {
-  it("recognizes a tag that is already in this repository", () => {
-    assert.equal(localTagExists("v4.0.2"), true);
-    assert.equal(localTagExists("v9.9.9"), false);
+  it("recognizes a tag in a repository and misses one that is absent", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "release-tag-"));
+    try {
+      execFileSync("git", ["init", "-q"], { cwd: dir });
+      execFileSync(
+        "git",
+        [
+          "-c",
+          "user.email=test@example.com",
+          "-c",
+          "user.name=test",
+          "commit",
+          "--allow-empty",
+          "-m",
+          "init",
+        ],
+        { cwd: dir }
+      );
+      execFileSync("git", ["tag", "v1.2.3"], { cwd: dir });
+
+      assert.equal(localTagExists("v1.2.3", dir), true);
+      assert.equal(localTagExists("v9.9.9", dir), false);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 
