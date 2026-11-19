@@ -3,6 +3,8 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+## 4.0.2 (2026-11-19)
+
 ### Changed
 - API releases are cut with `npm run release` from the repository root (`scripts/release.js`). The script bumps `api/package.json`, `api/package-lock.json`, and `api/src/swagger.ts`, moves `[Unreleased]` to `## X.Y.Z (YYYY-MM-DD)`, commits, and tags `vX.Y.Z`. The tag workflow publishes the API image and opens the GitHub Release
 - The Vue frontend is legacy. It stays in `frontend/` for a local build and is no longer published
