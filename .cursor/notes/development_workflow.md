@@ -242,24 +242,21 @@ docker build -t vc-verifier-frontend .
 
 ### Running with Docker Compose
 
-**Start All Services**:
+**Start the API**:
 ```bash
 docker-compose up
 ```
 
 **Configuration** (`docker-compose.yml`):
-- `api` service: Port 3000
-- `frontend` service: Port 80
+- `api` service only (port from `API_PORT`)
 - Environment variables from `.env` file
+- The legacy frontend is not composed; build it from `frontend/`
 
 **Environment File** (`.env`):
 ```
 API_PORT=3000
-FRONTEND_PORT=80
 VC_REGISTRY=https://ssi.eecc.de/api/registry/vcs/
-FRONTEND_PUBLIC_PATH=/verifier/
-NODE_ENV=production
-BASE_URL=/verifier/
+GS1_GLOBAL_DID=did:web:id.gs1.org
 ```
 
 **Stop Services**:
@@ -267,9 +264,10 @@ BASE_URL=/verifier/
 docker-compose down
 ```
 
-**Rebuild Images**:
+**Pull the published API image**:
 ```bash
-docker-compose up --build
+docker-compose pull
+docker-compose up -d
 ```
 
 ## Deployment
@@ -277,10 +275,9 @@ docker-compose up --build
 ### Production Deployment
 
 **Pre-built Images**:
-- GitHub Container Registry hosts images
-- Images: 
-  - `ghcr.io/european-epc-competence-center/vc-verifier/vc_verifier_api`
-  - `ghcr.io/european-epc-competence-center/vc-verifier/vc_verifier_frontend`
+- GitHub Container Registry hosts the API image
+- Image: `ghcr.io/european-epc-competence-center/vc-verifier/vc_verifier_api`
+- The frontend image is no longer published. `frontend/Dockerfile` is for a local build only
 
 **Pull and Run**:
 ```bash
@@ -318,22 +315,22 @@ docker-compose up -d
 **Workflows**:
 
 **1. `tests.yml` - Run Tests**
-- Trigger: Push, PR to main
+- Trigger: push
 - Steps:
   1. Checkout code
   2. Setup Node.js
   3. Install API dependencies
   4. Run API tests
-  5. Upload coverage
+  5. Run `node --test scripts/release.test.js`
 
-**2. `build-all.yml` - Build Containers**
+**2. `build-all.yml` - Build API**
 - Trigger: push to `main`, push of `v*` tags, PRs to `main` (build only, no push), `workflow_dispatch`
 - Steps:
   1. Checkout code
   2. Login to GitHub Container Registry
-  3. Build API image (context `./api`)
-  4. Build frontend image (context `./frontend`, build args pin `https://ssi.eecc.de`)
-  5. Push images (skipped for pull requests)
+  3. Build API image (context `./api`) and push (skipped for pull requests)
+  4. On a `v*` tag, the `create-release` job opens the GitHub Release from the `## X.Y.Z` changelog section. It does not wait for the image build
+- The frontend image is not built. Local frontend build: `frontend/README.md`
 
 **Container Tags** (`docker/metadata-action`, `latest=auto`):
 - `main` - push to main branch
@@ -343,22 +340,28 @@ docker-compose up -d
 
 ### Version Management & Release Process
 
-**Semantic Versioning**: MAJOR.MINOR.PATCH. Tags are `vX.Y.Z` (lightweight, on `main`).
+**Semantic Versioning**: MAJOR.MINOR.PATCH. Tags are annotated `vX.Y.Z` on `main`.
 
-**Version Locations** (API and frontend are versioned independently and are *not* in sync):
-- `api/package.json` + `api/src/swagger.ts` (`version:` field) - API version
-- `frontend/package.json` + `frontend/src/store/index.js` (`version:` field, shown in UI) - frontend version
-- Root `CHANGELOG.md` - version history for the whole repo
+**Version locations** (the release is the API; the legacy frontend version is not bumped):
+- `api/package.json`, `api/package-lock.json`, and `api/src/swagger.ts` (`version:`)
+- Root `CHANGELOG.md` — headings stay `## X.Y.Z (YYYY-MM-DD)`
+- `frontend/package.json` and `frontend/src/store/index.js` are leftover UI version fields and are not part of a release
 
-**Release is fully manual — there is no release script, and no workflow creates GitHub Releases.**
+**Release script**: `scripts/release.js`, invoked from `api/`:
 
-1. Bump the version in the API files above (and frontend files if the frontend changed); `api/package-lock.json` changes too when dependencies were bumped
-2. Rename the `## [Unreleased]` changelog section to `## X.Y.Z (YYYY-MM-DD)` and open a fresh `[Unreleased]`
-3. Commit as `prepare release X.Y.Z` on `main`
-4. Create the GitHub Release for tag `vX.Y.Z` targeting `main` (this creates the tag); release body = the new changelog section
-5. The tag push triggers `build-all.yml`, publishing `X.Y.Z`, `X.Y`, and `latest` container images
+```bash
+npm run release:patch   # or release:minor / release:major
+npm run release -- patch --skip-git   # files only
+```
 
-Deployments track `latest`, so `docker-compose.yml` (no explicit image tag) only picks up a release after step 4.
+The script requires a non-empty `## [Unreleased]` section, a clean `main` worktree (unless `--skip-git`), then:
+
+1. Bumps the API version files above
+2. Moves `[Unreleased]` to `## X.Y.Z (YYYY-MM-DD)` and leaves a fresh `[Unreleased]`
+3. Commits `chore: release version X.Y.Z`, tags `vX.Y.Z`, and pushes
+4. `build-all.yml` publishes the API image (`X.Y.Z`, `X.Y`, `latest`) and opens the GitHub Release with that changelog section
+
+Deployments track `latest`, so `docker-compose.yml` (no explicit image tag) picks up a release after the tag workflow finishes.
 
 ## Changelog Management
 

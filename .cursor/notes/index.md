@@ -2,18 +2,19 @@
 
 ## Project Overview
 
-EECC VC Verifier is a full-stack application for verifying W3C Verifiable Credentials (VCs) and Presentations. It consists of two main subprojects: an Express-based TypeScript API and a Vue.js frontend.
+EECC VC Verifier verifies W3C Verifiable Credentials (VCs) and Presentations. The released product is the Express TypeScript API. The Vue.js app in `frontend/` is a legacy UI that can be built locally and is not published.
 
 **License**: Apache-2.0  
 **Maintainer**: European EPC Competence Center GmbH (EECC)  
-**Versions**: API and frontend are versioned separately (`api/package.json`, `frontend/package.json`); repo releases are tagged `vX.Y.Z` after the API version
+**Versions**: Releases follow `api/package.json` (also `api/src/swagger.ts` and `api/package-lock.json`). `scripts/release.js` bumps those files, rewrites the root changelog, and tags `vX.Y.Z`. Run it from `api/` with `npm run release`.
 
 ## Repository Structure
 
 ```
 vc-verifier/
 ├── api/              # Backend verification API (TypeScript, Express)
-├── frontend/         # Vue.js 3 frontend application
+├── frontend/         # Legacy Vue.js UI (local build only; not in CI)
+├── scripts/          # API release script
 ├── CHANGELOG.md      # The single changelog for the whole repo
 ├── docs/vcalm-api.md # VCALM verifier API contract for `/api/vcalm`
 ├── docker-compose.yml # Container orchestration
@@ -30,11 +31,11 @@ vc-verifier/
 
 - **[api_architecture.md](./api_architecture.md)** - Backend architecture, services, routing patterns, verification flow, and key modules
 
-- **[frontend_architecture.md](./frontend_architecture.md)** - Vue.js frontend structure, components, state management, routing, and UI patterns
+- **[frontend_architecture.md](./frontend_architecture.md)** - Legacy Vue.js UI: components, state, routing. Local build only (`frontend/README.md`)
 
 - **[verification_system.md](./verification_system.md)** - Deep dive into how credential verification works: cryptographic suites, status checking, JWT handling, and GS1 integration
 
-- **[development_workflow.md](./development_workflow.md)** - Build processes, testing setup, Docker containerization, deployment patterns, and the manual release process (version bump + changelog + GitHub Release for tag `vX.Y.Z`)
+- **[development_workflow.md](./development_workflow.md)** - Build, test, Docker, and the API release script (`npm run release` from `api/`; tag `vX.Y.Z` publishes the API image and opens the GitHub Release)
 
 - **[vcalm-api.md](../../docs/vcalm-api.md)** - Contract for the VCALM verifier at `/api/vcalm`. HTTP 200 only when `verified` is true. Proof checks stay in `verify`; VCALM code is `services/vcalm`, `routes/vcalm`, and `routers/vcalm`
 
@@ -74,12 +75,12 @@ vc-verifier/
 ### Deployment & Operations
 1. Review [development_workflow.md](./development_workflow.md)
 2. Check `docker-compose.yml` for service configuration
-3. Both subprojects have separate Dockerfiles
+3. The API image is published by CI. The frontend Dockerfile remains for a local image build
 
 ## Important Patterns & Conventions
 
 ### Changelog Management
-- One root `CHANGELOG.md` for API and frontend (see `.cursor/rules/changelog-conventions.mdc`)
+- One root `CHANGELOG.md` (see `.cursor/rules/changelog-conventions.mdc`). Releases follow the API version
 - `[Unreleased]` section at the top for unreleased changes; it becomes the release notes body
 
 ### Code Organization

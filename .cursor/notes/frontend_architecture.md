@@ -2,7 +2,7 @@
 
 ## Overview
 
-The frontend is a Vue.js 3 single-page application (SPA) that provides a user interface for verifying W3C Verifiable Credentials and Presentations. It uses Vuex for state management, Vue Router for navigation, and Bootstrap 5 for styling.
+The frontend is a legacy Vue.js 3 SPA. It is not released and CI does not build it. Local commands are in `frontend/README.md`. It uses Vuex, Vue Router, and Bootstrap 5.
 
 ## Technology Stack
 

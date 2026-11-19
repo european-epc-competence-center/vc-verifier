@@ -1,7 +1,7 @@
 {
   "name": "verifier_frontend",
   "version": "3.3.2",
-  "description": "Vue frontend for the EECC vc verifier API",
+  "description": "Legacy Vue frontend for the EECC vc verifier API. Not released; build locally.",
   "scripts": {
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",

@@ -3,7 +3,14 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+### Changed
+- API releases are cut with `npm run release` from `api/` (`scripts/release.js`). The script bumps `api/package.json`, `api/package-lock.json`, and `api/src/swagger.ts`, moves `[Unreleased]` to `## X.Y.Z (YYYY-MM-DD)`, commits, and tags `vX.Y.Z`. The tag workflow publishes the API image and opens the GitHub Release
+- The Vue frontend is legacy. It stays in `frontend/` for a local build and is no longer published
 - runtime image upgraded to gcr.io/distroless/nodejs24-debian13:nonroot
+
+### Removed
+- Frontend image build from `.github/workflows/build-all.yml`
+- Frontend service from `docker-compose.yml`
 
 
 ## 4.0.1 (2026-11-13)

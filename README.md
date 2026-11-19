@@ -1,5 +1,5 @@
 [![Tests](https://github.com/european-epc-competence-center/vc-verifier/actions/workflows/tests.yml/badge.svg)](https://github.com/european-epc-competence-center/vc-verifier/actions)
-[![Building All Containers](https://github.com/european-epc-competence-center/vc-verifier/actions/workflows/build-all.yml/badge.svg)](https://github.com/orgs/european-epc-competence-center/packages?repo_name=vc-verifier)
+[![Build API](https://github.com/european-epc-competence-center/vc-verifier/actions/workflows/build-all.yml/badge.svg)](https://github.com/orgs/european-epc-competence-center/packages?repo_name=vc-verifier)
 
 <div align="center">
   <p>
@@ -11,21 +11,21 @@
 
 # VC Verifier
 
-The [EECC VC Verifier](https://ssi.eecc.de/verifier/) verifies [W3C Verifiable Credentials](https://www.w3.org/TR/vc-data-model/) (JSON-LD and JWT formats) and presentations using cryptographic signature verification and revocation checking. It includes a REST API and a web UI that aggregates credential data into a readable product passport view.
+The [EECC VC Verifier](https://ssi.eecc.de/verifier/) verifies [W3C Verifiable Credentials](https://www.w3.org/TR/vc-data-model/) (JSON-LD and JWT formats) and presentations using cryptographic signature verification and revocation checking. The released component is the REST API. A legacy web UI in `frontend/` can still be built locally and is not published.
 
 ## Repository Structure
 
 ```
 vc-verifier/
-├── api/          # TypeScript/Express verification API
+├── api/          # TypeScript/Express verification API (the release)
 │   ├── src/      # Source code
 │   ├── __tests__ # Jest tests
 │   └── Dockerfile
-├── frontend/     # Vue.js 3 web UI
-│   └── Dockerfile
+├── frontend/     # Legacy Vue.js UI, local build only (frontend/README.md)
+├── scripts/      # API release script (release.js)
 ├── assets/       # Images for README and UI
 ├── docker-compose.yml
-└── .github/workflows/  # CI: tests.yml, build-all.yml
+└── .github/workflows/  # CI: tests.yml, build-all.yml (API image and GitHub Release)
 ```
 
 ## Usage
@@ -37,21 +37,31 @@ vc-verifier/
 ### Local setup
 
 ```bash
-# Start both services
-docker-compose up
+docker-compose up    # API image
 ```
 
-Or run individually for development:
+Or run the API for development:
 
 ```bash
 cd api && npm install && npm run dev      # API on port 3000
-cd frontend && npm install && npm run dev # UI on port 8080
 ```
 
-Environment variables (see `docker-compose.yml` for defaults):
+The legacy UI is not part of `docker-compose`. Build and run it from `frontend/` (see `frontend/README.md`).
+
+Environment variables (see `docker-compose.yml`):
 - `VC_REGISTRY` — credential registry URL
-- `VUE_APP_VERIFIER_API` — API base URL (frontend)
-- `OPENID_ENDPOINT` — OpenID4VP endpoint URL (frontend)
+- `API_PORT` — host and container port for the API
+- `GS1_GLOBAL_DID` — trusted issuer DID for GS1 prefix licences
+
+### Release
+
+Releases follow the API version. On `main`, with notes under `## [Unreleased]` in `CHANGELOG.md`:
+
+```bash
+cd api && npm run release:patch   # or release:minor / release:major
+```
+
+That bumps `api/package.json`, `api/package-lock.json`, and `api/src/swagger.ts`, moves the changelog section to `## X.Y.Z (YYYY-MM-DD)`, commits, tags `vX.Y.Z`, and pushes. The tag workflow publishes the API image and opens the GitHub Release. `npm run release -- patch --skip-git` updates the files and leaves git alone.
 
 ## Features
 

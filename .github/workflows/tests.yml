@@ -17,3 +17,5 @@ jobs:
         working-directory: ./api
       - run: npm test
         working-directory: ./api
+      - name: Release script tests
+        run: node --test scripts/release.test.js
