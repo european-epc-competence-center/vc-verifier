@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const {
   bumpVersion,
   extractUnreleasedChanges,
+  localTagExists,
   replaceRootLockVersion,
   replaceSwaggerVersion,
   rewriteChangelog,
@@ -64,6 +65,13 @@ describe("changelog", () => {
       /## 4\.0\.2 \(2026-11-19\)\n\n### Fixed\n- Reject a bad previousProof\n+## 4\.0\.1/
     );
     assert.equal(extractUnreleasedChanges(updated), null);
+  });
+});
+
+describe("localTagExists", () => {
+  it("recognizes a tag that is already in this repository", () => {
+    assert.equal(localTagExists("v4.0.2"), true);
+    assert.equal(localTagExists("v9.9.9"), false);
   });
 });
 

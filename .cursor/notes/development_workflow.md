@@ -354,7 +354,7 @@ npm run release:patch   # or release:minor / release:major
 npm run release -- patch --skip-git   # files only
 ```
 
-The script requires a non-empty `## [Unreleased]` section, a clean `main` worktree (unless `--skip-git`), then:
+The script requires a non-empty `## [Unreleased]` section, a clean `main` worktree, and no existing local or `origin` tag `vX.Y.Z` (unless `--skip-git`), then:
 
 1. Bumps the API version files above
 2. Moves `[Unreleased]` to `## X.Y.Z (YYYY-MM-DD)` and leaves a fresh `[Unreleased]`

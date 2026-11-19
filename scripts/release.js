@@ -210,6 +210,40 @@ function assertReleaseBranchIsClean() {
   }
 }
 
+function localTagExists(tag) {
+  try {
+    execFileSync("git", ["rev-parse", "--verify", "--quiet", `refs/tags/${tag}`], {
+      cwd: repoRoot,
+      stdio: "ignore",
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function remoteTagExists(tag) {
+  const output = execFileSync(
+    "git",
+    ["ls-remote", "--tags", "origin", `refs/tags/${tag}`],
+    {
+      cwd: repoRoot,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    }
+  ).trim();
+  return output.length > 0;
+}
+
+function assertReleaseTagAvailable(version) {
+  const tag = `v${version}`;
+  if (localTagExists(tag) || remoteTagExists(tag)) {
+    throw new Error(
+      `Tag ${tag} already exists. The release was not started.`
+    );
+  }
+}
+
 function commitAndTag(version) {
   const commitFiles = [
     "api/package.json",
@@ -285,6 +319,7 @@ function main() {
 
   if (!skipGit) {
     assertReleaseBranchIsClean();
+    assertReleaseTagAvailable(newVersion);
   }
 
   updatePackageVersion(newVersion);
@@ -324,6 +359,7 @@ process.on("SIGINT", () => {
 module.exports = {
   bumpVersion,
   extractUnreleasedChanges,
+  localTagExists,
   replaceRootLockVersion,
   replaceSwaggerVersion,
   rewriteChangelog,
