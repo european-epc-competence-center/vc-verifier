@@ -432,20 +432,15 @@ const gs1ValidatorRequest = {
 
 **Two-tier approach**:
 
-**1. Permanent Cache** (Map)
-- Static contexts
-- JSON schemas
-- Never expires
-- Preloaded contexts
+**1. Preloaded contexts** (Map, `context/index.ts`)
+- Bundled, never expire, not written at runtime
 
-**2. TTL Cache** (class-based)
-- Verifiable credentials fetched by HTTP URL (default: 1 hour)
-- Configurable via `DOCUMENT_CACHE_TTL_HOURS`
-- No in-flight dedup: concurrent misses for the same URL all fetch
+**2. TTL Cache** (class-based, max age 1 hour)
+- Cache-first: fetched credentials, contexts, schemas
+- Refresh-first, cached copy as outage fallback only: DID documents and status lists
+- Configurable via `DOCUMENT_CACHE_TTL_HOURS`; details in api_architecture.md (Document Loader)
+- No in-flight dedup: concurrent misses / refreshes for the same URL all fetch
 
-**Not cached**:
-- DID documents. `did:` URLs return from `getResolver().resolve()` before either cache. The resolver is constructed with `cache: false` in `didresolver.ts`.
-- Status-list credentials (`BitstringStatusListCredential`, `StatusList2021Credential`, `RevocationList2020Credential`)
 
 ### DID Resolution
 

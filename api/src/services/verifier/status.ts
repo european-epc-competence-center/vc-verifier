@@ -2,7 +2,8 @@
 import { Bitstring } from "@digitalbazaar/bitstring";
 // @ts-ignore
 import { verifyCredential as vcVerifyCredential } from "@digitalbazaar/vc";
-import { decodeJWT, verifyJWT } from './jwt.js';
+import { verifyJWT } from './jwt.js';
+import { decodeJWT } from './jwtDecode.js';
 import { unwrapEnvelopedCredential } from './envelope.js';
 import { getSuites } from './suites.js';
 

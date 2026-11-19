@@ -9,9 +9,16 @@ const HEADERS = {
 const IPFS_GATEWAYS = ['ipfs.io', 'ipfs.ssi.eecc.de'].concat(process.env.IPFS_GATEWAYS ? process.env.IPFS_GATEWAYS.split(',') : []);
 
 
+/** Error pages must not be mistaken for documents (and must not replace cached copies). */
+async function fetchOk(url: string) {
+    const response = await fetch(url, { method: 'GET', headers: HEADERS });
+    if (!response.ok) throw new Error(`Fetching ${url} failed with HTTP ${response.status}`);
+    return response;
+}
+
 export async function fetch_jsonld_or_jwt(url: string): Promise<any> {
 
-    const response = await fetch(url, { method: 'GET', headers: HEADERS });
+    const response = await fetchOk(url);
 
     const contentType = response.headers.get("content-type");
 
@@ -31,7 +38,7 @@ export async function fetch_jsonld_or_jwt(url: string): Promise<any> {
 
     if (link?.alternate?.rel == 'alternate' && link?.alternate?.type == 'application/ld+json') {
 
-        const linkResponse = await fetch(url + link.alternate.url, { method: 'GET', headers: HEADERS });
+        const linkResponse = await fetchOk(url + link.alternate.url);
 
         return await linkResponse.json();
 

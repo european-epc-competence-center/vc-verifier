@@ -12,6 +12,19 @@ VC Verifier Changelog
 - Frontend image build from `.github/workflows/build-all.yml`
 - Frontend service from `docker-compose.yml`
 
+### Changed
+- DID documents and status lists survive short upstream outages: they are still refreshed live on every lookup, but the last successful copy (at most `DOCUMENT_CACHE_TTL_HOURS`, default 1 h, old) is served when the refresh fails transiently; previously they were not cached at all (supersedes PR #54)
+  - Transient: thrown errors, HTTP error responses, DID resolver codes `notFound` (did:web transport failures) and `internalError` (did:webvh transport failures). Other resolver errors, e.g. `invalidDid` or a deactivated DID, reject and evict the cached copy
+  - `TTLCache.load(key, loadLive, isTransient)` implements the refresh-first fallback
+- Fetched JSON-LD contexts and schemas expire after `DOCUMENT_CACHE_TTL_HOURS` like fetched credentials, instead of being cached for the process lifetime; bundled contexts are unchanged
+- `isJWT`, `decodeJWT` and `JWTDecoded` moved from `verifier/jwt.ts` to the import-free `verifier/jwtDecode.ts`, so the document loader can use `envelope.ts` without an import cycle (`jwt.ts` imports the document loader)
+
+### Fixed
+- `fetch_jsonld_or_jwt` rejects HTTP error responses (also of the `Link: rel=alternate` follow-up request) instead of returning the error page as a document
+- Status list detection in the document loader recognizes enveloped (`EnvelopedVerifiableCredential`) and VC-JWT (`vc` claim) status lists and decodes base64url JWT payloads (`atob` threw on `-`/`_`); such status lists were cached instead of refreshed, delaying revocation
+  - Reuses `decodeVerifiableInput(unwrapEnvelopedCredential(document))` from `envelope.ts`
+- An unparsable or non-positive `DOCUMENT_CACHE_TTL_HOURS` falls back to 1 h; before, `NaN` made cache entries (and with the new fallback, stale DID documents/status lists) never expire. Fractional hours (e.g. `0.5`) are now honored instead of truncated by `parseInt`
+
 
 ## 4.0.1 (2026-11-13)
 

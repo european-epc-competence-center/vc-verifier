@@ -52,7 +52,8 @@ api/src/
 │   │
 │   └── verifier/         # Verification services (CORE)
 │       ├── index.ts      # verify() for JSON-LD and JWT dispatch
-│       ├── jwt.ts        # VC-JWT functions (isJWT, verifyJWT)
+│       ├── jwt.ts        # VC-JWT verification (verifyJWT)
+│       ├── jwtDecode.ts  # isJWT, decodeJWT (leaf module, no verifier imports)
 │       ├── gs1.ts        # verifyGs1 and GS1 rules integration
 │       ├── status.ts     # Status checking (revocation, suspension)
 │       ├── envelope.ts   # EnvelopedVerifiableCredential unwrapping

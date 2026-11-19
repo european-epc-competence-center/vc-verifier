@@ -13,7 +13,7 @@ import { checkGS1CredentialPresentationValidation,
 
 import { documentLoader } from "../documentLoader/index.js";
 import { verify } from "./index.js";
-import { decodeJWT, isJWT } from "./jwt.js";
+import { decodeJWT, isJWT } from "./jwtDecode.js";
 import { getJsonSchema, downloadAndCacheSchemas } from "./schemas.js";
 import { normalizePresentationInput } from "./envelope.js";
 import { credentialId, enclosedCredentials } from "../../utils/verifiable.js";

@@ -150,7 +150,7 @@ Exported functions correspond to router endpoints:
 **`getCheckStatus(credentialStatus)`**: Returns status checking function
 **`isDataIntegrityProof(proof)`**: Determines proof type for routing
 
-### JWT functions (`services/verifier/jwt.ts`)
+### JWT functions (`services/verifier/jwt.ts`; `isJWT`/`decodeJWT` in `jwtDecode.ts`)
 
 #### Methods
 
@@ -205,31 +205,27 @@ Integrates with `@eecc/vc-verifier-rules` package for GS1-specific validation.
 #### Caching Strategy
 
 **Two-tier caching**:
-1. **Permanent cache** (`contexts` Map): Static resources (contexts, schemas)
-2. **TTL cache** (`TTLCache`): HTTP-fetched verifiable credentials
-   - Default TTL: 1 hour (configurable via `DOCUMENT_CACHE_TTL_HOURS`)
-   - DID documents and status-list credentials are not stored here
+1. **Preloaded contexts** (`contexts` Map in `context/index.ts`): bundled, never written at runtime
+2. **TTL cache** (`TTLCache`, max age `DOCUMENT_CACHE_TTL_HOURS`, default 1 h), two policies:
+   - Cache-first: fetched credentials, contexts, schemas (served until expiry, then refetched)
+   - Refresh-first (`TTLCache.load`): DID documents (keyed by DID URL without fragment) and status lists. Every lookup loads live; the cached copy is served only when the refresh fails transiently (thrown/HTTP error, DID codes `notFound`/`internalError`). Other DID errors evict
+   - Why refresh-first for DIDs/status lists: revocation, key rotation and deactivation must take effect immediately; the cache only bridges upstream outages (decision 2026-11-19, replaces PR #54)
+   - Status list detection (`isStatusListCredential`) decodes via `envelope.ts`, so JSON-LD, VC-JOSE JWT, VC-JWT `vc` claim and enveloped status lists are all refresh-first
+   - Trap (import cycle): `documentLoader` imports `envelope.ts`; `jwt.ts` imports `documentLoader`. `envelope.ts` must only use `jwtDecode.ts`, never `jwt.ts`. Symptom of a cycle: tests that `unstable_mockModule` the document loader after importing it (e.g. `es256-json-ld.test.ts`) hit unrecorded DID URLs, since `jwt.ts` bound the real loader (verified 2026-11-19)
+   - Trap: web-did-resolver reports transport failures as `notFound`, same as a deleted did:web, so a deleted did:web stays usable for up to one TTL during the fallback (source: node_modules/web-did-resolver/src/resolver.ts; verified 2026-11-19)
 
 #### Resolution Flow
 
 ```
 documentLoader(url)
     ↓
-  DID URL? → DID Resolver (cache off) → Return
+  DID URL? → resolve live (fallback cache on transient failure) → Return
     ↓
-  Check permanent cache (contexts)
+  Preloaded context or TTL cache hit (not a status list)? → Return
     ↓
-  Check TTL cache
-    ↓
-  Not cached? → Fetch
-    ↓
+  Fetch live, cache (status list: fallback cache on failure)
   IPFS? → fetchIPFS()
-  HTTP? → fetch_jsonld_or_jwt()
-    ↓
-  Cache based on type:
-    - VC → TTL cache
-    - Context/Schema → Permanent cache
-    - Status list → not cached
+  HTTP? → fetch_jsonld_or_jwt() (throws on HTTP errors)
     ↓
   Return document
 ```
@@ -367,7 +363,7 @@ try {
 ### Environment Variables
 - `PORT` - Server port (default: 3000)
 - `VC_REGISTRY` - Credential registry URL (default: https://ssi.eecc.de/api/registry/vcs/)
-- `DOCUMENT_CACHE_TTL_HOURS` - Document cache TTL (default: 1)
+- `DOCUMENT_CACHE_TTL_HOURS` - Max age of the outage-fallback document cache (default: 1)
 
 ### Dependencies
 
@@ -392,10 +388,10 @@ try {
 All array-based verification endpoints use `Promise.all()` for parallel processing.
 
 ### Caching Strategy
-- Static contexts: Never expire (Map)
-- HTTP-fetched verifiable credentials: 1-hour TTL (configurable)
-- DID documents: not cached (`didresolver.ts` uses `cache: false`; the `did:` branch returns before `TTLCache`)
-- Status credentials: never cached (always a fresh check)
+- Preloaded contexts: never expire (Map)
+- Fetched credentials, contexts, schemas: cache-first, 1 h TTL
+- DID documents, status lists: refreshed on every lookup; cached copy (max 1 h) only as outage fallback (see Document Loader above)
+- `didresolver.ts` keeps `cache: false`; the fallback lives in `documentLoader`
 - `verify` is a stateless function, so replicas do not share cache and do not share mutable verification state
 
 ### Module Loading

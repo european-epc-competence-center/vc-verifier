@@ -9,6 +9,7 @@ await jest.unstable_mockModule(
   })
 );
 
+const { httpRequests } = await import("../test-support/http-fixtures.js");
 const { DIDResolutionError, documentLoader } = await import(
   "../src/services/documentLoader/index.js"
 );
@@ -16,6 +17,8 @@ const { verify } = await import("../src/services/verifier/index.js");
 
 const did = "did:example:issuer";
 const verificationMethodId = `${did}#key-1`;
+// Never resolved successfully, so no cached fallback can mask a failure.
+const uncachedDid = "did:example:uncached";
 const didDocument = {
   "@context": "https://www.w3.org/ns/did/v1",
   id: did,
@@ -291,7 +294,7 @@ describe("DID document resolution", () => {
       didDocumentMetadata: {},
     });
 
-    const resolution = documentLoader(did);
+    const resolution = documentLoader(uncachedDid);
 
     await expect(resolution).rejects.toBeInstanceOf(DIDResolutionError);
     await expect(resolution).rejects.toMatchObject({
@@ -320,7 +323,7 @@ describe("DID document resolution", () => {
       didDocumentMetadata: {},
     });
 
-    await expect(documentLoader(did)).rejects.toMatchObject({
+    await expect(documentLoader(uncachedDid)).rejects.toMatchObject({
       code: "notFound",
       message: expect.stringContaining("no DID document"),
     });
@@ -346,5 +349,101 @@ describe("DID document resolution", () => {
       message: expect.stringContaining("The DID history hash does not match."),
     });
     expect(JSON.stringify(responseBody)).toContain("invalidDid");
+  });
+});
+
+describe("DID document fallback cache", () => {
+  const cachedDid = "did:example:cached";
+  const cachedDocument = { ...didDocument, id: cachedDid, verificationMethod: [] };
+  const failure = (error: string) => ({
+    didResolutionMetadata: { error },
+    didDocument: null,
+    didDocumentMetadata: {},
+  });
+
+  beforeEach(async () => {
+    resolveMock.mockResolvedValueOnce({
+      didResolutionMetadata: {},
+      didDocument: cachedDocument,
+      didDocumentMetadata: {},
+    });
+    await documentLoader(cachedDid);
+  });
+
+  test("refreshes a cached DID document on every lookup", async () => {
+    const updated = { ...cachedDocument, service: [] };
+    resolveMock.mockResolvedValueOnce({
+      didResolutionMetadata: {},
+      didDocument: updated,
+      didDocumentMetadata: {},
+    });
+
+    expect((await documentLoader(cachedDid)).document).toEqual(updated);
+    expect(resolveMock).toHaveBeenCalledTimes(2);
+  });
+
+  test.each(["notFound", "internalError"])(
+    "serves the cached document when resolution fails with %s",
+    async (error) => {
+      resolveMock.mockResolvedValueOnce(failure(error));
+
+      expect((await documentLoader(cachedDid)).document).toEqual(cachedDocument);
+    }
+  );
+
+  test("serves the cached document when the resolver throws", async () => {
+    resolveMock.mockRejectedValueOnce(new Error("socket hang up"));
+
+    expect((await documentLoader(cachedDid)).document).toEqual(cachedDocument);
+  });
+
+  test("rejects and evicts on an authoritative failure", async () => {
+    resolveMock.mockResolvedValueOnce({
+      didResolutionMetadata: {},
+      didDocument: cachedDocument,
+      didDocumentMetadata: { deactivated: true },
+    });
+    await expect(documentLoader(cachedDid)).rejects.toMatchObject({
+      code: "deactivated",
+    });
+
+    resolveMock.mockResolvedValueOnce(failure("notFound"));
+    await expect(documentLoader(cachedDid)).rejects.toMatchObject({
+      code: "notFound",
+    });
+  });
+});
+
+describe("remote document loading", () => {
+  const requestsFor = (url: string) =>
+    httpRequests().filter((request) => request === url).length;
+
+  test("serves a fetched context from the TTL cache", async () => {
+    const context = "https://ref.gs1.org/gs1/vc/declaration-context";
+
+    const first = await documentLoader(context);
+    const second = await documentLoader(context);
+
+    expect(second.document).toBe(first.document);
+    expect(requestsFor(context)).toBe(1);
+  });
+
+  test.each([
+    "https://fixtures.example/status/revocation-list-2020",
+    "https://fixtures.example/status/enveloped-status-list",
+  ])("refreshes a cached status list on every lookup: %s", async (statusList) => {
+    await documentLoader(statusList);
+    await documentLoader(statusList);
+
+    expect(requestsFor(statusList)).toBe(2);
+  });
+
+  test("rejects an HTTP error response instead of returning it as a document", async () => {
+    const unavailableStatusList =
+      "https://vckit.untp.showthething.com/credentials/status/bitstring-status-list/3";
+
+    await expect(documentLoader(unavailableStatusList)).rejects.toThrow(
+      `Fetching ${unavailableStatusList} failed with HTTP 500`
+    );
   });
 });
