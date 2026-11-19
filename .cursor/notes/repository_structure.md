@@ -5,13 +5,14 @@
 ```
 vc-verifier/
 ├── api/              # Backend Express API subproject
-├── frontend/         # Vue.js frontend subproject
+├── frontend/         # Legacy Vue.js UI (local build only)
+├── scripts/          # API release script (`release.js`)
 ├── assets/           # Shared images (logo, screenshots for README)
 ├── CHANGELOG.md      # Root changelog (consolidated)
 ├── README.md         # Project documentation
 ├── docs/vcalm-api.md # VCALM verifier contract, local suite runs, and canivc publication
 ├── LICENSE           # Apache-2.0 license
-└── docker-compose.yml # Multi-container orchestration
+└── docker-compose.yml # API container
 ```
 
 ## API Subproject (`/api`)
@@ -87,6 +88,8 @@ __tests__/
 
 ## Frontend Subproject (`/frontend`)
 
+Legacy UI. Not versioned with API releases and not built in CI. Local build: `frontend/README.md`. The Dockerfile remains for a local nginx image.
+
 ### Source Code (`/frontend/src`)
 
 ```
@@ -158,11 +161,7 @@ Static files copied as-is to dist:
 
 ### `docker-compose.yml`
 
-Orchestrates both services:
-- `api` service (port 3000)
-- `frontend` service (port 80)
-
-Each uses pre-built images from GitHub Container Registry.
+Runs the API from GitHub Container Registry (`api` service, port `API_PORT`). The frontend is not in Compose.
 
 ### Individual Dockerfiles
 
@@ -251,8 +250,7 @@ Uses Vue Router with hash history (`createWebHashHistory`).
 
 GitHub Actions workflows (`.github/workflows/`):
 - `tests.yml` - Run API tests
-- `build-all.yml` - Build and push Docker images
+- `build-all.yml` - Build and push the API image. On a `v*` tag, the `create-release` job opens the GitHub Release from the matching changelog section
 
-Built images pushed to GitHub Container Registry:
+Published image:
 - `ghcr.io/european-epc-competence-center/vc-verifier/vc_verifier_api`
-- `ghcr.io/european-epc-competence-center/vc-verifier/vc_verifier_frontend`

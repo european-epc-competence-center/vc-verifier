@@ -1,14 +1,18 @@
 {
   "name": "vc-verifier",
   "version": "4.0.1",
-  "description": "The EECC verifier for verifiable credentials which provides an verification API as well as the corresponding UI.",
+  "description": "The EECC API for verifying verifiable credentials.",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "dev": "tsc-watch --onSuccess 'nodemon ./dist/index.js'",
     "copy-schemas": "copyfiles -u 1 \"src/services/verifier/schemas/*.json\" dist",
     "build-tsc": "npx tsc && npm run copy-schemas",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --verbose --coverage --detectOpenHandles"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --verbose --coverage --detectOpenHandles",
+    "release": "node ../scripts/release.js",
+    "release:patch": "npm run release patch",
+    "release:minor": "npm run release minor",
+    "release:major": "npm run release major"
   },
   "repository": {
     "type": "git",
