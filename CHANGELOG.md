@@ -3,8 +3,11 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+## 4.0.3 (2026-11-19)
+
 ### Fixed
 - The release script checks that `vX.Y.Z` is not already present, locally or on `origin`, before it edits version files or commits
+
 
 ## 4.0.2 (2026-11-19)
 
