@@ -23,7 +23,7 @@ COPY . .
 RUN npm run build-tsc
 
 # Production image, copy all the files and run the app
-FROM gcr.io/distroless/nodejs24-debian12:nonroot AS runner
+FROM gcr.io/distroless/nodejs24-debian13:nonroot AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production

@@ -3,6 +3,9 @@ VC Verifier Changelog
 
 ## [Unreleased]
 
+- runtime image upgraded to gcr.io/distroless/nodejs24-debian13:nonroot
+
+
 ## 4.0.1 (2026-11-13)
 
 ### Fixed
